@@ -48,12 +48,53 @@ Create `reaper-workspace/experiments/NNN-<slug>/` where:
 Do the actual research. This is the core intellectual work. Depending on the hypothesis:
 
 - **Proof verification**: Check each step of an existing proof. Look for gaps, implicit assumptions, boundary cases. Consult `references/methodology.md` for patterns.
-- **Proof attempt**: Try to prove the claim. Start with the simplest approach. If it works, check if a simpler proof exists.
+- **Proof attempt**: Try to prove the claim. Start with the simplest approach. If it works, check if a simpler proof exists. All proofs must follow the formal proof structure below.
 - **Counterexample search**: Try to disprove the claim. Start small (2 parties, 1 round). Construct a specific adversary strategy and execution trace.
-- **Security analysis**: Enumerate threat models, check if reductions go through, verify simulator constructions.
+- **Security analysis**: Enumerate threat models, check if reductions go through, verify simulator constructions. Security proofs must follow the formal proof structure below.
 - **Comparison**: Compare approaches along specific dimensions (complexity, assumptions, properties).
+- **Performance analysis**: Prove complexity bounds, communication costs, round complexity, or other quantitative metrics. All performance claims must follow the formal proof structure below.
 
 Write all work — reasoning, attempts, dead ends, insights — to `reaper-workspace/experiments/NNN-<slug>/analysis.md`.
+
+#### Formal Proof Structure
+
+For theoretical research (proving properties, security guarantees, or performance metrics), every claim must be stated and proved formally. Write proofs in `reaper-workspace/experiments/NNN-<slug>/proof.md` using this structure:
+
+```markdown
+## Theorem/Lemma/Proposition N: <name>
+
+**Statement.** <precise mathematical statement of the claim>
+
+**Assumptions.**
+- <each assumption listed explicitly, e.g., threat model, computational hardness, network model>
+
+**Proof.**
+<the proof body — each logical step explicit and justified>
+
+1. <step>  *(by <justification: definition / assumption / prior lemma / cited result>)*
+2. <step>  *(by ...)*
+...
+
+∎
+
+**Proof technique:** <e.g., reduction, induction, simulation, hybrid argument, game hopping>
+```
+
+Requirements for formal proofs:
+
+- **Properties** (correctness, liveness, safety, fairness, etc.): State the property as a formal predicate. Prove it holds under the stated assumptions. If the property holds conditionally, state the conditions precisely.
+- **Performance metrics** (time complexity, communication complexity, round complexity, storage, etc.): State the bound as a formal claim (e.g., "The protocol terminates in O(f(n)) rounds"). Prove the bound by construction or by reduction to known results. Distinguish between worst-case, average-case, and amortized bounds.
+- **Security properties** (via reduction): State the security definition, construct the simulator/reduction, and prove the bound on advantage. Make the reduction tight or state the tightness gap.
+- **Impossibility results**: State what is being shown impossible, under which model. Prove by contradiction or by reduction to a known impossibility.
+
+If a proof attempt fails or has gaps:
+- Document exactly where the proof breaks down
+- State what additional assumption would close the gap
+- Log the cycle as `inconclusive` with the gap described
+
+Do not claim a property or metric holds without a proof. Conjectures are acceptable but must be clearly labeled as such, with evidence for and against.
+
+<!-- TODO: Add Lean-based formal verification step. When proofs are complete, translate them into Lean 4 and machine-check them. This would replace confidence levels with verified/unverified status and catch subtle gaps that manual proofs miss. Requires: Lean 4 toolchain, a library of common crypto/protocol primitives in Lean, and a skill or subscript to invoke the Lean checker. -->
 
 ### Step 4: Evaluate
 
@@ -78,7 +119,7 @@ Append a row to `reaper-workspace/results.md`:
 ```
 
 Where:
-- **action-type**: proof-verification, proof-attempt, counterexample-search, security-analysis, comparison, literature-search, reformulation
+- **action-type**: proof-verification, proof-attempt, counterexample-search, security-analysis, performance-analysis, comparison, literature-search, reformulation
 - **outcome**: confirmed, refuted, partially-confirmed, inconclusive, new-hypothesis
 - **confidence**: high, medium, low
 - **status**: keep or discard
