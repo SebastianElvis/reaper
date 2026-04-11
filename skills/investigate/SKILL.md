@@ -26,7 +26,8 @@ Read before starting:
 
 Also reference:
 - `reaper-workspace/notes/paper-summary.md` — the source paper
-- `reaper-workspace/notes/literature.md` — known prior work
+- `reaper-workspace/notes/literature.md` — known prior work (organized by same-goal and same-approach)
+- `reaper-workspace/papers/` — downloaded PDFs and per-paper notes (`<id>-notes.md`) from the literature review
 - `references/methodology.md` — proof/analysis patterns
 
 ## The Loop
@@ -110,7 +111,9 @@ If a cycle is going nowhere, escalate through these steps:
 1. **Re-read the paper.** Look at sections you skimmed earlier. The answer is often in the details you glossed over.
 2. **Re-read current-understanding.md.** What assumptions haven't been questioned? What's being taken for granted?
 3. **Re-read results.md.** Can two "discard" results be combined into something useful? Patterns in dead ends are informative.
-4. **Search for related work** you haven't found yet. Use the search scripts as primary sources:
+4. **Consult downloaded literature.** Before searching for new work, re-read the per-paper notes in `reaper-workspace/papers/<id>-notes.md`. A technique or result you need may already be in a paper you've downloaded but haven't fully exploited. If a specific section of a downloaded PDF seems relevant, read it directly with the Read tool.
+
+5. **Search for related work** you haven't found yet. Use the search scripts as primary sources:
 
    ```bash
    # For crypto/security topics — search IACR ePrint
@@ -125,20 +128,20 @@ If a cycle is going nowhere, escalate through these steps:
 
    Fall back to WebSearch if the scripts are unavailable or for non-academic sources (blog posts, talks, informal results).
 
-   If you find relevant new papers, **append** them to `reaper-workspace/notes/literature.md` under a new section:
+   If you find relevant new papers, **download them** to `reaper-workspace/papers/`, read them, and write per-paper notes (`<id>-notes.md`). Then **append** them to `reaper-workspace/notes/literature.md` under a new section:
 
    ```markdown
    ## Mid-Investigation Additions (Cycle NNN)
 
-   | # | Title | Authors | Year | Venue | Key Contribution | Relevance |
-   |---|-------|---------|------|-------|-----------------|-----------|
+   | # | Title | Authors | Year | Venue | Key Contribution | Category | Local Path |
+   |---|-------|---------|------|-------|-----------------|----------|------------|
    ```
 
    Log the literature search as a cycle with action-type `literature-search` in `results.md`.
-5. **Try a radically different approach** to the same hypothesis. If you've been trying direct proof, try reduction. If you've been trying construction, try impossibility.
-6. **Formulate a new hypothesis** based on what you've learned so far. The investigation may have revealed that the original question was the wrong question.
-7. **Invert the problem (Hamming).** Can't prove it? Try to disprove it. Can't find a counterexample? Ask what minimal assumption would make the proof work. What seems like a blockage often becomes the key insight.
-8. **Apply Qian's patterns:**
+6. **Try a radically different approach** to the same hypothesis. If you've been trying direct proof, try reduction. If you've been trying construction, try impossibility.
+7. **Formulate a new hypothesis** based on what you've learned so far. The investigation may have revealed that the original question was the wrong question.
+8. **Invert the problem (Hamming).** Can't prove it? Try to disprove it. Can't find a counterexample? Ask what minimal assumption would make the proof work. What seems like a blockage often becomes the key insight.
+9. **Apply Qian's patterns:**
    - *Fill in the blank*: What combination of assumptions/techniques hasn't been tried?
    - *Start small then generalize*: What's the simplest case? Can you solve it for n=2 first?
    - *Build a hammer*: Can a technique from a previous cycle apply here in a different way?
@@ -160,4 +163,4 @@ Use parallel investigation when hypotheses are truly independent. If hypothesis 
 - Each experiment directory has an `analysis.md` with full reasoning
 - The "one ping" test: every cycle's outcome can be stated in one sentence
 - No cycles wasted on tangential exploration that doesn't serve the research goal
-- When stuck, the 8-step protocol is followed before giving up on a hypothesis
+- When stuck, the 9-step protocol is followed before giving up on a hypothesis
