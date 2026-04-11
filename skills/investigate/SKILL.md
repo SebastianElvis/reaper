@@ -34,21 +34,48 @@ Also reference:
 - `reaper-workspace/papers/` — downloaded PDFs and per-paper notes (`<id>-notes.md`) from the literature review
 - `references/methodology.md` — proof/analysis patterns
 
-## The Loop
+## The Batch Loop
 
-For each cycle (1 to N):
+Investigation runs in **batches**, not sequential cycles. Independent hypotheses are investigated in parallel by default; sequential execution is the fallback when dependencies exist.
 
-### Step 1: Select Hypothesis
+### Overview: Plan → Dispatch → Merge → Repeat
 
-Pick the highest-priority **unresolved** hypothesis from `hypotheses.md`. Check `results.md` to avoid repeating failed approaches on the same hypothesis. If all hypotheses are resolved, formulate new ones based on what you've learned (see When Stuck, step 6).
+```
+while cycles_remaining > 0 and not converged:
+    Plan:     read hypotheses.md + results.md → dependency graph → batch of independent hypotheses
+    Dispatch: spawn one subagent per hypothesis (parallel, in one message)
+    Merge:    collect results → append to results.md → integrate "keep" insights into current-understanding.md
+```
 
-### Step 2: Create Experiment Directory
+### Plan Batch
+
+1. Read `hypotheses.md` and `results.md`
+2. Identify all **unresolved** hypotheses. Check `results.md` to avoid repeating failed approaches.
+3. Build a dependency graph: does resolving H2 require knowing the outcome of H1? If so, H2 depends on H1.
+4. Select the largest set of **independent** hypotheses that can run concurrently. Cap the batch size at `cycles_remaining`.
+5. Allocate cycle numbers: pre-assign a contiguous range per subagent (e.g., batch 1 gets 001-003, batch 2 gets 004-006). Each subagent gets one or more consecutive numbers from its range.
+6. If all remaining hypotheses form a dependency chain, the batch size is 1 — this is the **sequential fallback** (see below).
+7. If all hypotheses are resolved, formulate new ones based on what you've learned (see When Stuck, step 7).
+
+### Dispatch Batch
+
+Spawn one subagent per hypothesis in the batch using the Agent tool. **Launch all subagents in a single message** for true parallelism. Each subagent receives:
+
+- Its assigned cycle number(s)
+- The hypothesis to investigate
+- A snapshot of `current-understanding.md` (read-only for the duration of the batch)
+- The full single-cycle protocol (Steps A–E below)
+- Instructions to return: cycle rows for `results.md`, keep/discard verdict, and if keep: the insight to merge
+
+Each subagent runs the single-cycle protocol independently:
+
+#### Step A: Create Experiment Directory
 
 Create `reaper-workspace/experiments/NNN-<slug>/` where:
-- `NNN` is the zero-padded cycle number (001, 002, ...)
+- `NNN` is the assigned zero-padded cycle number (001, 002, ...)
 - `<slug>` is a short descriptor (e.g., `proof-lemma3`, `counterex-2party`, `alt-reduction`)
 
-### Step 3: Investigate
+#### Step B: Investigate
 
 Do the actual research. This is the core intellectual work. Depending on the hypothesis:
 
@@ -61,7 +88,16 @@ Do the actual research. This is the core intellectual work. Depending on the hyp
 
 Write all work — reasoning, attempts, dead ends, insights — to `reaper-workspace/experiments/NNN-<slug>/analysis.md`.
 
-#### Formal Proof Structure
+##### Intra-Cycle Parallelism
+
+Within a single cycle, subagents MAY spawn sub-subagents for concurrent attack:
+
+- **Proof + counterexample race**: When a hypothesis could go either way, run proof-attempt and counterexample-search as parallel sub-subagents. The first to reach a definitive result wins; the other's partial work is logged in the experiment directory.
+- **Parallel literature search**: When stuck and searching for related work, run IACR + arXiv + WebSearch as parallel sub-subagents, then merge results.
+
+Use intra-cycle parallelism when the hypothesis is genuinely uncertain. If prior cycles strongly suggest the claim is true (or false), prefer the targeted approach.
+
+##### Formal Proof Structure
 
 For theoretical research (proving properties, security guarantees, or performance metrics), every claim must be stated and proved formally. Write proofs in `reaper-workspace/experiments/NNN-<slug>/proof.md` using this structure:
 
@@ -101,7 +137,7 @@ Do not claim a property or metric holds without a proof. Conjectures are accepta
 
 <!-- TODO: Add Lean-based formal verification step. When proofs are complete, translate them into Lean 4 and machine-check them. This would replace confidence levels with verified/unverified status and catch subtle gaps that manual proofs miss. Requires: Lean 4 toolchain, a library of common crypto/protocol primitives in Lean, and a skill or subscript to invoke the Lean checker. -->
 
-### Step 4: Evaluate
+#### Step C: Evaluate
 
 Did this cycle produce **genuine progress**? A cycle counts as progress if it:
 
@@ -115,9 +151,9 @@ Did this cycle produce **genuine progress**? A cycle counts as progress if it:
 
 **One "ping" per cycle**: The cycle's outcome should be statable in a single sentence. If it can't be, the cycle tried to do too much — note this and decompose in the next cycle.
 
-### Step 5: Log
+#### Step D: Log
 
-Append a row to `reaper-workspace/results.md`:
+Prepare a row for `reaper-workspace/results.md`:
 
 ```
 | NNN | H# | action-type | outcome | confidence | status | one-sentence description |
@@ -129,21 +165,34 @@ Where:
 - **confidence**: high, medium, low
 - **status**: keep or discard
 
-### Step 6: Keep or Discard
+Subagents return this row to the main agent rather than appending directly.
 
-**keep** — The cycle produced genuine progress:
-- Update `reaper-workspace/notes/current-understanding.md` with the new insight
-- Write as if explaining at a whiteboard — crystallize understanding, don't just append notes
-- The updated file should be coherent end-to-end, not a chronological log
+#### Step E: Keep or Discard
 
-**discard** — The cycle was a dead end:
-- The experiment directory stays for the audit trail
-- Do NOT touch `current-understanding.md`
-- The row in `results.md` is the only trace in the running state
+Determine the verdict:
+
+**keep** — The cycle produced genuine progress. Return the insight to merge into `current-understanding.md`.
+
+**discard** — The cycle was a dead end. The experiment directory stays for the audit trail.
+
+Subagents do NOT write to `current-understanding.md` directly — they return their verdict and insight to the main agent.
+
+### Merge
+
+After all subagents in a batch complete:
+
+1. **Append rows** to `reaper-workspace/results.md`, ordered by cycle number
+2. **Integrate "keep" insights** into `reaper-workspace/notes/current-understanding.md` — the main agent writes this, preserving the single-writer constraint. Write as if explaining at a whiteboard — crystallize understanding, don't just append notes. The file should be coherent end-to-end, not a chronological log.
+3. **Check for new hypotheses** generated by the batch (subagents may propose them). Add to `hypotheses.md`.
+4. **Re-read updated state** and plan the next batch.
+
+### Sequential Fallback
+
+When all remaining hypotheses form a dependency chain (H2 requires H1's result, H3 requires H2's, ...), the batch size is 1. This is equivalent to the traditional sequential loop — no subagents needed, the main agent runs Steps A–E directly and writes to `current-understanding.md` immediately on keep.
 
 ### Repeat
 
-Go to Step 1 for the next cycle. Do not pause, do not ask if you should continue.
+Plan the next batch. Do not pause, do not ask if you should continue.
 
 ## Never-Stop Policy
 
@@ -190,16 +239,6 @@ If a cycle is going nowhere, escalate through these steps:
    - *Fill in the blank*: What combination of assumptions/techniques hasn't been tried?
    - *Start small then generalize*: What's the simplest case? Can you solve it for n=2 first?
    - *Build a hammer*: Can a technique from a previous cycle apply here in a different way?
-
-## Parallel Investigation
-
-When multiple **independent** hypotheses exist and haven't been explored, you MAY spawn parallel subagents (using the Agent tool) to investigate them concurrently. Each subagent:
-- Gets its own experiment directory (use non-overlapping cycle numbers)
-- Follows the same loop protocol
-- Writes to its own experiment directory and appends to `results.md`
-- Only the main agent updates `current-understanding.md` (to avoid write conflicts)
-
-Use parallel investigation when hypotheses are truly independent. If hypothesis H2 depends on the result of H1, investigate sequentially.
 
 ## Feedback Mode
 
@@ -252,3 +291,5 @@ For **deepen** and **explore**, after completing the cycles, the orchestrator sh
 - The "one ping" test: every cycle's outcome can be stated in one sentence
 - No cycles wasted on tangential exploration that doesn't serve the research goal
 - When stuck, the 9-step protocol is followed before giving up on a hypothesis
+- Independent hypotheses are batched in parallel by default; sequential only when dependencies exist
+- `current-understanding.md` is written only by the main agent during the merge phase, never by subagents
