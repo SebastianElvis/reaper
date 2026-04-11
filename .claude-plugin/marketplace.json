@@ -1,0 +1,14 @@
+{
+  "name": "reaper",
+  "owner": {
+    "name": "Runchao Han"
+  },
+  "plugins": [
+    {
+      "name": "reaper",
+      "source": ".",
+      "description": "AI-native scientific research pipeline. Takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.",
+      "version": "0.1.0"
+    }
+  ]
+}
