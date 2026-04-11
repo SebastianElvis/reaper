@@ -1,6 +1,6 @@
 ---
 name: reaper
-description: "Run the full Reaper research pipeline: analyze a paper, review literature, formalize the problem, investigate hypotheses, and synthesize a report. Use when given a research paper and a research goal."
+description: "Run the full Reaper research pipeline: analyze a paper, review literature, formalize the problem, investigate hypotheses with critique loops, and synthesize a report. Use when given a research paper and a research goal."
 user-invocable: true
 argument-hint: "<paper-path> \"<research-goal>\" [--codex]"
 ---
@@ -76,14 +76,31 @@ Both must complete before proceeding.
 
 Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline outputs (including `clarified-goal.md`) and produces `notes/hypotheses.md` with trust assumptions, security properties, performance goals, and prioritized testable claims.
 
-### Step 5: Investigate
+### Step 5: Investigate → Critique Loop
 
-Run **`/reaper:investigate 10`** (or **`/reaper:investigate 10 --codex`** if the `--codex` flag was passed to the orchestrator) — executes 10 investigation cycles (adjust based on problem complexity). Each cycle:
-- Tests a hypothesis from `hypotheses.md`
-- Logs results to `results.md`
-- Updates `current-understanding.md` only on keep
+Run an alternating investigate→critique loop. This is the core research engine. The loop structure depends on whether `--codex` was passed:
 
-This is the core research loop. It runs autonomously — do not interrupt or ask if it should continue.
+**Default (no `--codex`):**
+```
+/reaper:investigate 5  →  /reaper:critique --self  →  /reaper:investigate 5
+```
+
+**With `--codex`:**
+```
+/reaper:investigate 5  →  /reaper:critique --codex  →  /reaper:investigate 5  →  /reaper:critique --codex
+```
+
+Concretely:
+1. Run **`/reaper:investigate 5`** — first batch of investigation cycles
+2. Run **`/reaper:critique --codex`** (if `--codex`) or **`/reaper:critique --self`** — critique the findings, potentially adding new hypotheses
+3. Run **`/reaper:investigate 5`** — second batch, now incorporating hypotheses from critique
+4. If `--codex`, run **`/reaper:critique --codex`** once more for a final review
+
+Adjust cycle counts based on problem complexity (e.g., 3+3 for simple problems, 5+5 for complex ones). The total should be ~10 cycles of investigation.
+
+The critique step may add new hypotheses to `hypotheses.md` (tagged `[Codex-N]` or `[Self-N]`), which the next investigate batch picks up automatically.
+
+This loop runs autonomously — do not interrupt or ask if it should continue.
 
 ### Step 6: Synthesize
 
@@ -101,9 +118,9 @@ After synthesis completes:
 
 After presenting results, let the user know they can iterate:
 
-> If you'd like to refine, deepen, or challenge any aspect of this research, use `/reaper:investigate "your feedback here"`.
+> If you'd like to refine, deepen, or challenge any aspect of this research, use `/reaper:critique "your feedback here"`.
 
-Do **not** block waiting for a response — the pipeline is complete. The user can invoke `/reaper:investigate` with quoted feedback at any time to start a feedback round. When invoked this way, investigate enters feedback mode — it classifies the feedback, runs targeted cycles, and then you should re-run `/reaper:synthesize` to produce an updated report.
+Do **not** block waiting for a response — the pipeline is complete. The user can invoke `/reaper:critique` with quoted feedback at any time to start a feedback round. The critique skill classifies the feedback, may run targeted investigation cycles, and then you should re-run `/reaper:synthesize` to produce an updated report.
 
 ## Important Notes
 

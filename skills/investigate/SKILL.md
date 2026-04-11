@@ -1,39 +1,25 @@
 ---
 name: investigate
-description: "Run investigation cycles that test hypotheses through proof verification, counterexample search, or security analysis, with keep-or-discard discipline. Use when asked to investigate, verify, prove, or disprove claims, or when iterating on research based on human feedback."
+description: "Run investigation cycles that test hypotheses through proof verification, counterexample search, or security analysis, with keep-or-discard discipline. Use when asked to investigate, verify, prove, or disprove claims."
 user-invocable: true
-argument-hint: "[number-of-cycles] [--codex] or \"<feedback>\" [--codex]"
+argument-hint: "[number-of-cycles]"
 ---
 
 # Investigate
 
-The core research loop. Run N investigation cycles, each testing a hypothesis and applying keep-or-discard discipline. Also handles human feedback for iterating on completed research.
+The core research loop. Run N investigation cycles, each testing a hypothesis and applying keep-or-discard discipline.
 
 ## Usage
 
 ```
-# Initial investigation
+# Run 10 investigation cycles
 /reaper:investigate 10
 
-# With Codex consultation — get AI feedback between cycles
-/reaper:investigate 10 --codex
-
-# Human feedback — iterate on existing results
-/reaper:investigate "dig deeper into the liveness proof gap under partial synchrony"
-
-# Human feedback with Codex consultation
-/reaper:investigate "dig deeper into the liveness proof gap under partial synchrony" --codex
+# Default: 5 cycles
+/reaper:investigate
 ```
 
-Default: 5 cycles if no argument given. If the argument is quoted text (not a number), it is treated as human feedback (see Feedback Mode below).
-
-### The `--codex` Flag
-
-When `--codex` is passed, the skill consults an external AI (OpenAI Codex via MCP) after each batch's merge phase for an independent second opinion. This establishes an automated feedback loop where Codex plays **devil's advocate** or provides **alternative inspiration**, supplementing human feedback.
-
-**Requires**: The `codex-cli` MCP server registered with Claude Code (see [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server)): `claude mcp add codex-cli -- npx -y codex-mcp-server`.
-
-**Fallback**: If the Codex MCP tools are unavailable (server not registered, connection failure, etc.), skip the consultation step silently and continue the investigation loop as normal. Log a note in the experiment directory that Codex consultation was requested but unavailable.
+Default: 5 cycles if no argument given.
 
 ## Inputs
 
@@ -59,7 +45,6 @@ while cycles_remaining > 0 and not converged:
     Plan:     read hypotheses.md + results.md → dependency graph → batch of independent hypotheses
     Dispatch: spawn one subagent per hypothesis (parallel, in one message)
     Merge:    collect results → append to results.md → integrate "keep" insights into current-understanding.md
-    Consult:  [if --codex] ask Codex for critique or inspiration → triage → add hypotheses
 ```
 
 ### Plan Batch
@@ -136,66 +121,21 @@ For theoretical research (proving properties, security guarantees, or performanc
 **Proof technique:** <e.g., reduction, induction, simulation, hybrid argument, game hopping>
 ```
 
-#### Proof Techniques Catalog
-
-Choose the proof technique that matches the claim type. The technique determines the proof structure — don't mix paradigms within a single argument.
-
-**Cryptographic proof techniques** (see Shoup [ePrint 2004/332] for game-based proofs and Lindell [ePrint 2016/046] for simulation-based proofs):
-
-| Technique | When to Use | Core Idea | Key Pitfalls |
-|-----------|-------------|-----------|--------------|
-| **Game-based (sequence of games / game hopping)** | Proving IND-CPA, IND-CCA, EUF-CMA, and similar computational security notions | Define a sequence of games G₀, G₁, ..., Gₖ where G₀ is the real security game and Gₖ is trivially secure. Bound the distinguishing advantage between each consecutive pair. Total advantage ≤ Σ advantages. | Each hop must be justified (syntactic change, computational assumption, or statistical argument). The sum of advantages must remain negligible. Don't lose track of which game you're in. |
-| **Simulation-based (ideal/real paradigm)** | Proving security of MPC protocols, commitment schemes, zero-knowledge proofs — any setting where "security" means "the adversary learns nothing beyond the output" | Construct a simulator S that, given only the ideal-world output, produces a view indistinguishable from the adversary's real-world view. Security means: for every PPT adversary A, there exists PPT simulator S such that REAL_A ≈ IDEAL_S. | The simulator must handle ALL adversary behaviors including abort. Simulator must run in expected PPT. Rewinding is allowed in standalone but NOT in UC. The simulation must be indistinguishable — state precisely whether computationally, statistically, or perfectly. |
-| **UC (Universal Composability)** | Proving security that holds under arbitrary concurrent composition with other protocols | Define an ideal functionality F. Prove that for every environment Z and adversary A, there exists a simulator S such that Z cannot distinguish the real protocol from the ideal interaction with F and S. | No rewinding allowed — use equivocation or straight-line extraction instead. The environment Z is the distinguisher and is the most powerful entity. Composition theorem gives security for free but proving UC security is strictly harder than standalone. |
-| **Reduction** | Proving hardness-based security — "breaking the scheme implies solving a hard problem" | Given adversary A that breaks property P with advantage ε, construct algorithm B that solves hard problem H with advantage related to ε. | Check tightness (see Reduction Quality Gate). Reduction must handle ALL oracle queries. Watch for exponential security loss in multi-instance settings. Programming random oracle / CRS must produce correct distribution. |
-| **Hybrid argument** | Bounding advantage across many instances or many rounds | Define hybrid distributions H₀, ..., Hₙ that interpolate between two endpoints. Show adjacent hybrids are indistinguishable. | Security loss is typically linear in the number of hybrids (n). For n exponential in security parameter, the argument gives nothing useful. Consider tight reductions or complexity leveraging. |
-
-**Distributed computing proof techniques:**
-
-| Technique | When to Use | Core Idea | Key Pitfalls |
-|-----------|-------------|-----------|--------------|
-| **Safety by invariant** | Proving agreement, consistency, validity | Define a predicate Inv over global states. Show: (1) Inv holds initially, (2) every protocol step preserves Inv, (3) Inv implies the safety property. | The invariant must be inductive — it must be preserved by EVERY possible step, including adversarial ones. A common error is proving the invariant holds for honest steps but not for Byzantine behavior. |
-| **Liveness by eventual argument** | Proving termination, progress, fairness | Show that under the timing/fault assumptions, some progress measure eventually increases or some good event eventually occurs. Often: after GST, honest messages arrive within Δ, so a decision is reached within f(Δ, n, t) time. | Liveness proofs under partial synchrony must be explicit about what happens before GST (nothing is guaranteed) vs after GST. Don't assume synchrony holds globally. FLP means you need randomization or partial synchrony — be clear which you use. |
-| **Indistinguishability / partitioning** | Proving impossibility results, lower bounds | Construct two executions that are indistinguishable to some party or set of parties, yet require different outputs — a contradiction. Classic: partition n parties into groups that can't tell which partition they're in. | The indistinguishability argument must account for ALL information available to the parties, including message timing in synchronous models. |
-| **Bivalence / valency** | Proving FLP-style impossibility | Show that an initial configuration is bivalent (both 0 and 1 are reachable). Show that every deterministic step from a bivalent configuration leads to another bivalent configuration or a contradiction with fault tolerance. | Only applies to deterministic protocols. Randomized protocols circumvent FLP via probabilistic termination. |
-| **Counting / quorum intersection** | Proving properties of quorum-based protocols | Show that any two quorums intersect in enough honest parties to guarantee consistency. For n = 3t+1: any two sets of 2t+1 intersect in t+1, of which at least 1 is honest. | The intersection argument fails if the corruption threshold is violated. Be precise about whether you need "at least one honest in intersection" vs "honest majority in intersection." |
-
-When selecting a technique, state it explicitly in the proof header. If the chosen technique doesn't work after a genuine attempt, this is useful information — log which technique failed and why, then try an alternative technique in the next cycle.
+Consult `references/methodology.md` for the proof techniques catalog, reduction quality gate, and performance sanity checks. State the chosen proof technique in the proof header. If it doesn't work after a genuine attempt, log which technique failed and why, then try an alternative in the next cycle.
 
 Requirements for formal proofs:
 
-- **Properties** (correctness, liveness, safety, fairness, etc.): State the property as a formal predicate. Prove it holds under the stated assumptions. If the property holds conditionally, state the conditions precisely.
-- **Performance metrics** (time complexity, communication complexity, round complexity, storage, etc.): State the bound as a formal claim (e.g., "The protocol terminates in O(f(n)) rounds"). Prove the bound by construction or by reduction to known results. Distinguish between worst-case, average-case, and amortized bounds.
-- **Security properties** (via reduction): State the security definition, construct the simulator/reduction, and prove the bound on advantage. Make the reduction tight or state the tightness gap.
-- **Impossibility results**: State what is being shown impossible, under which model. Prove by contradiction or by reduction to a known impossibility.
+- **Properties**: State as a formal predicate. Prove under stated assumptions.
+- **Performance metrics**: State as a formal claim. Prove by construction or reduction. Distinguish worst/average/amortized.
+- **Security properties**: State the definition, construct the reduction, prove the bound. Make it tight or state the gap.
+- **Impossibility results**: State what's impossible, under which model. Prove by contradiction or reduction.
 
 If a proof attempt fails or has gaps:
 - Document exactly where the proof breaks down
 - State what additional assumption would close the gap
 - Log the cycle as `inconclusive` with the gap described
 
-Do not claim a property or metric holds without a proof. Conjectures are acceptable but must be clearly labeled as such, with evidence for and against.
-
-#### Reduction Quality Gate
-
-Every reduction-based argument must answer ALL of the following before being marked `confirmed`. If any answer is "unclear" or "not applicable" without justification, the cycle outcome must be `inconclusive`, not `confirmed`.
-
-1. **Embedding**: How is the challenge instance embedded in the protocol? Is the embedding perfect, statistical, or computational?
-2. **Simulation**: Does the simulator handle ALL adversary queries? List the query types (signing, corruption, random oracle, etc.) and how each is answered.
-3. **Extraction**: How is the solution extracted from a successful adversary? Does extraction work for ALL winning conditions in the security game?
-4. **Tightness**: What is the concrete security loss? Express as ε_scheme ≤ f(ε_assumption, q, ...). Is f polynomial in all parameters? If the loss is superpolynomial, the reduction gives no meaningful concrete security.
-5. **Rewinding**: Does the reduction rewind the adversary? If yes, is rewinding valid in the stated composition model? (Rewinding is NOT valid in UC.)
-6. **Abort analysis**: What happens if the adversary aborts mid-protocol? Does the reduction still extract or must it restart?
-7. **Programming**: Does the reduction program the random oracle / CRS? If so, is the programmed distribution indistinguishable from the real one?
-
-#### Performance Sanity Checks
-
-Before accepting any performance or complexity claim:
-
-- **Lower bounds**: Compare against known lower bounds for the problem class. A claim of O(n) communication for Byzantine agreement without threshold signatures contradicts Dolev-Reischuk (Ω(n²)).
-- **Concrete instantiation**: Plug in small concrete values (n=4, n=10, n=100). Does the concrete number make sense? Does it exceed trivially achievable bounds?
-- **Comparison**: Compare against the performance of existing solutions to the same problem under the same model. A claimed improvement must actually improve.
-- **Units**: Check units carefully — bits vs words vs field elements; per-round vs total; per-decision vs amortized; worst-case vs expected.
+Do not claim a property or metric holds without a proof. Conjectures must be clearly labeled as such.
 
 <!-- TODO: Add Lean-based formal verification step. When proofs are complete, translate them into Lean 4 and machine-check them. This would replace confidence levels with verified/unverified status and catch subtle gaps that manual proofs miss. Requires: Lean 4 toolchain, a library of common crypto/protocol primitives in Lean, and a skill or subscript to invoke the Lean checker. -->
 
@@ -275,40 +215,6 @@ After all subagents in a batch complete:
 3. **Check for new hypotheses** generated by the batch (subagents may propose them). Add to `hypotheses.md`.
 4. **Re-read updated state** and plan the next batch.
 
-### Codex Consultation (when `--codex` is active)
-
-After the merge phase and before planning the next batch, consult Codex for an independent critique. This step only runs when `--codex` was passed.
-
-#### How It Works
-
-Use the `codex` MCP tool to send a structured consultation request. Alternate between two roles each batch:
-
-**Devil's Advocate** (odd batches: 1st, 3rd, 5th, ...):
-Ask Codex to challenge the current findings. Send it:
-- The current `current-understanding.md`
-- The latest batch's results from `results.md`
-- The prompt: *"You are reviewing a research investigation. Play devil's advocate: identify the weakest claims, unstated assumptions, logical gaps, or alternative explanations that the investigators may have missed. Be specific — point to exact claims and explain why they might be wrong."*
-
-**Inspiration / Alternative Angles** (even batches: 2nd, 4th, 6th, ...):
-Ask Codex for fresh perspectives. Send it:
-- The current `current-understanding.md`
-- The current `hypotheses.md` (unresolved only)
-- The prompt: *"You are consulting on a research investigation. Suggest alternative proof strategies, related techniques from other fields, or hypotheses the investigators haven't considered. Focus on non-obvious connections and approaches that could break through current blockers."*
-
-#### Processing Codex Feedback
-
-1. **Log** the Codex response to `reaper-workspace/experiments/codex-consultation-batch-N.md` (where N is the batch number).
-2. **Triage** the feedback — not all suggestions will be actionable:
-   - **Actionable critique**: If Codex identifies a genuine gap or flaw, add a new hypothesis to `hypotheses.md` marked `[Codex-B<N>]` to be investigated in the next batch.
-   - **Alternative approach**: If Codex suggests a promising technique, add it as a hypothesis marked `[Codex-B<N>]`.
-   - **Already addressed**: If the point was already covered in prior cycles, note this in the consultation log and move on.
-   - **Irrelevant or wrong**: Codex may hallucinate or misunderstand the domain. Dismiss with a brief note in the log.
-3. **Do not block** on Codex feedback. If the MCP call times out or fails, continue to the next batch.
-
-#### Session Continuity
-
-Use a single Codex session ID across all consultations within one investigation run. This allows Codex to build context across batches rather than starting fresh each time. Pass the `sessionId` parameter to the `codex` tool, using a consistent ID like `"reaper-investigate-<timestamp>"`.
-
 ### Sequential Fallback
 
 When all remaining hypotheses form a dependency chain (H2 requires H1's result, H3 requires H2's, ...), the batch size is 1. This is equivalent to the traditional sequential loop — no subagents needed, the main agent runs Steps A–E directly and writes to `current-understanding.md` immediately on keep.
@@ -374,49 +280,6 @@ If after 3 cycles a hypothesis trends toward refutation (counterexample attempts
 
 Do not spend 10 cycles attempting minor variations of the same failed proof strategy. Three failures at the same point is a signal to change direction.
 
-## Feedback Mode
-
-When the argument is quoted text instead of a number, the skill enters feedback mode. This is used after a pipeline run has produced a report and the user wants to refine, deepen, or challenge specific findings.
-
-### 1. Determine the Feedback Round
-
-Check `reaper-workspace/feedback/` for existing `round-*.md` files. The new round number is one greater than the highest existing round, or 1 if none exist.
-
-### 2. Classify and Save Feedback
-
-Classify the user's feedback and write `reaper-workspace/feedback/round-N.md`:
-
-```markdown
-# Feedback Round N
-
-**User request**: [the user's feedback, verbatim or lightly paraphrased]
-
-**Category**: [scope | deepen | explore | rewrite]
-
-**Action plan**: [what will be done]
-```
-
-Categories:
-
-| Category | Signal | Example |
-|---|---|---|
-| **scope** | Change assumptions, threat model, or framing | "What if we assume a stronger adversary?" |
-| **deepen** | Dig into a specific claim, finding, or proof step | "The proof gap in Theorem 3 — find a concrete counterexample" |
-| **explore** | Investigate an area the report didn't cover | "What about liveness under partial synchrony?" |
-| **rewrite** | Improve clarity, structure, or presentation only | "Make the contributions more concrete" |
-
-### 3. Execute
-
-**scope**: Return control to the orchestrator — this requires re-running `formalize-problem` before investigation. Do not run cycles yourself; instead, write the feedback file and indicate that re-formalization is needed.
-
-**deepen**: Add targeted hypotheses to `hypotheses.md` marked with `[Round N]`, then run 5 investigation cycles (the standard loop above).
-
-**explore**: Add new hypotheses to `hypotheses.md` marked with `[Round N]`. If the area may need additional literature, run the search scripts first and update `literature.md`. Then run 5 investigation cycles.
-
-**rewrite**: No investigation cycles needed. Return control to the orchestrator to re-run `synthesize` only.
-
-For **deepen** and **explore**, after completing the cycles, the orchestrator should re-run `synthesize` to produce an updated report.
-
 ## Quality Criteria
 
 - Every cycle has a row in `results.md` — no exceptions
@@ -427,4 +290,3 @@ For **deepen** and **explore**, after completing the cycles, the orchestrator sh
 - When stuck, the 9-step protocol is followed before giving up on a hypothesis
 - Independent hypotheses are batched in parallel by default; sequential only when dependencies exist
 - `current-understanding.md` is written only by the main agent during the merge phase, never by subagents
-- When `--codex` is active: every batch has a consultation log in `reaper-workspace/experiments/codex-consultation-batch-N.md`, and actionable feedback is tracked as hypotheses in `hypotheses.md`
