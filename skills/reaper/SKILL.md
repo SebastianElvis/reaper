@@ -28,6 +28,7 @@ reaper-workspace/
 ├── notes/
 │   ├── current-understanding.md    # Initialize empty — "branch tip"
 │   └── scratchpad.md               # Initialize empty
+├── papers/                         # Downloaded PDFs and per-paper notes
 ├── experiments/
 ├── feedback/
 ├── results.md                      # Initialize with table header
