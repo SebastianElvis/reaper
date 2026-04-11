@@ -24,7 +24,7 @@ Do NOT rely on context window. Re-read all workspace files:
 - `reaper-workspace/notes/problem-statement.md`
 - `reaper-workspace/notes/current-understanding.md`
 - `reaper-workspace/results.md`
-- All `reaper-workspace/experiments/*/analysis.md` files
+- All `reaper-workspace/investigations/*/analysis.md` files
 
 ### 2. Identify the Central Finding
 
@@ -65,7 +65,7 @@ NOT: "We analyze protocol X" or "We study the security of Y"
 
 [Then: the general argument. Why does this happen? Under what conditions?]
 
-[Evidence: point to specific experiments and results that support this finding.]
+[Evidence: point to specific investigations and results that support this finding.]
 
 ### [Finding 2]
 ...
