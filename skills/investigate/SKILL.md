@@ -1,21 +1,25 @@
 ---
 name: investigate
-description: "Run investigation cycles that test hypotheses through proof verification, counterexample search, or security analysis, with keep-or-discard discipline. Use when asked to investigate, verify, prove, or disprove claims from a formalized research problem."
+description: "Run investigation cycles that test hypotheses through proof verification, counterexample search, or security analysis, with keep-or-discard discipline. Use when asked to investigate, verify, prove, or disprove claims, or when iterating on research based on human feedback."
 user-invocable: true
-argument-hint: "[number-of-cycles]"
+argument-hint: "[number-of-cycles] or \"<feedback>\""
 ---
 
 # Investigate
 
-The core research loop. Run N investigation cycles, each testing a hypothesis and applying keep-or-discard discipline.
+The core research loop. Run N investigation cycles, each testing a hypothesis and applying keep-or-discard discipline. Also handles human feedback for iterating on completed research.
 
 ## Usage
 
 ```
+# Initial investigation
 /reaper:investigate 10
+
+# Human feedback — iterate on existing results
+/reaper:investigate "dig deeper into the liveness proof gap under partial synchrony"
 ```
 
-Default: 5 cycles if no argument given.
+Default: 5 cycles if no argument given. If the argument is quoted text (not a number), it is treated as human feedback (see Feedback Mode below).
 
 ## Inputs
 
@@ -196,6 +200,49 @@ When multiple **independent** hypotheses exist and haven't been explored, you MA
 - Only the main agent updates `current-understanding.md` (to avoid write conflicts)
 
 Use parallel investigation when hypotheses are truly independent. If hypothesis H2 depends on the result of H1, investigate sequentially.
+
+## Feedback Mode
+
+When the argument is quoted text instead of a number, the skill enters feedback mode. This is used after a pipeline run has produced a report and the user wants to refine, deepen, or challenge specific findings.
+
+### 1. Determine the Feedback Round
+
+Check `reaper-workspace/feedback/` for existing `round-*.md` files. The new round number is one greater than the highest existing round, or 1 if none exist.
+
+### 2. Classify and Save Feedback
+
+Classify the user's feedback and write `reaper-workspace/feedback/round-N.md`:
+
+```markdown
+# Feedback Round N
+
+**User request**: [the user's feedback, verbatim or lightly paraphrased]
+
+**Category**: [scope | deepen | explore | rewrite]
+
+**Action plan**: [what will be done]
+```
+
+Categories:
+
+| Category | Signal | Example |
+|---|---|---|
+| **scope** | Change assumptions, threat model, or framing | "What if we assume a stronger adversary?" |
+| **deepen** | Dig into a specific claim, finding, or proof step | "The proof gap in Theorem 3 — find a concrete counterexample" |
+| **explore** | Investigate an area the report didn't cover | "What about liveness under partial synchrony?" |
+| **rewrite** | Improve clarity, structure, or presentation only | "Make the contributions more concrete" |
+
+### 3. Execute
+
+**scope**: Return control to the orchestrator — this requires re-running `formalize-problem` before investigation. Do not run cycles yourself; instead, write the feedback file and indicate that re-formalization is needed.
+
+**deepen**: Add targeted hypotheses to `hypotheses.md` marked with `[Round N]`, then run 5 investigation cycles (the standard loop above).
+
+**explore**: Add new hypotheses to `hypotheses.md` marked with `[Round N]`. If the area may need additional literature, run the search scripts first and update `literature.md`. Then run 5 investigation cycles.
+
+**rewrite**: No investigation cycles needed. Return control to the orchestrator to re-run `synthesize` only.
+
+For **deepen** and **explore**, after completing the cycles, the orchestrator should re-run `synthesize` to produce an updated report.
 
 ## Quality Criteria
 

@@ -27,7 +27,7 @@ pip install arxiv requests beautifulsoup4
 ## Key conventions
 
 - Skills are the unit of composition. Each skill directory contains a `SKILL.md` with frontmatter.
-- The orchestrator (`/reaper`) runs the full pipeline: clarify → analyze → literature → formalize → investigate → synthesize.
+- The orchestrator (`/reaper`) runs the full pipeline: clarify → analyze → literature → formalize → investigate → synthesize. After delivery, users can iterate via `/reaper:investigate "feedback"`.
 - Runtime state goes in `reaper-workspace/` (gitignored). Never commit workspace artifacts.
 - The six methodology principles (separation of concerns, fixed evaluation signal, structured results log, keep-or-discard loop, never stop, clarity and simplicity) govern how skills behave.
 - Python scripts live alongside the skill that uses them (e.g., `skills/search-arxiv/search_arxiv.py`).

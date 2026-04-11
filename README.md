@@ -48,7 +48,7 @@ See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugi
 
 ## How It Works
 
-Reaper executes a five-stage pipeline:
+Reaper executes a five-stage pipeline with an optional human feedback loop:
 
 ```
                         ┌──────────────────┐
@@ -59,7 +59,10 @@ Reaper executes a five-stage pipeline:
 └──────────────────┘    │ /reaper:         │───┘    │  -problem    │    │              │    │              │
                         │  review-literature│       └──────────────┘    └───────────┬──┘    └──────────────┘
                         └──────────────────┘                                 ▲    │              ▶ report.md
-                            (parallel)                                       └keep┘
+                            (parallel)                                       │keep│                   │
+                                                                             └────┘                   │
+                                                                                  ▲  human feedback   │
+                                                                                  └───────────────────┘
 ```
 
 ## Skills
@@ -73,7 +76,7 @@ Each skill can be used independently or composed by the orchestrator:
 | `/reaper:analyze-paper` | Extract structured information from a research paper |
 | `/reaper:review-literature` | Search and summarize related academic work |
 | `/reaper:formalize-problem` | Produce precise, testable hypotheses from a research question |
-| `/reaper:investigate` | Run investigation cycles with keep-or-discard discipline |
+| `/reaper:investigate` | Run investigation cycles with keep-or-discard discipline (also accepts quoted feedback for iteration) |
 | `/reaper:synthesize` | Generate a structured research report from investigation results |
 | `/reaper:search-arxiv` | Search arXiv papers, download PDFs, and trace citation graphs |
 | `/reaper:search-iacr` | Search IACR ePrint archive for cryptography papers |
@@ -101,7 +104,7 @@ reaper-workspace/
 │   └── scratchpad.md               # Free-form reasoning
 ├── experiments/
 │   └── NNN-<name>/                 # One directory per investigation cycle
-├── feedback/                       # Cross-model reviews (Horizon 3)
+├── feedback/                       # Human iteration feedback (round-N.md per round)
 ├── results.md                      # Cycle-by-cycle log with keep/discard
 ├── log.md                          # Timestamped narrative
 └── report.md                       # Final synthesized output
