@@ -107,7 +107,7 @@ reaper-workspace/
 │   ├── problem-statement.md               # Formalized problem + ideas
 │   ├── current-understanding.md    # "Branch tip" — advances only on keep
 │   └── scratchpad.md               # Free-form reasoning
-├── experiments/
+├── investigations/
 │   └── NNN-<name>/                 # One directory per investigation cycle
 ├── feedback/                       # Human iteration feedback (round-N.md per round)
 ├── results.md                      # Cycle-by-cycle log with keep/discard

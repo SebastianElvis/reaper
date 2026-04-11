@@ -84,11 +84,11 @@ Consult an external AI (OpenAI Codex via MCP) for an independent second opinion 
 
 **Requires**: The `codex-cli` MCP server registered with Claude Code (see [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server)): `claude mcp add codex-cli -- npx -y codex-mcp-server`.
 
-**Fallback**: If the Codex MCP tools are unavailable (server not registered, connection failure, etc.), skip the consultation step silently and continue. Log a note in the experiment directory that Codex consultation was requested but unavailable.
+**Fallback**: If the Codex MCP tools are unavailable (server not registered, connection failure, etc.), skip the consultation step silently and continue. Log a note in the investigation directory that Codex consultation was requested but unavailable.
 
 ### Determining the Role
 
-Check `reaper-workspace/experiments/` for existing `codex-consultation-*.md` files. Count them to determine the consultation number N. Alternate roles:
+Check `reaper-workspace/investigations/` for existing `codex-consultation-*.md` files. Count them to determine the consultation number N. Alternate roles:
 
 - **Devil's Advocate** (odd N: 1st, 3rd, 5th, ...):
   Ask Codex to challenge the current findings. Send it:
@@ -104,7 +104,7 @@ Check `reaper-workspace/experiments/` for existing `codex-consultation-*.md` fil
 
 ### Processing Codex Feedback
 
-1. **Log** the Codex response to `reaper-workspace/experiments/codex-consultation-N.md`.
+1. **Log** the Codex response to `reaper-workspace/investigations/codex-consultation-N.md`.
 2. **Triage** the feedback:
    - **Actionable critique**: If Codex identifies a genuine gap or flaw, add a new hypothesis to `problem-statement.md` marked `[Codex-N]`.
    - **Alternative approach**: If Codex suggests a promising technique, add it as a hypothesis marked `[Codex-N]`.
@@ -128,13 +128,13 @@ The agent reviews its own investigation results for gaps, inconsistencies, or mi
    - **Untested assumptions**: Assumptions listed in hypotheses or proofs that haven't been validated.
    - **Missing angles**: Obvious questions raised by the current findings that haven't been investigated.
    - **Inconsistencies**: Claims in `current-understanding.md` that conflict with each other or with `results.md`.
-3. Write the self-review to `reaper-workspace/experiments/self-review-N.md` (where N is one more than the count of existing self-review files).
+3. Write the self-review to `reaper-workspace/investigations/self-review-N.md` (where N is one more than the count of existing self-review files).
 4. For each actionable finding, add a hypothesis to `problem-statement.md` marked `[Self-N]`.
 5. If actionable hypotheses were added, run `/reaper:investigate 3` to address them.
 
 ## Quality Criteria
 
-- Every critique mode produces a logged artifact in `reaper-workspace/experiments/` or `reaper-workspace/feedback/`
+- Every critique mode produces a logged artifact in `reaper-workspace/investigations/` or `reaper-workspace/feedback/`
 - Human feedback is classified before action is taken
 - Codex consultations alternate between devil's advocate and inspiration roles
 - Self-reviews identify specific, actionable gaps — not vague concerns

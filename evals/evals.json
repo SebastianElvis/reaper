@@ -95,7 +95,7 @@
     },
     {
       "skill": "reaper:investigate",
-      "test": "After N cycles: results.md has exactly N rows, experiment directories 001 through NNN exist with analysis.md files, current-understanding.md changed only on keep cycles, every cycle outcome is statable in one sentence"
+      "test": "After N cycles: results.md has exactly N rows, investigation directories 001 through NNN exist with analysis.md files, current-understanding.md changed only on keep cycles, every cycle outcome is statable in one sentence"
     },
     {
       "skill": "reaper:synthesize",

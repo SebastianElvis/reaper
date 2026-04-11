@@ -28,13 +28,13 @@ Reaper's research loop is built on six principles that ensure autonomous, discip
 
 The AI and the human have non-overlapping territories:
 
-- **AI writes to `workspace/`** — notes, experiments, results, reports. This is the AI's exclusive working space.
+- **AI writes to `workspace/`** — notes, investigations, results, reports. This is the AI's exclusive working space.
 - **Human writes the research goal prompt** — the paper to analyze and what to investigate. This is the sole steering mechanism.
 - **SKILL.md files and workspace file contracts are fixed** — they define the pipeline, evaluation criteria, and interfaces between skills. Neither the AI nor the human modifies them during a run.
 
 | Role | What |
 |------|------|
-| AI modifies | `workspace/` (notes, experiments, report) |
+| AI modifies | `workspace/` (notes, investigations, report) |
 | Human provides | Research goal prompt (paper + what to investigate) |
 | Fixed harness | SKILL.md files + workspace file contracts |
 
@@ -73,7 +73,7 @@ Progress is tracked in `results.md` (see Principle 3).
 ```
 
 - **keep**: The cycle produced a meaningful advance in understanding. Findings propagate to `notes/current-understanding.md`.
-- **discard**: The cycle was a dead end. It stays logged in `results.md` and its experiment directory, but does not update the running state.
+- **discard**: The cycle was a dead end. It stays logged in `results.md` and its investigation directory, but does not update the running state.
 
 This is the ground-truth scoreboard. Every cycle gets a row, no exceptions.
 
@@ -82,7 +82,7 @@ This is the ground-truth scoreboard. Every cycle gets a row, no exceptions.
 `notes/current-understanding.md` is the "branch tip." It represents the best current understanding of the research question. After each investigation cycle:
 
 - If the cycle produced genuine progress (new finding, resolved hypothesis, corrected error) → **keep**: update `current-understanding.md` with the new insight.
-- If the cycle was unproductive (dead end, inconclusive without useful narrowing, redundant with prior work) → **discard**: log it in `results.md`, leave the experiment directory for the audit trail, but do not touch `current-understanding.md`.
+- If the cycle was unproductive (dead end, inconclusive without useful narrowing, redundant with prior work) → **discard**: log it in `results.md`, leave the investigation directory for the audit trail, but do not touch `current-understanding.md`.
 
 The AI always works from the best-known state. This prevents accumulation of noise in the working state while preserving the full history for audit.
 
@@ -161,7 +161,7 @@ reaper-workspace/
 │   ├── problem-statement.md                   # Problem statement + ideas
 │   ├── current-understanding.md        # "Branch tip" — only advances on keep
 │   └── scratchpad.md                   # Free-form reasoning
-├── experiments/
+├── investigations/
 │   └── NNN-<name>/                     # One directory per investigation cycle
 ├── feedback/                           # Cross-model review responses
 ├── results.md                          # Structured cycle log (keep/discard per cycle)
@@ -207,9 +207,9 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 | `/reaper:review-literature` | Stage 1b: Baseline (literature) | `notes/clarified-goal.md`, `notes/paper-summary.md` | `notes/literature.md` |
 | `/reaper:formalize-problem` | Stage 2: Formalize | `notes/clarified-goal.md`, `notes/paper-summary.md`, `notes/literature.md`, goal prompt | `notes/problem-statement.md` (trust assumptions, security properties, performance goals, ideas) |
 | `/reaper:brainstorm` | Stage 2.5: Recurring ideation | `notes/problem-statement.md`, `notes/current-understanding.md`, `results.md`, `notes/literature.md`, `notes/paper-summary.md` | Appends new ideas to `notes/problem-statement.md` |
-| `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/current-understanding.md` | `experiments/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
-| `/reaper:critique` | Stage 3 sub-step: review | `experiments/`, `notes/current-understanding.md` | `feedback/`, may add hypotheses to `notes/problem-statement.md` |
-| `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `experiments/`, `results.md` | `report.md` |
+| `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/current-understanding.md` | `investigations/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
+| `/reaper:critique` | Stage 3 sub-step: review | `investigations/`, `notes/current-understanding.md` | `feedback/`, may add hypotheses to `notes/problem-statement.md` |
+| `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `investigations/`, `results.md` | `report.md` |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |
 
 **`synthesize` report structure** (following Peyton Jones):
@@ -308,7 +308,7 @@ investigate ──> /reaper:critique
 
 | Skill | Methodology Stage | Reads | Writes |
 |-------|------------------|-------|--------|
-| `/reaper:critique` | Stage 3 sub-step: adversarial review | `experiments/`, `notes/current-understanding.md` | `feedback/*.md`, may add hypotheses |
+| `/reaper:critique` | Stage 3 sub-step: adversarial review | `investigations/`, `notes/current-understanding.md` | `feedback/*.md`, may add hypotheses |
 
 The original `cross-verify` concept was implemented as the more general `/reaper:critique` skill, which supports three modes: human feedback, Codex MCP consultation (devil's advocate / inspiration), and self-review.
 

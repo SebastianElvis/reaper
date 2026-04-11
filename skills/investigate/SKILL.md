@@ -69,9 +69,9 @@ Spawn one subagent per hypothesis in the batch using the Agent tool. **Launch al
 
 Each subagent runs the single-cycle protocol independently:
 
-#### Step A: Create Experiment Directory
+#### Step A: Create Investigation Directory
 
-Create `reaper-workspace/experiments/NNN-<slug>/` where:
+Create `reaper-workspace/investigations/NNN-<slug>/` where:
 - `NNN` is the assigned zero-padded cycle number (001, 002, ...)
 - `<slug>` is a short descriptor (e.g., `proof-lemma3`, `counterex-2party`, `alt-reduction`)
 
@@ -86,20 +86,20 @@ Do the actual research. This is the core intellectual work. Depending on the hyp
 - **Comparison**: Compare approaches along specific dimensions (complexity, assumptions, properties).
 - **Performance analysis**: Prove complexity bounds, communication costs, round complexity, or other quantitative metrics. All performance claims must follow the formal proof structure below.
 
-Write all work — reasoning, attempts, dead ends, insights — to `reaper-workspace/experiments/NNN-<slug>/analysis.md`.
+Write all work — reasoning, attempts, dead ends, insights — to `reaper-workspace/investigations/NNN-<slug>/analysis.md`.
 
 ##### Intra-Cycle Parallelism
 
 Within a single cycle, subagents MAY spawn sub-subagents for concurrent attack:
 
-- **Proof + counterexample race**: When a hypothesis could go either way, run proof-attempt and counterexample-search as parallel sub-subagents. The first to reach a definitive result wins; the other's partial work is logged in the experiment directory.
+- **Proof + counterexample race**: When a hypothesis could go either way, run proof-attempt and counterexample-search as parallel sub-subagents. The first to reach a definitive result wins; the other's partial work is logged in the investigation directory.
 - **Parallel literature search**: When stuck and searching for related work, run IACR + arXiv + WebSearch as parallel sub-subagents, then merge results.
 
 Use intra-cycle parallelism when the hypothesis is genuinely uncertain. If prior cycles strongly suggest the claim is true (or false), prefer the targeted approach.
 
 ##### Formal Proof Structure
 
-For theoretical research (proving properties, security guarantees, or performance metrics), every claim must be stated and proved formally. Write proofs in `reaper-workspace/experiments/NNN-<slug>/proof.md` using this structure:
+For theoretical research (proving properties, security guarantees, or performance metrics), every claim must be stated and proved formally. Write proofs in `reaper-workspace/investigations/NNN-<slug>/proof.md` using this structure:
 
 ```markdown
 ## Theorem/Lemma/Proposition N: <name>
@@ -170,7 +170,7 @@ When a security property is confirmed, note the composition implications:
 - Is the result in the standalone model, sequential composition, or UC?
 - If the paper claims the protocol is "used as a building block" in a larger system, does the proven security level actually support that usage?
 
-Log composition limitations in the experiment's `analysis.md` even if the original hypothesis didn't ask about composition — this is critical context for the final report.
+Log composition limitations in the investigation's `analysis.md` even if the original hypothesis didn't ask about composition — this is critical context for the final report.
 
 #### Step D: Log
 
@@ -202,7 +202,7 @@ Determine the verdict:
 
 **keep** — The cycle produced genuine progress. Return the insight to merge into `current-understanding.md`.
 
-**discard** — The cycle was a dead end. The experiment directory stays for the audit trail.
+**discard** — The cycle was a dead end. The investigation directory stays for the audit trail.
 
 Subagents do NOT write to `current-understanding.md` directly — they return their verdict and insight to the main agent.
 
@@ -280,7 +280,7 @@ Do not spend 10 cycles attempting minor variations of the same failed proof stra
 
 - Every cycle has a row in `results.md` — no exceptions
 - `current-understanding.md` only changes on keep cycles
-- Each experiment directory has an `analysis.md` with full reasoning
+- Each investigation directory has an `analysis.md` with full reasoning
 - The "one ping" test: every cycle's outcome can be stated in one sentence
 - No cycles wasted on tangential exploration that doesn't serve the research goal
 - When stuck, the 9-step protocol is followed before giving up on a hypothesis
