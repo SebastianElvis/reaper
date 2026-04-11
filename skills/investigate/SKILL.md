@@ -198,10 +198,7 @@ Did this cycle produce **genuine progress**? A cycle counts as progress if it:
 
 **One "ping" per cycle**: The cycle's outcome should be statable in a single sentence. If it can't be, the cycle tried to do too much — note this and decompose in the next cycle.
 
-<<<<<<< HEAD
-#### Step D: Log
-=======
-#### Classify Proof Issues Precisely
+##### Classify Proof Issues Precisely
 
 When a proof issue is found, do not just say "found a gap." Classify it:
 
@@ -210,7 +207,7 @@ When a proof issue is found, do not just say "found a gap." Classify it:
 - **Error (theorem likely false)**: The proof fails because the claimed property actually doesn't hold — you can construct a concrete counterexample or execution trace that violates it. Log as `refuted`.
 - **Overclaim**: The proof is correct but proves something strictly weaker than what's claimed — e.g., the paper claims adaptive security but the proof only handles static corruption, or claims async but requires partial synchrony. Log as `partially-confirmed` with the precise weakening stated.
 
-#### Composition Awareness
+##### Composition Awareness
 
 When a security property is confirmed, note the composition implications:
 - Does the proof use rewinding? If so, it likely doesn't compose (not UC-secure).
@@ -220,8 +217,7 @@ When a security property is confirmed, note the composition implications:
 
 Log composition limitations in the experiment's `analysis.md` even if the original hypothesis didn't ask about composition — this is critical context for the final report.
 
-### Step 5: Log
->>>>>>> origin/main
+#### Step D: Log
 
 Prepare a row for `reaper-workspace/results.md`:
 
@@ -235,19 +231,15 @@ Where:
 - **confidence**: high, medium, low (see calibration below)
 - **status**: keep or discard
 
-<<<<<<< HEAD
 Subagents return this row to the main agent rather than appending directly.
-=======
-#### Confidence Calibration
+
+##### Confidence Calibration
 
 Default to one level LOWER than your instinct. If you think "high," write "medium" unless every single step is airtight.
 
 - **High**: The argument is complete, every step is justified by definition / assumption / prior lemma / cited result, and you can see no way it could be wrong. You could present this at a seminar and defend every step under questioning. For reductions: the Reduction Quality Gate is fully passed.
 - **Medium**: The argument is plausible and mostly complete, but at least one step relies on intuition rather than rigorous justification, or there is a step you believe is correct but haven't fully verified. A careful reviewer might find an issue.
 - **Low**: The argument has significant gaps, relies on unverified assumptions, or is based on analogy/heuristic rather than proof. This is a conjecture with supporting evidence, not a result.
-
-### Step 6: Keep or Discard
->>>>>>> origin/main
 
 #### Step E: Keep or Discard
 
