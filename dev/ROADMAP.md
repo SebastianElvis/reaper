@@ -130,10 +130,16 @@ autoresearch/
 │   │   ├── investigate/SKILL.md        # /reaper:investigate (proof/analysis cycles)
 │   │   ├── cross-verify/SKILL.md       # /reaper:cross-verify (multi-model feedback)
 │   │   └── synthesize/SKILL.md         # /reaper:synthesize (report generation)
+│   ├── search-arxiv/                   # /reaper:search-arxiv (H2)
+│   │   ├── SKILL.md
+│   │   └── search_arxiv.py            # arXiv API + Semantic Scholar citations
+│   ├── search-iacr/                    # /reaper:search-iacr (H2)
+│   │   ├── SKILL.md
+│   │   └── search_iacr.py             # IACR ePrint scraper
 │   └── references/
 │       ├── methodology.md              # Research methodology patterns
 │       ├── paper-analysis.md           # How to read/extract from papers
-│       └── mcp-tools.md               # Available MCP tools and when to use them
+│       └── search-tools.md            # Search tool catalog and decision tree
 ├── dev/
 │   ├── ROADMAP.md                      # This file
 │   └── test-papers/                    # Papers for testing
@@ -242,28 +248,27 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 
 **Methodology stage:** Enriches Stage 1b (establish baseline from literature) with real academic paper servers.
 
-**Goal:** Upgrade `review-literature` from generic web search to structured academic search via MCP — arXiv, IACR ePrint, citation graph traversal. Also enable `investigate` to pull in new references mid-loop when a cycle reveals a gap in context.
+**Goal:** Upgrade `review-literature` from generic web search to structured academic search — arXiv, IACR ePrint, citation graph traversal — using lightweight Python scripts (no MCP dependency). Also enable `investigate` to pull in new references mid-loop when a cycle reveals a gap in context.
 
-**What success looks like:** `/reaper:review-literature "post-quantum threshold signatures"` automatically searches arXiv and IACR ePrint, downloads and reads the top results, traces forward/backward citations, and produces a structured literature survey with precise references.
+**What success looks like:** `/reaper:review-literature "post-quantum threshold signatures"` automatically searches arXiv and IACR ePrint, traces forward/backward citations via Semantic Scholar, and produces a structured literature survey with precise references.
 
-#### MCP Servers
+#### Search Tools
 
-| Server | Repository | Capabilities |
-|--------|-----------|--------------|
-| arxiv-mcp-server | https://github.com/blazickjp/arxiv-mcp-server | `search_papers`, `download_paper`, `read_paper`, `list_papers`, `semantic_search`, `citation_graph` |
-| eprint-mcp-server | https://github.com/heewon-chung/eprint-mcp-server | `search_papers`, `get_paper`, `get_recent_papers`, `download_paper`, `get_paper_url` |
+| Script | Location | Capabilities | Dependencies |
+|--------|----------|--------------|-------------|
+| `search_arxiv.py` | `skills/search-arxiv/` | `search`, `download`, `citations` (via Semantic Scholar) | `pip install arxiv requests` |
+| `search_iacr.py` | `skills/search-iacr/` | `search`, `recent`, `download`, `url` | `pip install requests beautifulsoup4` |
 
 #### Tasks
 
-- [ ] Install and configure arxiv-mcp-server; document setup in README
-- [ ] Install and configure eprint-mcp-server; document setup in README
-- [ ] Write `references/mcp-tools.md` — catalog of available MCP tools with usage patterns and examples
-- [ ] Update `review-literature` skill to use MCP tools as primary search, WebSearch as fallback
-- [ ] Add citation graph traversal pattern (forward + backward citation chasing via Semantic Scholar integration)
-- [ ] Add "recent papers" monitoring pattern (eprint-mcp-server's `get_recent_papers`)
-- [ ] Enable `investigate` to trigger ad-hoc literature search mid-cycle when context is missing
+- [x] Build `search-arxiv` skill with Python script (arXiv API + Semantic Scholar citations)
+- [x] Build `search-iacr` skill with Python script (IACR ePrint scraper)
+- [x] Write `references/search-tools.md` — catalog of search tools with usage patterns and decision tree
+- [x] Update `review-literature` skill: structured search as primary, WebSearch as fallback, citation graph, recent papers
+- [x] Update `investigate` skill: mid-cycle literature search via search scripts
+- [x] Handle graceful degradation when search scripts are unavailable
+- [x] Document Python prerequisites in README
 - [ ] Test: given a seed paper, can Reaper find and summarize the 10 most relevant related works?
-- [ ] Handle graceful degradation when MCP servers are unavailable
 
 ### Horizon 3: The Committee
 
