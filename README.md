@@ -4,18 +4,18 @@
 
 ## Installation
 
-Install as a Claude Code plugin:
+Add the marketplace and install the plugin:
 
 ```
-/plugin install reaper@SebastianElvis
+/plugin marketplace add SebastianElvis/reaper
+/plugin install reaper@SebastianElvis-reaper
 ```
 
-Or clone and install locally:
+Or test locally during development:
 
 ```bash
 git clone https://github.com/SebastianElvis/reaper.git
-cd reaper
-/plugin install .
+claude --plugin-dir ./reaper
 ```
 
 ## Quick Start
