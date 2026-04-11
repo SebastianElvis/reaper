@@ -42,6 +42,8 @@ The AI and the human have non-overlapping territories:
 
 Before investigation begins, the problem must be precisely defined with concrete evaluation criteria. This happens in two stages:
 
+**Stage 0: Clarify the goal.** Before any analysis begins, `clarify-goal` quick-scans the paper and asks the user 3-5 targeted clarifying questions about scope, assumptions, and success criteria. This produces `notes/clarified-goal.md` which grounds all downstream skills. If the goal is already precise, this step proceeds without questions.
+
 **Stage 1: Establish baseline.** Before formalizing the problem, `analyze-paper` and `review-literature` establish what is already known — the paper's claims, existing approaches, and the state of the art. This grounds the investigation in reality rather than starting from a vacuum.
 
 **Stage 2: Formalize the problem.** `formalize-problem` then produces a problem statement in `notes/hypotheses.md` containing:
@@ -155,6 +157,7 @@ When a user invokes `/reaper`, this structure is created in their working direct
 ```
 reaper-workspace/
 ├── notes/
+│   ├── clarified-goal.md              # Refined goal, scope, assumptions, Q&A
 │   ├── paper-summary.md                # Structured extraction from the paper
 │   ├── literature.md                   # Related work found during search
 │   ├── hypotheses.md                   # Problem statement + testable claims
@@ -175,12 +178,12 @@ reaper-workspace/
 Each horizon enriches a specific stage of the methodology pipeline. H1 builds the decomposed pipeline from day one. H2 enriches the baseline stage. H3 strengthens the evaluation signal. H4 expands what kinds of research the pipeline can do.
 
 ```
-Methodology stage:     Baseline → Formalize → Investigate → Synthesize
-                         │           │            │             │
-H1 The Pipeline:       paper + web  ✓            ✓             ✓
-H2 The Library:        + arXiv/ePrint MCP         + mid-loop search
-H3 The Committee:                                 + multi-model review
-H4 The Lab:            + multi-paper              + computation   + LaTeX
+Methodology stage:     Clarify → Baseline → Formalize → Investigate → Synthesize
+                         │         │           │            │             │
+H1 The Pipeline:         ✓       paper + web  ✓            ✓             ✓
+H2 The Library:                    + arXiv/ePrint MCP         + mid-loop search
+H3 The Committee:                                             + multi-model review
+H4 The Lab:                        + multi-paper              + computation   + LaTeX
 ```
 
 ### Horizon 1: The Pipeline
@@ -201,9 +204,10 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 
 | Skill | Methodology Stage | Reads | Writes |
 |-------|------------------|-------|--------|
+| `/reaper:clarify-goal` | Stage 0: Clarify | Input paper, goal prompt | `notes/clarified-goal.md` (refined goal, scope, assumptions, Q&A) |
 | `/reaper:analyze-paper` | Stage 1a: Baseline (paper) | Input paper | `notes/paper-summary.md` |
-| `/reaper:review-literature` | Stage 1b: Baseline (literature) | Goal prompt, `notes/paper-summary.md` | `notes/literature.md` |
-| `/reaper:formalize-problem` | Stage 2: Formalize | `notes/paper-summary.md`, `notes/literature.md`, goal prompt | `notes/hypotheses.md` (trust assumptions, security properties, performance goals, testable claims) |
+| `/reaper:review-literature` | Stage 1b: Baseline (literature) | `notes/clarified-goal.md`, `notes/paper-summary.md` | `notes/literature.md` |
+| `/reaper:formalize-problem` | Stage 2: Formalize | `notes/clarified-goal.md`, `notes/paper-summary.md`, `notes/literature.md`, goal prompt | `notes/hypotheses.md` (trust assumptions, security properties, performance goals, testable claims) |
 | `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/hypotheses.md`, `notes/current-understanding.md` | `experiments/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
 | `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `experiments/`, `results.md` | `report.md` |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |

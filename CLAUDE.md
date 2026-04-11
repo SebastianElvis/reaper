@@ -4,8 +4,9 @@ AI-native scientific research pipeline distributed as a Claude Code plugin. Take
 
 ## Project structure
 
-- `skills/` — 8 composable Claude skills (each has a `SKILL.md` defining its behavior)
+- `skills/` — 9 composable Claude skills (each has a `SKILL.md` defining its behavior)
   - `reaper/` — Main orchestrator that chains all other skills
+  - `clarify-goal/` — Interactive goal clarification (asks user targeted questions before pipeline runs)
   - `analyze-paper/`, `review-literature/`, `formalize-problem/`, `investigate/`, `synthesize/` — Pipeline stages
   - `search-arxiv/`, `search-iacr/` — Academic search via Python scripts
 - `tests/` — Python tests for skill structure and search scripts
@@ -26,8 +27,9 @@ pip install arxiv requests beautifulsoup4
 ## Key conventions
 
 - Skills are the unit of composition. Each skill directory contains a `SKILL.md` with frontmatter.
-- The orchestrator (`/reaper`) runs the full pipeline: analyze → literature → formalize → investigate → synthesize.
+- The orchestrator (`/reaper`) runs the full pipeline: clarify → analyze → literature → formalize → investigate → synthesize.
 - Runtime state goes in `reaper-workspace/` (gitignored). Never commit workspace artifacts.
 - The six methodology principles (separation of concerns, fixed evaluation signal, structured results log, keep-or-discard loop, never stop, clarity and simplicity) govern how skills behave.
 - Python scripts live alongside the skill that uses them (e.g., `skills/search-arxiv/search_arxiv.py`).
 - No JavaScript/TypeScript in this project — it's Claude skills + Python only.
+- Before finishing a task, check if important docs (README.md, CLAUDE.md, dev/ROADMAP.md) need to be updated to reflect your changes.
