@@ -1,6 +1,8 @@
 # Reaper
 
-**AI-native scientific research pipeline.** Takes a research paper and a research goal, and autonomously conducts rigorous, multi-step academic research.
+**AI-native scientific research pipeline.** A [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins) that takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.
+
+[![Claude Code Plugin](https://img.shields.io/badge/Claude_Code-Plugin-blue)](https://code.claude.com/docs/en/discover-plugins)
 
 ## Installation
 
@@ -50,7 +52,7 @@ Each skill can be used independently or composed by the orchestrator:
 
 | Skill | What it does |
 |-------|-------------|
-| `/reaper:reaper` | Full pipeline: analyze → literature → formalize → investigate → synthesize |
+| `/reaper` | Full pipeline: analyze → literature → formalize → investigate → synthesize |
 | `/reaper:analyze-paper` | Extract structured information from a research paper |
 | `/reaper:review-literature` | Search and summarize related academic work |
 | `/reaper:formalize-problem` | Produce precise, testable hypotheses from a research question |
@@ -106,3 +108,7 @@ See `dev/ROADMAP.md` for the full methodology and development roadmap.
 - **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph — *complete*
 - **Horizon 3 (The Committee)**: Multi-model adversarial review — planned
 - **Horizon 4 (The Lab)**: Multi-paper, computation, LaTeX — planned
+
+## License
+
+This project is open source. Licensed under the [Apache License 2.0](LICENSE).
