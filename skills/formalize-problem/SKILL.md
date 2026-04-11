@@ -20,9 +20,10 @@ Transform a research goal into precise, testable hypotheses with explicit succes
 ### 1. Read Inputs
 
 Read these files:
+- `reaper-workspace/notes/clarified-goal.md` — refined research goal, scope, assumptions, and success criteria
 - `reaper-workspace/notes/paper-summary.md` — what the paper claims and how
 - `reaper-workspace/notes/literature.md` — what's already known, what gaps exist
-- The research goal from the argument
+- The research goal from the argument (use the refined goal from `clarified-goal.md` if available)
 
 ### 2. Identify the Core Question
 
