@@ -55,7 +55,7 @@ while cycles_remaining > 0 and not converged:
 4. Select the largest set of **independent** hypotheses that can run concurrently. Cap the batch size at `cycles_remaining`.
 5. Allocate cycle numbers: pre-assign a contiguous range per subagent (e.g., batch 1 gets 001-003, batch 2 gets 004-006). Each subagent gets one or more consecutive numbers from its range.
 6. If all remaining hypotheses form a dependency chain, the batch size is 1 — this is the **sequential fallback** (see below).
-7. If all hypotheses are resolved, formulate new ones based on what you've learned (see When Stuck, step 7).
+7. If all hypotheses are resolved, **stop and return control** to the orchestrator. The orchestrator will call `brainstorm` to generate new ideas if needed.
 
 ### Dispatch Batch
 
@@ -229,7 +229,7 @@ Run all N cycles. The only valid early stop is **genuine convergence**: all hypo
 
 ## When Stuck
 
-If a cycle is going nowhere, escalate through these steps:
+If a cycle is going nowhere, escalate through these execution-level tactics:
 
 1. **Re-read the paper.** Look at sections you skimmed earlier. The answer is often in the details you glossed over.
 2. **Re-read current-understanding.md.** What assumptions haven't been questioned? What's being taken for granted?
@@ -262,21 +262,17 @@ If a cycle is going nowhere, escalate through these steps:
 
    Log the literature search as a cycle with action-type `literature-search` in `results.md`.
 6. **Try a radically different approach** to the same hypothesis. If you've been trying direct proof, try reduction. If you've been trying construction, try impossibility.
-7. **Formulate a new hypothesis** based on what you've learned so far. The investigation may have revealed that the original question was the wrong question.
-8. **Invert the problem (Hamming).** Can't prove it? Try to disprove it. Can't find a counterexample? Ask what minimal assumption would make the proof work. What seems like a blockage often becomes the key insight.
-9. **Apply Qian's patterns:**
-   - *Fill in the blank*: What combination of assumptions/techniques hasn't been tried?
-   - *Start small then generalize*: What's the simplest case? Can you solve it for n=2 first?
-   - *Build a hammer*: Can a technique from a previous cycle apply here in a different way?
+
+If all six tactics are exhausted and the hypothesis remains stuck, log the cycle as `inconclusive` and continue to the next hypothesis. The orchestrator will call `brainstorm` after the batch to generate new ideas based on the pattern of failures.
 
 ## Negative Result Protocol
 
 If after 3 cycles a hypothesis trends toward refutation (counterexample attempts partially succeed, proof attempts consistently fail at the same point, or you keep hitting the same structural gap):
 
-1. **Pivot explicitly** to proving the negative. State the impossibility or separation as a new hypothesis: "Protocol X cannot achieve property Y under model Z because..."
-2. **Construct the strongest possible negative result.** A clean impossibility result is more valuable than a vague "we couldn't prove it." Show a concrete attack, execution trace, or reduction to a known impossibility.
-3. **Identify the minimal fix.** What is the weakest additional assumption that would make the positive result hold? (e.g., "Safety holds if we additionally assume synchronous message delivery in the view-change sub-protocol.")
-4. **A clean negative result is a KEEP, not a failure.** It resolves the hypothesis (by refutation) and advances understanding. Log it with outcome `refuted` and status `keep`.
+1. **Pivot explicitly** to proving the negative. Construct the strongest possible negative result — a concrete attack, execution trace, or reduction to a known impossibility. A clean impossibility result is more valuable than a vague "we couldn't prove it."
+2. **Identify the minimal fix.** What is the weakest additional assumption that would make the positive result hold? (e.g., "Safety holds if we additionally assume synchronous message delivery in the view-change sub-protocol.")
+3. **A clean negative result is a KEEP, not a failure.** It resolves the hypothesis (by refutation) and advances understanding. Log it with outcome `refuted` and status `keep`.
+4. **Signal for new ideas.** Note in the cycle's result description that the hypothesis was refuted and what was learned. The orchestrator will call `brainstorm` to generate follow-up hypotheses (e.g., proving the impossibility formally, exploring the minimal fix).
 
 Do not spend 10 cycles attempting minor variations of the same failed proof strategy. Three failures at the same point is a signal to change direction.
 

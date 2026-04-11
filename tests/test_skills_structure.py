@@ -12,9 +12,11 @@ SKILLS_DIR = Path("skills")
 EXPECTED_SKILLS = {
     # H1
     "reaper": "skills/reaper/SKILL.md",
+    "clarify-goal": "skills/clarify-goal/SKILL.md",
     "analyze-paper": "skills/analyze-paper/SKILL.md",
     "review-literature": "skills/review-literature/SKILL.md",
     "formalize-problem": "skills/formalize-problem/SKILL.md",
+    "brainstorm": "skills/brainstorm/SKILL.md",
     "investigate": "skills/investigate/SKILL.md",
     "critique": "skills/critique/SKILL.md",
     "synthesize": "skills/synthesize/SKILL.md",
