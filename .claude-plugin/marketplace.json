@@ -12,7 +12,7 @@
       "name": "reaper",
       "description": "AI-native scientific research pipeline. Takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": [
         "./skills/reaper",
         "./skills/analyze-paper",
