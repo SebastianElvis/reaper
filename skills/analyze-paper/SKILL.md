@@ -1,6 +1,6 @@
 ---
 name: analyze-paper
-description: "Extract structured information from a research paper for the Reaper research pipeline. Use when you need to analyze a crypto, distributed systems, or blockchain paper."
+description: "Extract structured information from a research paper: system model, theorem statements, proof techniques, complexity claims, and red flags. Use when asked to analyze, summarize, or review a crypto, distributed systems, or blockchain paper."
 user-invocable: true
 argument-hint: "<paper-path>"
 ---
