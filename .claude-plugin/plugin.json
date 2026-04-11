@@ -1,10 +1,10 @@
 {
   "name": "reaper",
-  "version": "0.1.0",
+  "version": "0.3.1",
   "description": "AI-native scientific research pipeline. Takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.",
   "author": {
     "name": "Runchao Han"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": ["research", "cryptography", "distributed-systems", "paper-analysis", "literature-review"]
 }

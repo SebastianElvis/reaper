@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "AI-native scientific research pipeline",
-    "version": "0.1.0"
+    "version": "0.3.1"
   },
   "plugins": [
     {
@@ -15,10 +15,13 @@
       "strict": true,
       "skills": [
         "./skills/reaper",
+        "./skills/clarify-goal",
         "./skills/analyze-paper",
         "./skills/review-literature",
         "./skills/formalize-problem",
+        "./skills/brainstorm",
         "./skills/investigate",
+        "./skills/critique",
         "./skills/synthesize",
         "./skills/search-arxiv",
         "./skills/search-iacr"
