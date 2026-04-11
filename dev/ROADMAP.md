@@ -173,7 +173,7 @@ reaper-workspace/
 
 ## Horizons
 
-Each horizon enriches a specific stage of the methodology pipeline. H1 builds the decomposed pipeline from day one. H2 enriches the baseline stage. H3 strengthens the evaluation signal. H4 expands what kinds of research the pipeline can do.
+Each horizon enriches a specific stage of the methodology pipeline. H1 builds the decomposed pipeline from day one. H2 adds crypto-specific search. H3 strengthens the evaluation signal. H4 expands to the broader CS academic network. H5 makes the system honest about evidence quality. H6 adds proactive reformulation and claim provenance.
 
 ```
 Methodology stage:     Clarify → Baseline → Formalize → Brainstorm → Investigate ↔ Critique → Synthesize
@@ -181,7 +181,9 @@ Methodology stage:     Clarify → Baseline → Formalize → Brainstorm → Inv
 H1 The Pipeline:         ✓       paper + web  ✓            ✓              ✓              ✓          ✓
 H2 The Library:                    + arXiv/ePrint                           + mid-loop search
 H3 The Committee:                                                           + Codex MCP review
-H4 The Lab:                        + multi-paper                            + computation          + LaTeX
+H4 The Academy:                    + Scholar/DBLP/venues + author search     + mid-loop author/venue
+H5 The Apprentice:                                                          + evidence taxonomy        + proven vs conjecture
+H6 The Examiner:                                           + reformulation  + (stretch: Z3/Tamarin)    + claim provenance
 ```
 
 ### Horizon 1: The Pipeline
@@ -333,34 +335,160 @@ The original `cross-verify` concept was implemented as the more general `/reaper
 - [ ] Add more MCP model backends (Gemini, Grok, open-source models)
 - [ ] Test: does multi-model feedback catch errors that single-model analysis misses?
 
-### Horizon 4: The Lab
+### Horizon 4: The Academy
 
-**Methodology stage:** Expands what kinds of research the pipeline can handle — multiple papers, surveys, computational verification, publication-ready output.
+**Methodology stage:** Enriches Stage 1b (literature baseline) and Stage 3 (mid-investigation search) by expanding from crypto-specific sources to the broader CS academic network, and adding author-centric and venue-centric search alongside topic-centric search.
 
-**Goal:** Support sophisticated research workflows beyond single-paper analysis: multi-paper comparative studies, systematic literature surveys, research agenda generation, computational verification, and collaborative human-AI research sessions.
+**Current state:** H2 (The Library) added arXiv and IACR ePrint as structured search sources, with Semantic Scholar for citation traversal. This covers cryptography and security well, but Reaper's methodology is domain-agnostic — a consensus protocol paper may need distributed systems literature (PODC, DISC), a blockchain paper may need systems/networking work (NSDI, OSDI), and any paper draws on a broader CS context. The current search tools also only support topic-centric queries ("find papers about X"), not author-centric ("what has this researcher published?") or venue-centric ("what was accepted at CCS 2025?").
 
-**What success looks like:** "Survey all post-quantum signature schemes on ePrint from 2023-2025, compare their security assumptions and efficiency, and identify open problems" produces a comprehensive, publication-ready survey with LaTeX output.
+**Goal:** Three new search dimensions beyond topic search:
 
-#### New Capabilities
+1. **Broader topic search** — Google Scholar and DBLP cover all of CS, not just crypto. Google Scholar also indexes workshop papers, technical reports, and theses that arXiv/ePrint miss. DBLP provides clean bibliographic metadata (venue, year, co-authors) that Semantic Scholar sometimes lacks.
+2. **Author-centric search** — Given a name from a paper's references or a related work, find their DBLP profile or Google Scholar page, retrieve their publication list, identify their recent focus areas, and find co-authors who work on similar problems. This is how human researchers navigate literature: "Elaine Shi has been working on this — what else has her group done?"
+3. **Venue-centric search** — Given a conference (CCS, CRYPTO, PODC, S&P, EUROCRYPT), find recent proceedings, accepted papers, program committee members, and keynote topics. This surfaces work that topic search misses because the terminology differs across communities (e.g., "Byzantine agreement" vs. "atomic broadcast" vs. "state machine replication").
 
-| Capability | Methodology stages affected | How |
-|-----------|---------------------------|-----|
-| Multi-paper input | Stage 1a | `analyze-paper` runs in parallel subagents across all papers |
-| Systematic survey | Stage 1a + 1b + 4 | search → filter → parallel read → cross-compare → synthesize |
-| Research agenda generation | Stage 4 | After investigation, propose open problems with feasibility assessments |
-| Interactive mode | Stage 3 | User checkpoints between cycles — "dig deeper into Theorem 3" |
-| LaTeX output | Stage 4 | Publication-ready reports alongside Markdown |
-| Computation support | Stage 3 | SageMath, Python, formal verification (EasyCrypt, Tamarin) for checking proofs computationally |
+**What success looks like:** Given a paper on BFT consensus, `review-literature` automatically:
+- Searches arXiv + ePrint (existing) for direct topic matches
+- Searches Google Scholar and DBLP for broader CS coverage
+- Identifies key authors from initial results, retrieves their recent publications
+- Checks proceedings of relevant venues (PODC, DISC, CCS) for recent related work
+- Produces a literature survey that a reviewer wouldn't fault for missing obvious related work
+
+#### Search Tools
+
+Following H2's pattern: lightweight Python scripts, JSON output, graceful degradation when unavailable.
+
+| Script | Location | Capabilities | Dependencies |
+|--------|----------|--------------|-------------|
+| `search_scholar.py` | `skills/search-scholar/` | `search` (topic query), `author` (author profile + publications), `citations` (citing/cited papers) | `pip install scholarly` or scraping with `requests`+`beautifulsoup4` |
+| `search_dblp.py` | `skills/search-dblp/` | `search` (topic query), `author` (publication list by author), `venue` (proceedings by venue+year) | `pip install requests` (DBLP has a clean REST API) |
+| `search_venue.py` | `skills/search-venue/` | `proceedings` (accepted papers by venue+year), `pc` (program committee), `recent` (last N editions) | `pip install requests beautifulsoup4` (scrapes conference websites) |
+
+**Design notes:**
+- Google Scholar aggressively rate-limits and blocks scrapers. The `scholarly` Python library works but is fragile. Consider Google Scholar as best-effort with WebSearch as fallback, not a reliable primary source.
+- DBLP has a well-documented, stable REST API (`dblp.org/search/publ/api`). This is the most reliable new integration.
+- Conference website scraping is inherently brittle (each conference has a different site structure). Start with a small set of well-structured venues (IACR conferences via iacr.org, ACM conferences via dl.acm.org) and expand incrementally.
+
+#### Search Strategies
+
+The `review-literature` skill currently does topic-centric search only. With the new tools, it should orchestrate three search strategies in parallel:
+
+| Strategy | When to use | Tools |
+|----------|------------|-------|
+| **Topic search** | Always — the baseline | arXiv, ePrint, Google Scholar, DBLP |
+| **Author search** | When initial results identify recurring authors (≥2 papers by the same group) | DBLP author lookup, Google Scholar profile |
+| **Venue search** | When the paper targets a specific venue or subfield (identified from paper metadata or clarified goal) | DBLP venue proceedings, conference website |
+
+The `investigate` skill's mid-cycle search should also gain access to author and venue search — "this proof technique was introduced by [author], what else have they published on this?" is a common mid-investigation need.
 
 #### Tasks
 
-- [ ] Extend orchestrator to accept multiple papers as input
-- [ ] Build systematic survey workflow (search → filter → parallel read → cross-compare → synthesize)
-- [ ] Add research agenda generation as a synthesis option
-- [ ] Add interactive mode with user checkpoints between cycles
-- [ ] Add LaTeX report template alongside Markdown
-- [ ] Add `references/computation.md` — when and how to use SageMath, symbolic math, formal verification
-- [ ] Explore integration with Semantic Scholar MCP for large-scale citation analysis
+- [ ] Build `search-dblp` skill with Python script (DBLP REST API: topic search, author publications, venue proceedings)
+- [ ] Build `search-scholar` skill with Python script (Google Scholar: topic search, author profiles, citation traversal)
+- [ ] Build `search-venue` skill with Python script (conference proceedings scraper, starting with IACR + ACM DL)
+- [ ] Update `review-literature` skill: add author-centric and venue-centric search strategies alongside existing topic search
+- [ ] Update `investigate` skill: mid-cycle author/venue search when a cycle reveals a key researcher or venue
+- [ ] Update `references/search-tools.md`: add new tools to the catalog and decision tree
+- [ ] Handle graceful degradation: Google Scholar blocking, conference site structure changes
+- [ ] Test: given a seed paper, does the expanded search surface find relevant work that arXiv + ePrint missed?
+- [ ] Test: does author-centric search surface work that topic search misses due to different terminology?
+
+### Horizon 5: The Apprentice (Evidence Quality)
+
+**Methodology stage:** Strengthens the evaluation signal across all stages by making the system self-aware of its evidence quality.
+
+**Goal:** The `investigate` skill already tracks confidence (High/Medium/Low) and outcome (confirmed/refuted/inconclusive), but these are vibes — there's no framework distinguishing a formal proof from a plausible argument from a heuristic suspicion. The Apprentice adds an evidence taxonomy so Reaper is honest about *what kind* of evidence backs each claim, and enforces that weak evidence gets elevated or discarded.
+
+**Current state:** The investigate skill has confidence levels with a "default one level lower than instinct" heuristic and outcome tags (confirmed/refuted/partially-confirmed/inconclusive/new-hypothesis/reformulate). The critique skill classifies feedback into scope/deepen/explore/rewrite. Neither reasons about evidence *strength*.
+
+**What success looks like:** When Reaper says "we found a gap in the proof," it classifies the evidence as "formal counterexample" vs. "plausible argument" vs. "heuristic suspicion." A "keep" decision at the heuristic level automatically queues a follow-up cycle to elevate the evidence. The critique skill flags claims where stated confidence exceeds evidence strength. The final report distinguishes proven claims from conjectures.
+
+#### Evidence Taxonomy
+
+Every claim in `results.md` and `current-understanding.md` must be tagged with an evidence level:
+
+| Level | Meaning | Example |
+|-------|---------|---------|
+| **Formal proof** | Complete, step-by-step argument with no gaps | "Theorem 3.2 fails because step (ii) assumes synchrony (see investigation 003)" |
+| **Reduction** | Claim follows from a known result via explicit reduction | "Insecurity follows by reduction to the impossibility of [DLS88]" |
+| **Counterexample** | Concrete execution trace or adversary strategy | "Adversary corrupts parties {1,2}, sends conflicting messages in round 3 → safety violation" |
+| **Bounded search** | Systematic search found no counterexample in a defined space | "No counterexample exists for n ≤ 6, t ≤ 2 (exhaustive check)" |
+| **Plausible argument** | Informal but coherent reasoning | "The simulator likely cannot handle abort because it has no rewinding opportunity" |
+| **Heuristic suspicion** | Pattern match or intuition, not yet substantiated | "The proof structure resembles [X] which had a known flaw" |
+
+The `investigate` skill's keep-or-discard decision should account for evidence level: a "keep" at the "heuristic suspicion" level must be followed by a cycle that attempts to elevate it. The orchestrator's adaptation signals (currently ">50% discard → brainstorm") should also consider evidence distribution — a round where most keeps are heuristic-level warrants deepening, not advancing.
+
+#### Evidence-Aware Critique
+
+The `critique` skill's self-review mode currently identifies "weak claims" and "untested assumptions" but has no systematic way to evaluate them. With the evidence taxonomy:
+
+- **Self-review** checks each claim's evidence level against its stated confidence. High confidence + heuristic suspicion = flag.
+- **Codex consultation** receives evidence levels as context, enabling more targeted devil's advocate ("this claim rests on a plausible argument — can you construct a counterexample?").
+- **Human feedback** records whether the human's correction reveals a mis-classified evidence level (e.g., what Reaper called a "formal proof" had a gap).
+
+#### Tasks
+
+- [ ] Define and document the evidence taxonomy (the table above, integrated into `investigate` and `critique` skills)
+- [ ] Update `results.md` format to include evidence level column alongside existing confidence and outcome
+- [ ] Update `investigate` skill: tag every claim with evidence level, require elevation plan for heuristic-level keeps
+- [ ] Update `critique` skill: self-review checks evidence level vs. confidence, Codex consultation includes evidence context
+- [ ] Update `synthesize` skill: distinguish proven claims from conjectures in the report
+- [ ] Update orchestrator adaptation signals: factor in evidence distribution, not just keep/discard ratio
+- [ ] Test: does evidence tagging change keep/discard decisions compared to current behavior?
+
+### Horizon 6: The Examiner (Verification & Provenance)
+
+**Methodology stage:** Strengthens Stage 3 (investigate) with proactive reformulation and claim provenance, with formal verification as a stretch goal.
+
+**Goal:** Address two structural gaps: (1) the pipeline can reformulate reactively (the investigate skill already emits `outcome: reformulate` which triggers re-formalization), but has no *proactive* trigger when a pattern of failure suggests the problem statement itself is wrong; (2) claims in the final report don't link back to the investigation cycles that support them, making audit difficult.
+
+**Current state:** The investigate skill has `outcome: reformulate` which hands control to the orchestrator to re-run `formalize-problem`. The orchestrator checks for this after each batch. But this only fires when a single cycle explicitly concludes "reformulate" — it doesn't detect the pattern of 5 consecutive inconclusive results that suggests the formalization is flawed. Separately, `synthesize` reads investigation directories selectively but doesn't generate provenance links in the report.
+
+**What success looks like:** After 5 consecutive inconclusive/discard cycles where no individual cycle triggered reformulation, the orchestrator proactively escalates — passing the accumulated failure evidence to `formalize-problem` for re-examination. The final report includes investigation references for every claim, so a reader can trace any finding back to its supporting reasoning.
+
+#### Proactive Reformulation Trigger
+
+The existing reactive mechanism (`outcome: reformulate`) handles cases where a cycle discovers a specific flaw in the formalization. The proactive trigger handles the subtler case: persistent failure without a clear cause.
+
+**Trigger condition:** After N consecutive discard/inconclusive results (default N=5), or when the `critique` skill flags a systematic pattern of failure, the orchestrator invokes `formalize-problem` again with:
+- The original inputs (paper, goal, literature)
+- The accumulated evidence of what doesn't work (from `results.md`)
+- An explicit directive: "The current formalization may be flawed. Re-examine the trust assumptions, security property definitions, and hypothesis framing in light of these failed attempts."
+
+The reformulated `problem-statement.md` replaces the old one (old version archived in `investigations/`). Investigation continues from the new formulation. This complements the existing reactive path — both can coexist.
+
+#### Claim Provenance
+
+Every claim in `report.md` should reference the investigation cycle(s) that support it. The `synthesize` skill already reads investigations selectively; provenance links are a natural extension:
+
+- Each claim references the investigation directory and results.md cycle that produced it
+- Evidence level (from H4) is included so readers know the strength of support
+- Claims supported by multiple cycles reference all of them
+
+This doesn't require a rigid format — the `synthesize` skill should produce natural prose with inline references, not a mechanical template.
+
+#### Formal Verification (Stretch)
+
+For specific claim types, mechanical checking could complement informal reasoning. This is a stretch goal because the hard problem is *encoding* — translating informal prose claims into tool-specific languages (Tamarin models, Z3 constraints) is itself a research problem.
+
+| Claim type | Tool | Feasibility |
+|-----------|------|-------------|
+| Protocol safety/liveness | Tamarin, ProVerif | Medium — symbolic models are well-understood for standard protocols |
+| Arithmetic/algebraic claims | Z3, SageMath | High — constraint encoding is relatively straightforward |
+| Counterexample search | Z3, model checking | High — bounded search is well-suited to SMT solvers |
+| Proof steps | Lean, Coq | Low — requires deep formalization expertise, aspirational only |
+
+The investigate skill already has access to Bash for running external tools. Integration means teaching the skill *when* to attempt mechanical checking and *how* to interpret results (timeouts ≠ confirmation). The evidence taxonomy (H5) classifies tool-backed claims as stronger evidence.
+
+#### Tasks
+
+- [ ] Add proactive reformulation trigger to orchestrator: count consecutive discards/inconclusives, escalate at N=5
+- [ ] Update `formalize-problem` skill: accept "reformulation mode" with prior failure evidence alongside existing initial mode
+- [ ] Update `synthesize` skill: generate investigation references for each claim in the report
+- [ ] Add `references/computation.md` — decision tree for when mechanical checking is worth attempting (Z3 for bounded search, Tamarin for protocol models)
+- [ ] (Stretch) Build Z3 integration for bounded counterexample search — lowest barrier, highest payoff
+- [ ] (Stretch) Build Tamarin integration for protocol security claims
+- [ ] Test: does proactive reformulation produce better outcomes than the existing reactive-only path?
 
 ---
 
