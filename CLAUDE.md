@@ -1,6 +1,6 @@
 # Reaper
 
-AI-native scientific research pipeline distributed as a Claude Code plugin. Takes a research paper + research goal and autonomously runs a multi-step research loop.
+AI-native scientific research pipeline distributed as a Claude Code plugin. Takes a research paper + research goal and autonomously runs a multi-step research loop. Ships with reference files for cryptography and distributed systems, but the skills themselves are domain-agnostic — swap the reference files to adapt to other research domains.
 
 ## Project structure
 
@@ -30,6 +30,7 @@ pip install arxiv requests beautifulsoup4
 - The orchestrator (`/reaper`) runs the full pipeline: clarify → analyze → literature → formalize → brainstorm → investigate ↔ critique → synthesize. After delivery, users can iterate via `/reaper:critique "feedback"`.
 - Runtime state goes in `reaper-workspace/` (gitignored). Never commit workspace artifacts.
 - The six methodology principles (separation of concerns, fixed evaluation signal, structured results log, keep-or-discard loop, never stop, clarity and simplicity) govern how skills behave.
+- Domain-specific content (impossibility results, trust model checklists, venue tiers, definitional standards) lives in `skills/reaper/references/`, not inline in skills. Skills reference these files but remain domain-agnostic — the reference files can be swapped for a different research domain.
 - Python scripts live alongside the skill that uses them (e.g., `skills/search-arxiv/search_arxiv.py`).
 - No JavaScript/TypeScript in this project — it's Claude skills + Python only.
 - When adding, removing, or renaming a skill, update `.claude-plugin/marketplace.json` to keep the `skills` array in sync. Also keep `version` in both `plugin.json` and `marketplace.json` consistent with the current release.

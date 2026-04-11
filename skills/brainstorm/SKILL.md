@@ -27,12 +27,12 @@ The recurring ideation step. Reads the current research state and proposes new o
 
 ## Inputs
 
-Read before starting:
+**Always read** before starting:
 - `reaper-workspace/notes/problem-statement.md` — the current ideas and their resolution status
 - `reaper-workspace/notes/current-understanding.md` — the "branch tip" of accumulated knowledge
-- `reaper-workspace/results.md` — what's been tried and what happened
+- `reaper-workspace/results.md` — what's been tried and what happened. **If the file is long (20+ rows), read the batch summaries at the end instead of every individual row.** Look for patterns in failures across batches, not individual cycle details.
 
-Also reference:
+**Lazy-load only when needed** (skip these unless you're stuck or exploring a specific direction):
 - `reaper-workspace/notes/paper-summary.md` — the source paper
 - `reaper-workspace/notes/literature.md` — known prior work
 - `reaper-workspace/notes/clarified-goal.md` — refined research goal and scope
@@ -55,12 +55,7 @@ Apply these techniques systematically. Not all will produce ideas every time —
 
 #### Gap-Finding (Qian: Fill in the Blank)
 
-Map the dimensions of existing work and find unexplored combinations:
-- Threat models (static/adaptive × sync/async/partial-sync × corruption thresholds)
-- Protocol families (leader-based, leaderless, DAG-based, etc.)
-- Security properties (safety, liveness, fairness, accountability, etc.)
-
-Which cells in this matrix are empty? Those are candidate hypotheses.
+Map the dimensions of existing work and find unexplored combinations. Consult `references/model.md` for the domain-appropriate gap-finding matrix dimensions. Which cells in this matrix are empty? Those are candidate hypotheses.
 
 #### Problem Inversion (Hamming)
 
@@ -89,14 +84,7 @@ If a hypothesis has trended toward refutation over 3+ cycles (counterexample att
 
 ### 3. Screen Against Known Impossibilities
 
-For each candidate idea, check whether it contradicts a known impossibility or lower bound:
-
-- **FLP** [Fischer, Lynch, Paterson 1985]: No deterministic consensus in asynchrony with even 1 crash fault
-- **DLS** [Dwork, Lynch, Stockmeyer 1988]: No partially-synchronous consensus tolerating t ≥ n/3 Byzantine faults
-- **Byzantine agreement bound**: Requires t < n/3 without trusted setup (or t < n/2 with PKI + randomization)
-- **Dolev-Strong**: Authenticated broadcast requires t < n
-- **Fischer-Lynch-Merritt**: k-set agreement impossible with t ≥ k crash faults in async
-- **Communication lower bounds**: Ω(n²) for deterministic Byzantine agreement without threshold signatures (Dolev-Reischuk)
+For each candidate idea, check whether it contradicts a known impossibility or lower bound. Consult `references/impossibility-results.md` for the domain-relevant impossibility results and lower bounds.
 
 If a candidate contradicts a known impossibility:
 1. Flag it explicitly with a warning
@@ -105,12 +93,7 @@ If a candidate contradicts a known impossibility:
 
 ### 4. Prioritize (Hamming: Importance Filter)
 
-Not all ideas are equally worth investigating. Rank by consequence:
-- A security proof gap that invalidates a deployed protocol > a tighter constant in a complexity bound
-- An impossibility result that rules out an entire approach > an incremental improvement
-- A finding that changes how practitioners build systems > a purely theoretical curiosity
-
-Ask: "If we resolved this idea, who would care and why?"
+Not all ideas are equally worth investigating. Rank by consequence — ask: "If we resolved this idea, who would care and why?" Consult `references/model.md` for domain-specific examples of how to rank by importance.
 
 ### 5. Write Output
 
