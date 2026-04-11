@@ -46,15 +46,15 @@ Before investigation begins, the problem must be precisely defined with concrete
 
 **Stage 1: Establish baseline.** Before formalizing the problem, `analyze-paper` and `review-literature` establish what is already known — the paper's claims, existing approaches, and the state of the art. This grounds the investigation in reality rather than starting from a vacuum.
 
-**Stage 2: Formalize the problem.** `formalize-problem` then produces a problem statement in `notes/hypotheses.md` containing:
+**Stage 2: Formalize the problem.** `formalize-problem` then produces a problem statement in `notes/problem-statement.md` containing:
 
 - **Trust assumptions**: Every dimension pinned down unambiguously — communication, timing, PKI/setup, corruption (timing, power, bound), computation, composition, cryptographic hardness, protocol-specific assumptions. A hypothesis without fully specified trust assumptions is rejected.
 - **Security properties**: What must hold, stated as formal predicates, game-based definitions, simulation-based definitions, or precise references to existing definitions. Informal descriptions like "safety" or "liveness" without formal definitions are not acceptable.
 - **Performance metrics/goals**: What are the concrete targets? (e.g., "O(n) communication complexity per decision, finality in 3 rounds")
 - **Impossibility screening**: Each hypothesis is checked against known impossibility results (FLP, DLS, Dolev-Reischuk, etc.). Hypotheses that contradict known impossibilities are flagged and reformulated, not left for the investigate skill to waste cycles on.
-- **Testable claims**: Derived from the above — specific hypotheses with explicit success/failure conditions
+- **Ideas**: Derived from the above — specific hypotheses with explicit success/failure conditions
 
-Not all hypotheses are equally worth investigating. Among the testable claims, prioritize those whose resolution would be most consequential — a security proof gap that invalidates a deployed protocol matters more than a tighter constant in a complexity bound (Hamming: "If you do not work on important problems, how can you expect to do important work?"). Use Qian's "fill in the blank" pattern to find gaps: map the dimensions of existing work (threat models × protocol families × security properties) and identify unexplored combinations.
+Not all hypotheses are equally worth investigating. Among the ideas, prioritize those whose resolution would be most consequential — a security proof gap that invalidates a deployed protocol matters more than a tighter constant in a complexity bound (Hamming: "If you do not work on important problems, how can you expect to do important work?"). Use Qian's "fill in the blank" pattern to find gaps: map the dimensions of existing work (threat models × protocol families × security properties) and identify unexplored combinations.
 
 Every investigation cycle is then evaluated against these fixed criteria — did the cycle make progress toward confirming or refuting a specific claim?
 
@@ -112,7 +112,7 @@ Uncertainty about whether the human wants you to continue is *never* a reason to
 **Clarity in expression** (Peyton Jones: writing is a primary mechanism for doing research, not just for reporting it):
 - **Write early, not last.** Each investigation cycle should update `current-understanding.md` not just with results but with *explanations* of those results, as if explaining at a whiteboard. Writing crystallizes understanding.
 - **One "ping" per finding.** Each cycle should produce one clear, sharp insight. If a cycle's outcome cannot be stated in a single sentence, it needs to be decomposed further.
-- **Contributions must be refutable.** Every claim — whether in `hypotheses.md` or `report.md` — should be specific enough that a reader could disagree with it. "We analyze the security of protocol X" is not a contribution. "We show that protocol X's safety proof fails under asynchrony because the simulator cannot handle abort in round 3" is.
+- **Contributions must be refutable.** Every claim — whether in `problem-statement.md` or `report.md` — should be specific enough that a reader could disagree with it. "We analyze the security of protocol X" is not a contribution. "We show that protocol X's safety proof fails under asynchrony because the simulator cannot handle abort in round 3" is.
 
 When evaluating whether a cycle produced progress, weight clarity and elegance alongside novelty. A cycle that narrows the search space on an important question is a "keep" even if it didn't resolve the hypothesis.
 
@@ -159,7 +159,7 @@ reaper-workspace/
 │   ├── clarified-goal.md              # Refined goal, scope, assumptions, Q&A
 │   ├── paper-summary.md                # Structured extraction from the paper
 │   ├── literature.md                   # Related work found during search
-│   ├── hypotheses.md                   # Problem statement + testable claims
+│   ├── problem-statement.md                   # Problem statement + ideas
 │   ├── current-understanding.md        # "Branch tip" — only advances on keep
 │   └── scratchpad.md                   # Free-form reasoning
 ├── experiments/
@@ -192,7 +192,7 @@ H4 The Lab:                        + multi-paper              + computation     
 **Goal:** Build the full research pipeline as composable sub-skills that each map 1:1 to a methodology stage. Each skill is independently useful, has a clear file contract, and can be composed by the orchestrator with subagent parallelism. Literature search uses WebSearch initially (MCP servers come in H2).
 
 **What success looks like:** `/reaper paper.pdf "check if the security proof in Section 4 holds under asynchrony"` produces a workspace with:
-- `notes/hypotheses.md` containing a precise problem statement (trust assumptions, security properties, performance goals)
+- `notes/problem-statement.md` containing a precise problem statement (trust assumptions, security properties, performance goals)
 - `results.md` showing cycle-by-cycle progression with keep/discard decisions
 - `current-understanding.md` with the accumulated findings
 - `report.md` that a researcher would find genuinely useful
@@ -206,9 +206,9 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 | `/reaper:clarify-goal` | Stage 0: Clarify | Input paper, goal prompt | `notes/clarified-goal.md` (refined goal, scope, assumptions, Q&A) |
 | `/reaper:analyze-paper` | Stage 1a: Baseline (paper) | Input paper | `notes/paper-summary.md` |
 | `/reaper:review-literature` | Stage 1b: Baseline (literature) | `notes/clarified-goal.md`, `notes/paper-summary.md` | `notes/literature.md` |
-| `/reaper:formalize-problem` | Stage 2: Formalize | `notes/clarified-goal.md`, `notes/paper-summary.md`, `notes/literature.md`, goal prompt | `notes/hypotheses.md` (trust assumptions, security properties, performance goals, testable claims) |
-| `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/hypotheses.md`, `notes/current-understanding.md` | `experiments/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
-| `/reaper:critique` | Stage 3 sub-step: review | `experiments/`, `notes/current-understanding.md` | `feedback/`, may add hypotheses to `notes/hypotheses.md` |
+| `/reaper:formalize-problem` | Stage 2: Formalize | `notes/clarified-goal.md`, `notes/paper-summary.md`, `notes/literature.md`, goal prompt | `notes/problem-statement.md` (trust assumptions, security properties, performance goals, ideas) |
+| `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/current-understanding.md` | `experiments/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
+| `/reaper:critique` | Stage 3 sub-step: review | `experiments/`, `notes/current-understanding.md` | `feedback/`, may add hypotheses to `notes/problem-statement.md` |
 | `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `experiments/`, `results.md` | `report.md` |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |
 
@@ -374,7 +374,7 @@ Reaper's methodology draws from four sources:
 
 **[Richard Hamming, "You and Your Research"](https://d37ugbyn3rpeym.cloudfront.net/stripe-press/TAODSAE_zine_press.pdf)** (Stripe Press edition of *The Art of Doing Science and Engineering*) — The importance filter and problem-inversion technique. Hamming's central question — "Why are you not working on the important problems in your field?" — shapes the importance filter in Principle 2: prioritize hypotheses by consequence, not convenience. His technique of inverting blockages into insights (if you can't prove it, try to disprove it) is built into the "when stuck" protocol in Principle 5. Hamming also taught that effort compounds — steady, disciplined investigation cycles accumulate understanding the way compound interest accumulates capital.
 
-**[Zhiyun Qian, "How to Look for Ideas in Computer Science Research"](https://medium.com/digital-diplomacy/how-to-look-for-ideas-in-computer-science-research-7a3fa6f4696f)** — Systematic idea generation patterns. Qian's six patterns (fill-in-the-blank, expansion, build-a-hammer, start-small-then-generalize, reproduce-prior-work, external-sources) are incorporated into Principles 2 and 5, and into the `formalize-problem` skill's approach to generating testable claims. The "fill in the blank" pattern — mapping dimensions of existing research and finding unexplored combinations — is particularly powerful for theoretical research where the design space of threat models, protocol families, and security properties can be systematically enumerated.
+**[Zhiyun Qian, "How to Look for Ideas in Computer Science Research"](https://medium.com/digital-diplomacy/how-to-look-for-ideas-in-computer-science-research-7a3fa6f4696f)** — Systematic idea generation patterns. Qian's six patterns (fill-in-the-blank, expansion, build-a-hammer, start-small-then-generalize, reproduce-prior-work, external-sources) are incorporated into Principles 2 and 5, and into the `formalize-problem` skill's approach to generating ideas. The "fill in the blank" pattern — mapping dimensions of existing research and finding unexplored combinations — is particularly powerful for theoretical research where the design space of threat models, protocol families, and security properties can be systematically enumerated.
 
 **[Simon Peyton Jones, "How to Write a Great Research Paper"](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/How-to-write-a-great-research-paper.pdf)** — Writing as research methodology. Peyton Jones's core insight — that writing is a primary mechanism for doing research, not just for reporting it — is woven into Principle 6 (Clarity and Simplicity). His structural advice (one clear "ping," explicit refutable contributions, examples before generality, narrative flow over chronological recounting) shapes the `synthesize` skill's report format. Most importantly, the idea that you should write *before* you fully understand forces Reaper to crystallize its understanding in `current-understanding.md` at every cycle, not just at the end.
 

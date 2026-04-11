@@ -74,7 +74,7 @@ Both must complete before proceeding.
 
 ### Step 4: Formalize the Problem
 
-Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline outputs (including `clarified-goal.md`) and produces `notes/hypotheses.md` with trust assumptions, security properties, performance goals, and prioritized testable claims.
+Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline outputs (including `clarified-goal.md`) and produces `notes/problem-statement.md` with trust assumptions, security properties, performance goals, and prioritized ideas.
 
 ### Step 5: Investigate → Critique Loop
 
@@ -98,7 +98,7 @@ Concretely:
 
 Adjust cycle counts based on problem complexity (e.g., 3+3 for simple problems, 5+5 for complex ones). The total should be ~10 cycles of investigation.
 
-The critique step may add new hypotheses to `hypotheses.md` (tagged `[Codex-N]` or `[Self-N]`), which the next investigate batch picks up automatically.
+The critique step may add new hypotheses to `problem-statement.md` (tagged `[Codex-N]` or `[Self-N]`), which the next investigate batch picks up automatically.
 
 This loop runs autonomously — do not interrupt or ask if it should continue.
 

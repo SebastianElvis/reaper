@@ -9,7 +9,7 @@
       "expected_outputs": {
         "paper-summary": "notes/paper-summary.md must contain verbatim theorem statements, complete system model, and red flags section identifying the proof gap",
         "literature": "notes/literature.md must contain at least 10 related works with specific relevance statements",
-        "hypotheses": "notes/hypotheses.md must contain falsifiable claims with explicit success/failure conditions targeting the proof gap",
+        "hypotheses": "notes/problem-statement.md must contain falsifiable claims with explicit success/failure conditions targeting the proof gap",
         "results": "results.md must have at least 5 cycle rows with keep/discard decisions",
         "current-understanding": "notes/current-understanding.md must identify the specific proof gap (not just 'there may be issues')",
         "report": "report.md must have a one-sentence central finding, refutable contributions, and concrete examples"
@@ -35,7 +35,7 @@
       "expected_outputs": {
         "paper-summary": "notes/paper-summary.md must include communication/round complexity claims and the exact network/adversary model",
         "literature": "notes/literature.md must cover competing protocols (PBFT, Tendermint, HotStuff, etc.) with consistent comparison dimensions",
-        "hypotheses": "notes/hypotheses.md must include claims about relative performance under the same model",
+        "hypotheses": "notes/problem-statement.md must include claims about relative performance under the same model",
         "results": "results.md must show comparison cycles using consistent dimensions from methodology.md",
         "current-understanding": "notes/current-understanding.md must contain a structured comparison table",
         "report": "report.md must identify at least one unfair or misleading comparison in the original paper (if any)"
@@ -61,7 +61,7 @@
       "expected_outputs": {
         "paper-summary": "notes/paper-summary.md must flag any red flags (synchrony/asynchrony mismatch, missing liveness argument, vague security definition)",
         "literature": "notes/literature.md must include relevant impossibility results and known attacks on similar constructions",
-        "hypotheses": "notes/hypotheses.md must include hypotheses about whether specific claims are valid",
+        "hypotheses": "notes/problem-statement.md must include hypotheses about whether specific claims are valid",
         "results": "results.md must show at least one counterexample search cycle",
         "current-understanding": "notes/current-understanding.md must clearly state which claims hold, which fail, and which are undetermined",
         "report": "report.md must present any counterexample with a concrete execution trace"
@@ -91,7 +91,7 @@
     },
     {
       "skill": "reaper:formalize-problem",
-      "test": "Given paper-summary.md and literature.md, hypotheses.md must have complete trust assumptions (all 5 dimensions), at least 2 testable claims each with statement/success/failure conditions, and priorities justified by consequence"
+      "test": "Given paper-summary.md and literature.md, problem-statement.md must have complete trust assumptions (all 5 dimensions), at least 2 ideas each with statement/success/failure conditions, and priorities justified by consequence"
     },
     {
       "skill": "reaper:investigate",

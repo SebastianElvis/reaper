@@ -93,10 +93,10 @@ Each security property listed in the output must be stated as one of:
 
 ### 8. Write Output
 
-Write to `reaper-workspace/notes/hypotheses.md`:
+Write to `reaper-workspace/notes/problem-statement.md`:
 
 ```markdown
-# Research Hypotheses
+# Problem Statement
 
 ## Research Goal
 [Restate the goal precisely]
@@ -124,7 +124,7 @@ Write to `reaper-workspace/notes/hypotheses.md`:
 - Round complexity:
 - Other:
 
-## Testable Claims
+## Ideas
 
 ### H1: [Short descriptive title]
 - **Statement**: [Precise, falsifiable claim — specific enough that a reader could disagree]

@@ -103,7 +103,7 @@ reaper-workspace/
 │   ├── clarified-goal.md           # Refined goal, scope, assumptions, Q&A
 │   ├── paper-summary.md            # Structured paper extraction
 │   ├── literature.md               # Related work survey
-│   ├── hypotheses.md               # Formalized problem + testable claims
+│   ├── problem-statement.md               # Formalized problem + ideas
 │   ├── current-understanding.md    # "Branch tip" — advances only on keep
 │   └── scratchpad.md               # Free-form reasoning
 ├── experiments/
@@ -140,7 +140,7 @@ Reaper's methodology draws from four sources:
 
 - **[karpathy/autoresearch](https://github.com/karpathy/autoresearch)** — Loop discipline: constrain the loop so the AI can iterate autonomously with a clear signal of progress. The structured results log, keep-or-discard mechanism, and never-stop policy are direct adaptations.
 - **[Richard Hamming, "You and Your Research"](https://d37ugbyn3rpeym.cloudfront.net/stripe-press/TAODSAE_zine_press.pdf)** — The importance filter ("Why are you not working on the important problems?") and the technique of inverting blockages into insights.
-- **[Zhiyun Qian, "How to Look for Ideas in Computer Science Research"](https://medium.com/digital-diplomacy/how-to-look-for-ideas-in-computer-science-research-7a3fa6f4696f)** — Systematic idea generation patterns (fill-in-the-blank, start-small-then-generalize, build-a-hammer) for formulating testable claims.
+- **[Zhiyun Qian, "How to Look for Ideas in Computer Science Research"](https://medium.com/digital-diplomacy/how-to-look-for-ideas-in-computer-science-research-7a3fa6f4696f)** — Systematic idea generation patterns (fill-in-the-blank, start-small-then-generalize, build-a-hammer) for formulating research ideas.
 - **[Simon Peyton Jones, "How to Write a Great Research Paper"](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/How-to-write-a-great-research-paper.pdf)** — Writing as a primary mechanism for doing research, not just reporting it. Shapes the report structure: one clear "ping," explicit refutable contributions, examples before generality.
 
 ## License
