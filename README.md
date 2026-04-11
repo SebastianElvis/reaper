@@ -61,26 +61,26 @@ If not configured, Codex consultation is silently skipped and the pipeline conti
 Reaper executes a multi-stage pipeline where investigation runs in parallel batches and critique provides feedback from multiple sources:
 
 ```
-                 ┌─ analyze-paper ──┐
-clarify-goal ──> │                  ├─> formalize-problem
-                 └─ review-lit ─────┘          │
-                     (parallel)                v
-                              ┌──────────> brainstorm
-                              │                │
-                              │    ┌─ investigate ─────────────────┐
-                              │    │  plan batch                   │
-                              │    │    ├──> agent H1 ─┐           │
-                              │    │    ├──> agent H2 ─┼─> merge   │
-                              │    │    └──> agent H3 ─┘    │      │
-                              │    │          next batch or done    │
-                              │    └───────────────────────────────┘
-                              │                │
-                              │    ┌─ critique ──────────────────┐
-                              │    │  --self  --codex  "feedback" │
-                              │    └────┬────────────────┬───────┘
-                              │         │                │
-                              │   deepen/explore    rewrite/done ──> synthesize ──> report.md
-                              └─────────┘
+                      ┌─ /analyze-paper ─────────┐
+/clarify-goal ──────> │                          ├─> /formalize-problem
+                      └─ /review-literature ─────┘          │
+                            (parallel)                      v
+                                       ┌──────────────> /brainstorm
+                                       │                    │
+                                       │    ┌─ /investigate ─────────────────┐
+                                       │    │  plan batch                    │
+                                       │    │    ├──> agent H1 ─┐            │
+                                       │    │    ├──> agent H2 ─┼──> merge   │
+                                       │    │    └──> agent H3 ─┘     │      │
+                                       │    │          next batch or done     │
+                                       │    └────────────────────────────────┘
+                                       │                    │
+                                       │    ┌─ /critique ────────────────────┐
+                                       │    │  --self  --codex  "feedback"   │
+                                       │    └────┬───────────────────┬───────┘
+                                       │         │                   │
+                                       │   deepen/explore    rewrite/done ──> /synthesize ──> report.md
+                                       └─────────┘
 ```
 
 ## Skills
