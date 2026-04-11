@@ -85,6 +85,32 @@ For theoretical research (proving properties, security guarantees, or performanc
 **Proof technique:** <e.g., reduction, induction, simulation, hybrid argument, game hopping>
 ```
 
+#### Proof Techniques Catalog
+
+Choose the proof technique that matches the claim type. The technique determines the proof structure — don't mix paradigms within a single argument.
+
+**Cryptographic proof techniques** (see Shoup [ePrint 2004/332] for game-based proofs and Lindell [ePrint 2016/046] for simulation-based proofs):
+
+| Technique | When to Use | Core Idea | Key Pitfalls |
+|-----------|-------------|-----------|--------------|
+| **Game-based (sequence of games / game hopping)** | Proving IND-CPA, IND-CCA, EUF-CMA, and similar computational security notions | Define a sequence of games G₀, G₁, ..., Gₖ where G₀ is the real security game and Gₖ is trivially secure. Bound the distinguishing advantage between each consecutive pair. Total advantage ≤ Σ advantages. | Each hop must be justified (syntactic change, computational assumption, or statistical argument). The sum of advantages must remain negligible. Don't lose track of which game you're in. |
+| **Simulation-based (ideal/real paradigm)** | Proving security of MPC protocols, commitment schemes, zero-knowledge proofs — any setting where "security" means "the adversary learns nothing beyond the output" | Construct a simulator S that, given only the ideal-world output, produces a view indistinguishable from the adversary's real-world view. Security means: for every PPT adversary A, there exists PPT simulator S such that REAL_A ≈ IDEAL_S. | The simulator must handle ALL adversary behaviors including abort. Simulator must run in expected PPT. Rewinding is allowed in standalone but NOT in UC. The simulation must be indistinguishable — state precisely whether computationally, statistically, or perfectly. |
+| **UC (Universal Composability)** | Proving security that holds under arbitrary concurrent composition with other protocols | Define an ideal functionality F. Prove that for every environment Z and adversary A, there exists a simulator S such that Z cannot distinguish the real protocol from the ideal interaction with F and S. | No rewinding allowed — use equivocation or straight-line extraction instead. The environment Z is the distinguisher and is the most powerful entity. Composition theorem gives security for free but proving UC security is strictly harder than standalone. |
+| **Reduction** | Proving hardness-based security — "breaking the scheme implies solving a hard problem" | Given adversary A that breaks property P with advantage ε, construct algorithm B that solves hard problem H with advantage related to ε. | Check tightness (see Reduction Quality Gate). Reduction must handle ALL oracle queries. Watch for exponential security loss in multi-instance settings. Programming random oracle / CRS must produce correct distribution. |
+| **Hybrid argument** | Bounding advantage across many instances or many rounds | Define hybrid distributions H₀, ..., Hₙ that interpolate between two endpoints. Show adjacent hybrids are indistinguishable. | Security loss is typically linear in the number of hybrids (n). For n exponential in security parameter, the argument gives nothing useful. Consider tight reductions or complexity leveraging. |
+
+**Distributed computing proof techniques:**
+
+| Technique | When to Use | Core Idea | Key Pitfalls |
+|-----------|-------------|-----------|--------------|
+| **Safety by invariant** | Proving agreement, consistency, validity | Define a predicate Inv over global states. Show: (1) Inv holds initially, (2) every protocol step preserves Inv, (3) Inv implies the safety property. | The invariant must be inductive — it must be preserved by EVERY possible step, including adversarial ones. A common error is proving the invariant holds for honest steps but not for Byzantine behavior. |
+| **Liveness by eventual argument** | Proving termination, progress, fairness | Show that under the timing/fault assumptions, some progress measure eventually increases or some good event eventually occurs. Often: after GST, honest messages arrive within Δ, so a decision is reached within f(Δ, n, t) time. | Liveness proofs under partial synchrony must be explicit about what happens before GST (nothing is guaranteed) vs after GST. Don't assume synchrony holds globally. FLP means you need randomization or partial synchrony — be clear which you use. |
+| **Indistinguishability / partitioning** | Proving impossibility results, lower bounds | Construct two executions that are indistinguishable to some party or set of parties, yet require different outputs — a contradiction. Classic: partition n parties into groups that can't tell which partition they're in. | The indistinguishability argument must account for ALL information available to the parties, including message timing in synchronous models. |
+| **Bivalence / valency** | Proving FLP-style impossibility | Show that an initial configuration is bivalent (both 0 and 1 are reachable). Show that every deterministic step from a bivalent configuration leads to another bivalent configuration or a contradiction with fault tolerance. | Only applies to deterministic protocols. Randomized protocols circumvent FLP via probabilistic termination. |
+| **Counting / quorum intersection** | Proving properties of quorum-based protocols | Show that any two quorums intersect in enough honest parties to guarantee consistency. For n = 3t+1: any two sets of 2t+1 intersect in t+1, of which at least 1 is honest. | The intersection argument fails if the corruption threshold is violated. Be precise about whether you need "at least one honest in intersection" vs "honest majority in intersection." |
+
+When selecting a technique, state it explicitly in the proof header. If the chosen technique doesn't work after a genuine attempt, this is useful information — log which technique failed and why, then try an alternative technique in the next cycle.
+
 Requirements for formal proofs:
 
 - **Properties** (correctness, liveness, safety, fairness, etc.): State the property as a formal predicate. Prove it holds under the stated assumptions. If the property holds conditionally, state the conditions precisely.
@@ -98,6 +124,27 @@ If a proof attempt fails or has gaps:
 - Log the cycle as `inconclusive` with the gap described
 
 Do not claim a property or metric holds without a proof. Conjectures are acceptable but must be clearly labeled as such, with evidence for and against.
+
+#### Reduction Quality Gate
+
+Every reduction-based argument must answer ALL of the following before being marked `confirmed`. If any answer is "unclear" or "not applicable" without justification, the cycle outcome must be `inconclusive`, not `confirmed`.
+
+1. **Embedding**: How is the challenge instance embedded in the protocol? Is the embedding perfect, statistical, or computational?
+2. **Simulation**: Does the simulator handle ALL adversary queries? List the query types (signing, corruption, random oracle, etc.) and how each is answered.
+3. **Extraction**: How is the solution extracted from a successful adversary? Does extraction work for ALL winning conditions in the security game?
+4. **Tightness**: What is the concrete security loss? Express as ε_scheme ≤ f(ε_assumption, q, ...). Is f polynomial in all parameters? If the loss is superpolynomial, the reduction gives no meaningful concrete security.
+5. **Rewinding**: Does the reduction rewind the adversary? If yes, is rewinding valid in the stated composition model? (Rewinding is NOT valid in UC.)
+6. **Abort analysis**: What happens if the adversary aborts mid-protocol? Does the reduction still extract or must it restart?
+7. **Programming**: Does the reduction program the random oracle / CRS? If so, is the programmed distribution indistinguishable from the real one?
+
+#### Performance Sanity Checks
+
+Before accepting any performance or complexity claim:
+
+- **Lower bounds**: Compare against known lower bounds for the problem class. A claim of O(n) communication for Byzantine agreement without threshold signatures contradicts Dolev-Reischuk (Ω(n²)).
+- **Concrete instantiation**: Plug in small concrete values (n=4, n=10, n=100). Does the concrete number make sense? Does it exceed trivially achievable bounds?
+- **Comparison**: Compare against the performance of existing solutions to the same problem under the same model. A claimed improvement must actually improve.
+- **Units**: Check units carefully — bits vs words vs field elements; per-round vs total; per-decision vs amortized; worst-case vs expected.
 
 <!-- TODO: Add Lean-based formal verification step. When proofs are complete, translate them into Lean 4 and machine-check them. This would replace confidence levels with verified/unverified status and catch subtle gaps that manual proofs miss. Requires: Lean 4 toolchain, a library of common crypto/protocol primitives in Lean, and a skill or subscript to invoke the Lean checker. -->
 
@@ -115,6 +162,25 @@ Did this cycle produce **genuine progress**? A cycle counts as progress if it:
 
 **One "ping" per cycle**: The cycle's outcome should be statable in a single sentence. If it can't be, the cycle tried to do too much — note this and decompose in the next cycle.
 
+#### Classify Proof Issues Precisely
+
+When a proof issue is found, do not just say "found a gap." Classify it:
+
+- **Gap (fillable)**: A step is missing but the overall approach is sound. The gap can likely be closed with additional argument. Log as `partially-confirmed`.
+- **Gap (structural)**: The proof strategy fundamentally cannot work as written — e.g., the simulator doesn't handle a class of adversary behaviors, the reduction has exponential loss, the induction hypothesis is too weak. Log as `inconclusive` and pivot to whether the theorem itself is true via an alternative proof.
+- **Error (theorem likely false)**: The proof fails because the claimed property actually doesn't hold — you can construct a concrete counterexample or execution trace that violates it. Log as `refuted`.
+- **Overclaim**: The proof is correct but proves something strictly weaker than what's claimed — e.g., the paper claims adaptive security but the proof only handles static corruption, or claims async but requires partial synchrony. Log as `partially-confirmed` with the precise weakening stated.
+
+#### Composition Awareness
+
+When a security property is confirmed, note the composition implications:
+- Does the proof use rewinding? If so, it likely doesn't compose (not UC-secure).
+- Does the protocol use a CRS? Is the CRS shared with other protocols?
+- Is the result in the standalone model, sequential composition, or UC?
+- If the paper claims the protocol is "used as a building block" in a larger system, does the proven security level actually support that usage?
+
+Log composition limitations in the experiment's `analysis.md` even if the original hypothesis didn't ask about composition — this is critical context for the final report.
+
 ### Step 5: Log
 
 Append a row to `reaper-workspace/results.md`:
@@ -126,8 +192,16 @@ Append a row to `reaper-workspace/results.md`:
 Where:
 - **action-type**: proof-verification, proof-attempt, counterexample-search, security-analysis, performance-analysis, comparison, literature-search, reformulation
 - **outcome**: confirmed, refuted, partially-confirmed, inconclusive, new-hypothesis
-- **confidence**: high, medium, low
+- **confidence**: high, medium, low (see calibration below)
 - **status**: keep or discard
+
+#### Confidence Calibration
+
+Default to one level LOWER than your instinct. If you think "high," write "medium" unless every single step is airtight.
+
+- **High**: The argument is complete, every step is justified by definition / assumption / prior lemma / cited result, and you can see no way it could be wrong. You could present this at a seminar and defend every step under questioning. For reductions: the Reduction Quality Gate is fully passed.
+- **Medium**: The argument is plausible and mostly complete, but at least one step relies on intuition rather than rigorous justification, or there is a step you believe is correct but haven't fully verified. A careful reviewer might find an issue.
+- **Low**: The argument has significant gaps, relies on unverified assumptions, or is based on analogy/heuristic rather than proof. This is a conjecture with supporting evidence, not a result.
 
 ### Step 6: Keep or Discard
 
@@ -190,6 +264,17 @@ If a cycle is going nowhere, escalate through these steps:
    - *Fill in the blank*: What combination of assumptions/techniques hasn't been tried?
    - *Start small then generalize*: What's the simplest case? Can you solve it for n=2 first?
    - *Build a hammer*: Can a technique from a previous cycle apply here in a different way?
+
+## Negative Result Protocol
+
+If after 3 cycles a hypothesis trends toward refutation (counterexample attempts partially succeed, proof attempts consistently fail at the same point, or you keep hitting the same structural gap):
+
+1. **Pivot explicitly** to proving the negative. State the impossibility or separation as a new hypothesis: "Protocol X cannot achieve property Y under model Z because..."
+2. **Construct the strongest possible negative result.** A clean impossibility result is more valuable than a vague "we couldn't prove it." Show a concrete attack, execution trace, or reduction to a known impossibility.
+3. **Identify the minimal fix.** What is the weakest additional assumption that would make the positive result hold? (e.g., "Safety holds if we additionally assume synchronous message delivery in the view-change sub-protocol.")
+4. **A clean negative result is a KEEP, not a failure.** It resolves the hypothesis (by refutation) and advances understanding. Log it with outcome `refuted` and status `keep`.
+
+Do not spend 10 cycles attempting minor variations of the same failed proof strategy. Three failures at the same point is a signal to change direction.
 
 ## Parallel Investigation
 
