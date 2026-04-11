@@ -1,6 +1,6 @@
 ---
 name: analyze-paper
-description: "Extract structured information from a research paper: system model, theorem statements, proof techniques, complexity claims, and red flags. Use when asked to analyze, summarize, or review a crypto, distributed systems, or blockchain paper."
+description: "Extract structured information from a research paper: system model, theorem statements, proof techniques, complexity claims, and red flags. Use when asked to analyze, summarize, or review an academic paper."
 user-invocable: true
 argument-hint: "<paper-path>"
 ---
@@ -50,11 +50,7 @@ Write the extracted information to `reaper-workspace/notes/paper-summary.md` wit
 What problem does this paper solve? Why does it matter?
 
 ## System Model
-- **Network model**: (synchronous / asynchronous / partially synchronous; timing assumptions)
-- **Adversary model**: (static / adaptive; computational bound; rush / non-rush)
-- **Trust assumptions**: (corruption threshold; honest majority; trusted setup)
-- **Communication model**: (point-to-point / broadcast; authenticated channels; PKI)
-- **Cryptographic assumptions**: (hardness assumptions; idealized models)
+[Extract all model dimensions relevant to the paper's domain. Consult references/model.md for the domain-appropriate dimensions to extract. Every applicable dimension must have a concrete answer.]
 
 ## Construction Overview
 High-level protocol description. Key technical idea. Building blocks used.

@@ -1,6 +1,6 @@
 # Reaper
 
-**Reaper (REAd PapER)** — an AI-native scientific research pipeline. A [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins) that takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.
+**Reaper (REAd PapER)** — an AI-native scientific research pipeline. A [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins) that takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research. Ships with reference files for cryptography and distributed systems, but the skills are domain-agnostic — swap the reference files to adapt to other domains.
 
 [![Claude Code Plugin](https://img.shields.io/badge/Claude_Code-Plugin-blue)](https://code.claude.com/docs/en/discover-plugins)
 
@@ -40,9 +40,9 @@ cp -r reaper/skills/* ./.claude/skills/
 
 See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugins) for more details on installing plugins.
 
-### Optional: Codex MCP for AI critique
+### Optional: Codex MCP for AI consultation
 
-The `/reaper:critique --codex` mode consults OpenAI Codex as a devil's advocate during investigation. To enable it, register the [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server):
+Pass `--codex` to enable pipeline-wide Codex consultation — every skill gains a checkpoint where it can consult OpenAI Codex for a second opinion. The orchestrator controls when consultations happen (see `skills/reaper/references/codex-consultation.md` for the full protocol). To enable, register the [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server):
 
 ```bash
 claude mcp add codex-cli -- npx -y codex-mcp-server

@@ -1,6 +1,6 @@
 ---
 name: review-literature
-description: "Search for related academic work, download and read key papers, and produce a structured literature survey. Use when asked to find prior art, related papers, competing approaches, or known results for a crypto/distributed systems research topic."
+description: "Search for related academic work, download and read key papers, and produce a structured literature survey. Use when asked to find prior art, related papers, competing approaches, or known results for a research topic."
 user-invocable: true
 argument-hint: "<research-goal>"
 ---
@@ -57,6 +57,8 @@ python skills/search-iacr/search_iacr.py search "<query>" --max-results 10
 - **Subagent 2**: IACR ePrint searches (multiple queries)
 - **Subagent 3**: WebSearch fallback (see step 3)
 
+**Context efficiency**: Do NOT pass the full `paper-summary.md` to each search subagent. Instead, extract the key search terms (topic, author names, 3-5 key concepts) and pass those as a brief JSON object (~100 words). Each subagent only needs the terms to formulate queries, not the full paper analysis.
+
 Each subagent runs its searches and returns structured JSON results.
 
 ### 3. Search — WebSearch (Fallback)
@@ -103,20 +105,9 @@ For each result found, assess relevance to the research goal. Classify each pape
 
 #### Venue and Author Weighting
 
-**Venue tiers** — weight results heavily toward top venues. A peer-reviewed top-conference paper is far more trustworthy than an unreviewed preprint.
+Weight results heavily toward top venues. A peer-reviewed top-conference paper is far more trustworthy than an unreviewed preprint. Consult `references/venue-tiers.md` for the domain-appropriate venue tier table and author weighting criteria.
 
-| Tier | Venues | Weight |
-|------|--------|--------|
-| **Tier 1 (flagship)** | CRYPTO, EUROCRYPT, ASIACRYPT, CCS, S&P (Oakland), NDSS, USENIX Security, PODC, DISC, STOC, FOCS, SODA, TCC | Strongest signal. Prefer these over all others. |
-| **Tier 2 (strong)** | PKC, CT-RSA, FC, ACNS, SCN, OPODIS, SSS, Journal of Cryptology, Distributed Computing (journal), JACM, SICOMP | Strong signal. Treat nearly as tier 1. |
-| **Tier 3 (preprint/other)** | IACR ePrint (unreviewed), arXiv (unreviewed), workshops, lesser conferences | Use for recency and breadth, but verify claims independently. Do not treat unreviewed results as established. |
-
-**Author weighting** — give additional weight to papers by:
-- **Program committee members and editors** of top venues in the relevant area (they shape what gets accepted and reflect community expertise)
-- **Established researchers** with a strong publication record in the specific sub-area (not just generally prolific authors)
-- **Original authors** of foundational results being built upon (they understand the subtleties best)
-
-When two papers make competing claims, prefer the one from the higher-tier venue by authors with more domain-specific expertise. When an ePrint preprint contradicts a published top-conference result, flag it but do not treat the preprint as authoritative without independent verification.
+When two papers make competing claims, prefer the one from the higher-tier venue by authors with more domain-specific expertise. When a preprint contradicts a published top-venue result, flag it but do not treat the preprint as authoritative without independent verification.
 
 #### Relevance Assessment
 

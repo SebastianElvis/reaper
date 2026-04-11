@@ -18,7 +18,9 @@ You are the Reaper orchestrator. You take a research paper and a research goal, 
 /reaper path/to/paper.pdf "determine if the security proof in Section 4 holds under asynchrony" --codex
 ```
 
-The first argument is the path to the paper (PDF or text). Everything after it in quotes is the research goal. Pass `--codex` to enable automated Codex consultation during investigation (requires [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server)).
+The first argument is the path to the paper (PDF or text). Everything after it in quotes is the research goal. Pass `--codex` to enable Codex consultation across the entire pipeline — every skill gains an optional step where it consults Codex for a second opinion at a natural checkpoint. See `references/codex-consultation.md` for the full protocol. Requires [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server).
+
+When `--codex` is set, propagate this context to all skill invocations. Each skill will consult Codex only at its designated checkpoint (defined in `references/codex-consultation.md`), using compressed context and a shared session ID for continuity across the pipeline.
 
 ## Workflow
 
@@ -78,31 +80,44 @@ Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline out
 
 ### Step 5: Brainstorm → Investigate → Critique Loop
 
-Run the core research engine: a recurring loop of brainstorm (generate ideas), investigate (execute on ideas), and critique (external perspective). The loop structure depends on whether `--codex` was passed:
+Run the core research engine: a recurring loop of brainstorm (generate ideas), investigate (execute on ideas), and critique (external perspective).
+
+#### Adaptive Loop Structure
+
+The loop adapts to problem complexity. Assess complexity after formalization, before the first brainstorm:
+
+- **Simple** (1-3 hypotheses, narrow scope, single claim to check): 2 brainstorm-investigate rounds, 3 cycles each, 1 critique. Total: ~6 investigation cycles.
+- **Moderate** (3-5 hypotheses, multiple steps or properties): 2 brainstorm-investigate rounds, 5 cycles each, 1-2 critiques. Total: ~10 investigation cycles.
+- **Complex** (5+ hypotheses, multiple interacting properties, broad scope): 3+ brainstorm-investigate rounds, 5 cycles each, 2+ critiques. Total: ~15+ investigation cycles.
+
+#### Default Patterns
 
 **Default (no `--codex`):**
 ```
-/reaper:brainstorm  →  /reaper:investigate 5  →  /reaper:critique --self  →  /reaper:brainstorm  →  /reaper:investigate 5
+/reaper:brainstorm  →  /reaper:investigate N  →  /reaper:critique --self  →  /reaper:brainstorm  →  /reaper:investigate N
 ```
 
 **With `--codex`:**
 ```
-/reaper:brainstorm  →  /reaper:investigate 5  →  /reaper:critique --codex  →  /reaper:brainstorm  →  /reaper:investigate 5  →  /reaper:critique --codex
+/reaper:brainstorm  →  /reaper:investigate N  →  /reaper:critique --codex  →  /reaper:brainstorm  →  /reaper:investigate N  →  /reaper:critique --codex
 ```
 
-Concretely:
-1. Run **`/reaper:brainstorm`** — generate initial ideas based on the formalized problem (supplements the hypotheses from `formalize-problem` with additional angles)
-2. Run **`/reaper:investigate 5`** — first batch of investigation cycles
-3. Run **`/reaper:critique --codex`** (if `--codex`) or **`/reaper:critique --self`** — critique the findings
-4. Run **`/reaper:brainstorm`** — generate new ideas based on what was learned and critique feedback
-5. Run **`/reaper:investigate 5`** — second batch, now incorporating new ideas from brainstorm and critique
-6. If `--codex`, run **`/reaper:critique --codex`** once more for a final review
+Where N is determined by the complexity assessment above.
 
-Adjust cycle counts based on problem complexity (e.g., 3+3 for simple problems, 5+5 for complex ones). The total should be ~10 cycles of investigation.
+#### Adaptation Signals During the Loop
+
+- If >50% of cycles in a batch are "discard," the hypotheses may be poorly formulated — run brainstorm before the next batch rather than continuing with existing hypotheses.
+- If investigate returns early (all hypotheses resolved), run brainstorm to check for overlooked directions before moving to synthesis.
+- If a critique round generates 3+ new actionable hypotheses, extend the loop with another investigate batch.
+- If 2 consecutive batches produce only "keep" results with high confidence and no new hypotheses, convergence is likely — proceed to synthesis.
+
+#### Re-Formalization Handling
+
+If `investigate` returns with a re-formalization signal (any cycle logged with outcome `reformulate`), re-run **`/reaper:formalize-problem`** before continuing the loop. The re-formalization should incorporate the findings from the investigation cycle that triggered it. After re-formalization, restart the brainstorm-investigate loop with the updated problem statement and reset the cycle budget for the new formulation.
+
+#### Loop Mechanics
 
 The `brainstorm` step reads the current state and appends new ideas to `problem-statement.md` (tagged `[Brainstorm-N]`). The `critique` step may also add hypotheses (tagged `[Codex-N]` or `[Self-N]`). The next `investigate` batch picks up all unresolved ideas automatically.
-
-If `investigate` returns early because all ideas are resolved, run `brainstorm` before deciding whether to continue or move to synthesis.
 
 This loop runs autonomously — do not interrupt or ask if it should continue.
 
@@ -133,3 +148,24 @@ Do **not** block waiting for a response — the pipeline is complete. The user c
 - If a skill fails, read its output file to diagnose, then retry
 - The workspace is the source of truth — if context is compressed, re-read workspace files
 - Never ask the user "should I continue?" during the pipeline — run to completion
+
+## Context Window Recovery
+
+If the context window is compressed or the orchestrator loses track of its position, reconstruct the pipeline state from workspace files alone:
+
+1. **Check which files exist** in `reaper-workspace/notes/`
+2. **Read `results.md`** to determine investigation progress (count cycles, check for unresolved hypotheses)
+3. **Read `problem-statement.md`** to find unresolved hypotheses (cross-reference with `results.md`)
+4. **Check for `report.md`** to determine if synthesis is complete
+5. **Check `feedback/`** for iteration rounds
+
+**Decision table:**
+
+| `paper-summary.md` | `problem-statement.md` | `results.md` rows | `report.md` | Action |
+|---|---|---|---|---|
+| missing | - | - | - | Run Step 3 (baseline) |
+| exists | missing | - | - | Run Step 4 (formalize) |
+| exists | exists | 0 | - | Run Step 5 (brainstorm + investigate) |
+| exists | exists | >0, unresolved H | - | Continue Step 5 (investigate or brainstorm) |
+| exists | exists | >0, all H resolved | missing | Run Step 6 (synthesize) |
+| exists | exists | >0 | exists | Run Step 7-8 (present + offer iteration) |

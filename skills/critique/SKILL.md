@@ -24,16 +24,16 @@ Provide external perspective on investigation results. Three modes: human feedba
 
 ## Inputs
 
-Read before starting:
+**Always read** before starting:
 - `reaper-workspace/notes/current-understanding.md` — the "branch tip" of accumulated knowledge
 - `reaper-workspace/results.md` — what's been tried and what happened
 - `reaper-workspace/notes/problem-statement.md` — the ideas to investigate
+- `reaper-workspace/feedback/` — prior feedback rounds
 
-Also reference:
+**Lazy-load only when needed:**
 - `reaper-workspace/notes/paper-summary.md` — the source paper
 - `reaper-workspace/notes/literature.md` — known prior work
 - `reaper-workspace/papers/` — downloaded PDFs and per-paper notes
-- `reaper-workspace/feedback/` — prior feedback rounds
 
 ## Mode: Human Feedback
 
@@ -82,25 +82,25 @@ For **deepen** and **explore**, after completing the cycles, the orchestrator sh
 
 Consult an external AI (OpenAI Codex via MCP) for an independent second opinion on the current investigation state. This establishes an automated feedback loop where Codex plays **devil's advocate** or provides **alternative inspiration**.
 
-**Requires**: The `codex-cli` MCP server registered with Claude Code (see [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server)): `claude mcp add codex-cli -- npx -y codex-mcp-server`.
-
-**Fallback**: If the Codex MCP tools are unavailable (server not registered, connection failure, etc.), skip the consultation step silently and continue. Log a note in the investigation directory that Codex consultation was requested but unavailable.
+See `references/codex-consultation.md` for MCP setup, fallback behavior, session continuity, and context compression rules. The critique skill's Codex mode is the most thorough consultation — other skills have lighter-weight checkpoint consultations.
 
 ### Determining the Role
 
 Check `reaper-workspace/investigations/` for existing `codex-consultation-*.md` files. Count them to determine the consultation number N. Alternate roles:
 
 - **Devil's Advocate** (odd N: 1st, 3rd, 5th, ...):
-  Ask Codex to challenge the current findings. Send it:
-  - The current `current-understanding.md`
-  - The latest results from `results.md`
+  Ask Codex to challenge the current findings. Send it a **compressed context** (not full files):
+  - The **last 5 findings** from `current-understanding.md` (extract the most recent insights, ~500 words — not the full file)
+  - A **summary row** from `results.md` (e.g., "Last 10 cycles: 6 keep, 4 discard; key patterns: [list]")
   - The prompt: *"You are reviewing a research investigation. Play devil's advocate: identify the weakest claims, unstated assumptions, logical gaps, or alternative explanations that the investigators may have missed. Be specific — point to exact claims and explain why they might be wrong."*
 
 - **Inspiration / Alternative Angles** (even N: 2nd, 4th, 6th, ...):
-  Ask Codex for fresh perspectives. Send it:
-  - The current `current-understanding.md`
-  - The current `problem-statement.md` (unresolved only)
+  Ask Codex for fresh perspectives. Send it a **compressed context**:
+  - The **last 5 findings** from `current-understanding.md` (~500 words)
+  - The **unresolved hypotheses only** from `problem-statement.md` (skip resolved ones)
   - The prompt: *"You are consulting on a research investigation. Suggest alternative proof strategies, related techniques from other fields, or hypotheses the investigators haven't considered. Focus on non-obvious connections and approaches that could break through current blockers."*
+
+**Context efficiency**: Sending compressed context (~800 words) to Codex instead of full files (~5000 words) reduces latency and improves response quality by focusing Codex on what matters most.
 
 ### Processing Codex Feedback
 
