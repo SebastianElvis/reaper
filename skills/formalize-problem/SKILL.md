@@ -1,6 +1,6 @@
 ---
 name: formalize-problem
-description: "Formalize a research question into precise, testable hypotheses for the Reaper research pipeline. Use after paper analysis and literature review are complete."
+description: "Formalize a research question into precise, testable hypotheses with trust assumptions, security properties, and explicit success/failure conditions. Use when asked to formalize, define, or scope a research problem after paper analysis."
 user-invocable: true
 argument-hint: "<research-goal>"
 ---

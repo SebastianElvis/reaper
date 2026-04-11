@@ -229,12 +229,14 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
   - Simplicity criterion for evaluating cycles (Principle 6)
 - [x] Build `/reaper:synthesize`; test independently
 - [x] Build the `/reaper` orchestrator that composes them with subagent parallelism
+- [x] Create eval framework (`evals/evals.json`) with test cases and quality criteria
+- [x] Create test paper specifications (`dev/test-papers/README.md`)
+- [x] Tune skill descriptions for reliable triggering (added action verbs, specific outputs, broader trigger phrases)
 - [ ] Test full pipeline end-to-end with 3 real papers:
   - A cryptographic construction with a known proof gap
   - A consensus protocol paper (e.g., compare HotStuff variants)
   - A blockchain paper with questionable security claims
-- [ ] Iterate on skills based on test results (using skill-creator eval framework)
-- [ ] Tune skill descriptions for reliable triggering
+- [ ] Iterate on skills based on test results (using eval framework)
 
 ### Horizon 2: The Library
 

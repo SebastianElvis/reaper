@@ -1,6 +1,6 @@
 ---
 name: review-literature
-description: "Search for and summarize related academic work for the Reaper research pipeline. Use when you need to find prior art, competing approaches, or known results relevant to a research goal."
+description: "Search for related academic work and produce a structured literature survey. Use when asked to find prior art, related papers, competing approaches, or known results for a crypto/distributed systems research topic."
 user-invocable: true
 argument-hint: "<research-goal>"
 ---

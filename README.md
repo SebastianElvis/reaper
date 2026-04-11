@@ -72,7 +72,7 @@ See `dev/ROADMAP.md` for the full methodology and development roadmap.
 
 ## Development Status
 
-- **Horizon 1 (The Pipeline)**: Core skills and orchestrator — *in progress*
+- **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete, pending end-to-end testing*
 - **Horizon 2 (The Library)**: arXiv/ePrint MCP integration — planned
 - **Horizon 3 (The Committee)**: Multi-model adversarial review — planned
 - **Horizon 4 (The Lab)**: Multi-paper, computation, LaTeX — planned

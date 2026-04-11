@@ -1,6 +1,6 @@
 ---
 name: synthesize
-description: "Generate the final research report for the Reaper research pipeline. Synthesizes all investigation results into a structured, publication-quality report."
+description: "Generate a structured research report from investigation results, with a central finding, refutable contributions, and concrete examples. Use when asked to synthesize, summarize, or write up research findings after investigation cycles."
 user-invocable: true
 ---
 

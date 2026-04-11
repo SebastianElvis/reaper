@@ -1,6 +1,6 @@
 ---
 name: investigate
-description: "Run investigation cycles for the Reaper research pipeline. Each cycle tests a hypothesis through proof attempts, counterexample searches, or analysis, then applies keep-or-discard discipline."
+description: "Run investigation cycles that test hypotheses through proof verification, counterexample search, or security analysis, with keep-or-discard discipline. Use when asked to investigate, verify, prove, or disprove claims from a formalized research problem."
 user-invocable: true
 argument-hint: "[number-of-cycles]"
 ---

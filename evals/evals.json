@@ -1,0 +1,112 @@
+{
+  "description": "End-to-end evaluation cases for the Reaper research pipeline (Horizon 1)",
+  "test_cases": [
+    {
+      "id": "proof-gap",
+      "name": "Cryptographic construction with a known proof gap",
+      "paper": "dev/test-papers/proof-gap-paper.pdf",
+      "goal": "Verify whether the security proof in the main theorem holds under the stated threat model. Identify any gaps, missing cases, or implicit assumptions.",
+      "expected_outputs": {
+        "paper-summary": "notes/paper-summary.md must contain verbatim theorem statements, complete system model, and red flags section identifying the proof gap",
+        "literature": "notes/literature.md must contain at least 10 related works with specific relevance statements",
+        "hypotheses": "notes/hypotheses.md must contain falsifiable claims with explicit success/failure conditions targeting the proof gap",
+        "results": "results.md must have at least 5 cycle rows with keep/discard decisions",
+        "current-understanding": "notes/current-understanding.md must identify the specific proof gap (not just 'there may be issues')",
+        "report": "report.md must have a one-sentence central finding, refutable contributions, and concrete examples"
+      },
+      "quality_criteria": [
+        "The proof gap is identified with specificity (which lemma, which step, what goes wrong)",
+        "The report explains the gap with a concrete execution trace or adversary strategy",
+        "current-understanding.md only advances on keep cycles (verify via results.md cross-check)",
+        "No hallucinated references in literature.md"
+      ],
+      "suggested_papers": [
+        {
+          "title": "Papers with known simulator construction issues (e.g., missing abort handling)",
+          "where_to_find": "IACR ePrint, search for papers with published errata or follow-up corrections"
+        }
+      ]
+    },
+    {
+      "id": "consensus-comparison",
+      "name": "Consensus protocol comparison (e.g., HotStuff variants)",
+      "paper": "dev/test-papers/consensus-paper.pdf",
+      "goal": "Compare the security properties and performance of this protocol against its closest competitors. Identify any claims that don't hold under fair comparison (same threat model).",
+      "expected_outputs": {
+        "paper-summary": "notes/paper-summary.md must include communication/round complexity claims and the exact network/adversary model",
+        "literature": "notes/literature.md must cover competing protocols (PBFT, Tendermint, HotStuff, etc.) with consistent comparison dimensions",
+        "hypotheses": "notes/hypotheses.md must include claims about relative performance under the same model",
+        "results": "results.md must show comparison cycles using consistent dimensions from methodology.md",
+        "current-understanding": "notes/current-understanding.md must contain a structured comparison table",
+        "report": "report.md must identify at least one unfair or misleading comparison in the original paper (if any)"
+      },
+      "quality_criteria": [
+        "Comparisons use the same threat model for all protocols (flagged if original paper doesn't)",
+        "Complexity claims are verified, not just repeated from the paper",
+        "The report distinguishes between theoretical bounds and practical performance",
+        "Literature review covers the protocol's lineage (what it builds on, what builds on it)"
+      ],
+      "suggested_papers": [
+        {
+          "title": "HotStuff (Yin et al., PODC 2019) or variants like Jolteon, Ditto, BullShark",
+          "where_to_find": "arXiv cs.DC, IACR ePrint"
+        }
+      ]
+    },
+    {
+      "id": "questionable-security",
+      "name": "Blockchain paper with questionable security claims",
+      "paper": "dev/test-papers/blockchain-paper.pdf",
+      "goal": "Evaluate the security claims of this blockchain protocol. Determine whether the claimed properties actually hold under the stated assumptions, and whether the assumptions are realistic.",
+      "expected_outputs": {
+        "paper-summary": "notes/paper-summary.md must flag any red flags (synchrony/asynchrony mismatch, missing liveness argument, vague security definition)",
+        "literature": "notes/literature.md must include relevant impossibility results and known attacks on similar constructions",
+        "hypotheses": "notes/hypotheses.md must include hypotheses about whether specific claims are valid",
+        "results": "results.md must show at least one counterexample search cycle",
+        "current-understanding": "notes/current-understanding.md must clearly state which claims hold, which fail, and which are undetermined",
+        "report": "report.md must present any counterexample with a concrete execution trace"
+      },
+      "quality_criteria": [
+        "At least one counterexample search is attempted (not just proof verification)",
+        "Impossibility results from literature are applied to narrow the search space",
+        "The report is honest — if the paper is actually secure, say so; don't manufacture flaws",
+        "Assumptions are evaluated for realism (e.g., synchrony in a WAN deployment)"
+      ],
+      "suggested_papers": [
+        {
+          "title": "Blockchain papers from non-top-tier venues with strong security claims but limited formalization",
+          "where_to_find": "arXiv cs.CR, IEEE Blockchain conference proceedings"
+        }
+      ]
+    }
+  ],
+  "skill_unit_tests": [
+    {
+      "skill": "reaper:analyze-paper",
+      "test": "Given any crypto/distributed systems paper, paper-summary.md must have all sections filled (Metadata, Problem Statement, System Model with all 5 sub-dimensions, Construction Overview, Claimed Security Properties with verbatim theorems, Proof Technique, Complexity Claims, Limitations, Key Definitions, Red Flags)"
+    },
+    {
+      "skill": "reaper:review-literature",
+      "test": "Given a research goal and paper-summary.md, literature.md must have a landscape summary, at least 10 related works table entries with non-empty Relevance column, key prior results, and at least 2 specific gaps"
+    },
+    {
+      "skill": "reaper:formalize-problem",
+      "test": "Given paper-summary.md and literature.md, hypotheses.md must have complete trust assumptions (all 5 dimensions), at least 2 testable claims each with statement/success/failure conditions, and priorities justified by consequence"
+    },
+    {
+      "skill": "reaper:investigate",
+      "test": "After N cycles: results.md has exactly N rows, experiment directories 001 through NNN exist with analysis.md files, current-understanding.md changed only on keep cycles, every cycle outcome is statable in one sentence"
+    },
+    {
+      "skill": "reaper:synthesize",
+      "test": "report.md has a one-sentence central finding, bulleted refutable contributions, each finding starts with a concrete example, no chronological narration, open questions are specific"
+    }
+  ],
+  "evaluation_protocol": {
+    "setup": "1. Place a test paper PDF in dev/test-papers/ with the filename matching the test case\n2. Open Claude Code in the repo root",
+    "run_full_pipeline": "/reaper dev/test-papers/<paper>.pdf \"<goal from test case>\"",
+    "run_individual_skill": "/reaper:<skill-name> <args>",
+    "evaluate": "After the pipeline completes, check each expected_output and quality_criteria. Score pass/fail per criterion.",
+    "iterate": "For each failure, identify whether the issue is in the skill prompt, the orchestrator composition, or the model's capability. Fix skill prompts first."
+  }
+}
