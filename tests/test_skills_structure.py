@@ -16,6 +16,7 @@ EXPECTED_SKILLS = {
     "review-literature": "skills/review-literature/SKILL.md",
     "formalize-problem": "skills/formalize-problem/SKILL.md",
     "investigate": "skills/investigate/SKILL.md",
+    "critique": "skills/critique/SKILL.md",
     "synthesize": "skills/synthesize/SKILL.md",
     # H2
     "search-arxiv": "skills/search-arxiv/SKILL.md",
