@@ -27,7 +27,7 @@ Provide external perspective on investigation results. Three modes: human feedba
 Read before starting:
 - `reaper-workspace/notes/current-understanding.md` — the "branch tip" of accumulated knowledge
 - `reaper-workspace/results.md` — what's been tried and what happened
-- `reaper-workspace/notes/hypotheses.md` — the testable claims
+- `reaper-workspace/notes/problem-statement.md` — the ideas to investigate
 
 Also reference:
 - `reaper-workspace/notes/paper-summary.md` — the source paper
@@ -70,9 +70,9 @@ Categories:
 
 **scope**: Return control to the orchestrator — this requires re-running `formalize-problem` before investigation. Do not run cycles yourself; instead, write the feedback file and indicate that re-formalization is needed.
 
-**deepen**: Add targeted hypotheses to `hypotheses.md` marked with `[Round N]`, then run `/reaper:investigate 5` (the standard investigation loop).
+**deepen**: Add targeted hypotheses to `problem-statement.md` marked with `[Round N]`, then run `/reaper:investigate 5` (the standard investigation loop).
 
-**explore**: Add new hypotheses to `hypotheses.md` marked with `[Round N]`. If the area may need additional literature, use the search scripts first and update `literature.md`. Then run `/reaper:investigate 5`.
+**explore**: Add new hypotheses to `problem-statement.md` marked with `[Round N]`. If the area may need additional literature, use the search scripts first and update `literature.md`. Then run `/reaper:investigate 5`.
 
 **rewrite**: No investigation cycles needed. Return control to the orchestrator to re-run `synthesize` only.
 
@@ -99,14 +99,14 @@ Check `reaper-workspace/experiments/` for existing `codex-consultation-*.md` fil
 - **Inspiration / Alternative Angles** (even N: 2nd, 4th, 6th, ...):
   Ask Codex for fresh perspectives. Send it:
   - The current `current-understanding.md`
-  - The current `hypotheses.md` (unresolved only)
+  - The current `problem-statement.md` (unresolved only)
   - The prompt: *"You are consulting on a research investigation. Suggest alternative proof strategies, related techniques from other fields, or hypotheses the investigators haven't considered. Focus on non-obvious connections and approaches that could break through current blockers."*
 
 ### Processing Codex Feedback
 
 1. **Log** the Codex response to `reaper-workspace/experiments/codex-consultation-N.md`.
 2. **Triage** the feedback:
-   - **Actionable critique**: If Codex identifies a genuine gap or flaw, add a new hypothesis to `hypotheses.md` marked `[Codex-N]`.
+   - **Actionable critique**: If Codex identifies a genuine gap or flaw, add a new hypothesis to `problem-statement.md` marked `[Codex-N]`.
    - **Alternative approach**: If Codex suggests a promising technique, add it as a hypothesis marked `[Codex-N]`.
    - **Already addressed**: Note this in the consultation log and move on.
    - **Irrelevant or wrong**: Dismiss with a brief note in the log.
@@ -122,14 +122,14 @@ The agent reviews its own investigation results for gaps, inconsistencies, or mi
 
 ### Process
 
-1. Read `current-understanding.md`, `results.md`, and `hypotheses.md`.
+1. Read `current-understanding.md`, `results.md`, and `problem-statement.md`.
 2. Identify:
    - **Weak claims**: Findings with low or medium confidence that haven't been strengthened.
    - **Untested assumptions**: Assumptions listed in hypotheses or proofs that haven't been validated.
    - **Missing angles**: Obvious questions raised by the current findings that haven't been investigated.
    - **Inconsistencies**: Claims in `current-understanding.md` that conflict with each other or with `results.md`.
 3. Write the self-review to `reaper-workspace/experiments/self-review-N.md` (where N is one more than the count of existing self-review files).
-4. For each actionable finding, add a hypothesis to `hypotheses.md` marked `[Self-N]`.
+4. For each actionable finding, add a hypothesis to `problem-statement.md` marked `[Self-N]`.
 5. If actionable hypotheses were added, run `/reaper:investigate 3` to address them.
 
 ## Quality Criteria

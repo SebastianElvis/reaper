@@ -21,7 +21,7 @@ Generate a structured research report from all investigation results.
 Do NOT rely on context window. Re-read all workspace files:
 - `reaper-workspace/notes/paper-summary.md`
 - `reaper-workspace/notes/literature.md`
-- `reaper-workspace/notes/hypotheses.md`
+- `reaper-workspace/notes/problem-statement.md`
 - `reaper-workspace/notes/current-understanding.md`
 - `reaper-workspace/results.md`
 - All `reaper-workspace/experiments/*/analysis.md` files
