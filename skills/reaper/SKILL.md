@@ -92,6 +92,15 @@ After synthesis completes:
 1. Read `reaper-workspace/report.md`
 2. Present the key findings to the user
 3. Point them to the full workspace for the audit trail
+4. Proceed to Step 8
+
+### Step 8: Offer Iteration
+
+After presenting results, let the user know they can iterate:
+
+> If you'd like to refine, deepen, or challenge any aspect of this research, use `/reaper:investigate "your feedback here"`.
+
+Do **not** block waiting for a response — the pipeline is complete. The user can invoke `/reaper:investigate` with quoted feedback at any time to start a feedback round. When invoked this way, investigate enters feedback mode — it classifies the feedback, runs targeted cycles, and then you should re-run `/reaper:synthesize` to produce an updated report.
 
 ## Important Notes
 
