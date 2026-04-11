@@ -4,6 +4,8 @@
 
 ## Installation
 
+### From the marketplace
+
 Add the marketplace and install the plugin:
 
 ```
@@ -11,12 +13,30 @@ Add the marketplace and install the plugin:
 /plugin install reaper@SebastianElvis-reaper
 ```
 
-Or test locally during development:
+### Manual installation via Git
+
+Clone the repository and add it as a local marketplace:
 
 ```bash
 git clone https://github.com/SebastianElvis/reaper.git
-claude --plugin-dir ./reaper
+/plugin marketplace add ./reaper
+/plugin install reaper@reaper
 ```
+
+Or manually copy skills into your Claude configuration:
+
+```bash
+# Clone the repository
+git clone https://github.com/SebastianElvis/reaper.git
+
+# Global installation (available in all projects)
+cp -r reaper/skills/* ~/.claude/skills/
+
+# Or project-level installation (available in current project only)
+cp -r reaper/skills/* ./.claude/skills/
+```
+
+See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugins) for more details on installing plugins.
 
 ## Quick Start
 
