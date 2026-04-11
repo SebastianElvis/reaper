@@ -40,6 +40,16 @@ cp -r reaper/skills/* ./.claude/skills/
 
 See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugins) for more details on installing plugins.
 
+### Optional: Codex MCP for AI critique
+
+The `/reaper:critique --codex` mode consults OpenAI Codex as a devil's advocate during investigation. To enable it, register the [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server):
+
+```bash
+claude mcp add codex-cli -- npx -y codex-mcp-server
+```
+
+If not configured, Codex consultation is silently skipped and the pipeline continues normally.
+
 ## Quick Start
 
 ```
@@ -51,18 +61,11 @@ See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugi
 Reaper executes a five-stage pipeline with an optional human feedback loop:
 
 ```
-                        ┌──────────────────┐
-                        │ /reaper:         │───┐
-┌──────────────────┐    │  analyze-paper   │   │    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│ /reaper:         │───▶└──────────────────┘   ├───▶│ /reaper:     │───▶│ /reaper:     │◀──▶│ /reaper:     │───▶ report.md
-│  clarify-goal    │    ┌──────────────────┐   │    │  formalize   │    │  investigate │    │  critique    │        │
-└──────────────────┘    │ /reaper:         │───┘    │  -problem    │    │              │    │              │        │
-                        │  review-literature│       └──────────────┘    └──────────────┘    └──────────────┘        │
-                        └──────────────────┘                                                       │               │
-                            (parallel)                                            /reaper:synthesize ◀──────────────┘
-                                                                                                   │
-                                                                                        ▲  human feedback
-                                                                                        └──── /reaper:critique "..."
+clarify-goal ──> analyze-paper    ──> formalize-problem ──> investigate <──> critique ──> synthesize ──> report.md
+                 review-literature                              ^                             ^
+                 (parallel)                                     |                             |
+                                                                +-------- human feedback -----+
+                                                                          /reaper:critique "..."
 ```
 
 ## Skills
@@ -126,9 +129,9 @@ See `dev/ROADMAP.md` for the full methodology and development roadmap.
 
 ## Development Status
 
-- **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete, pending end-to-end testing*
+- **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete*
 - **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph — *complete*
-- **Horizon 3 (The Committee)**: Multi-model adversarial review — planned
+- **Horizon 3 (The Committee)**: Codex MCP critique via `/reaper:critique --codex` — *complete (optional dependency)*
 - **Horizon 4 (The Lab)**: Multi-paper, computation, LaTeX — planned
 
 ## Acknowledgements
