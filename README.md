@@ -36,6 +36,16 @@ Each skill can be used independently or composed by the orchestrator:
 | `/reaper:formalize-problem` | Produce precise, testable hypotheses from a research question |
 | `/reaper:investigate` | Run investigation cycles with keep-or-discard discipline |
 | `/reaper:synthesize` | Generate a structured research report from investigation results |
+| `/reaper:search-arxiv` | Search arXiv papers, download PDFs, and trace citation graphs |
+| `/reaper:search-iacr` | Search IACR ePrint archive for cryptography papers |
+
+## Prerequisites
+
+The search skills require Python packages:
+
+```bash
+pip install arxiv requests beautifulsoup4
+```
 
 ## Workspace
 
@@ -73,6 +83,6 @@ See `dev/ROADMAP.md` for the full methodology and development roadmap.
 ## Development Status
 
 - **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete, pending end-to-end testing*
-- **Horizon 2 (The Library)**: arXiv/ePrint MCP integration — planned
+- **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph — *complete*
 - **Horizon 3 (The Committee)**: Multi-model adversarial review — planned
 - **Horizon 4 (The Lab)**: Multi-paper, computation, LaTeX — planned

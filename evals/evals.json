@@ -100,6 +100,22 @@
     {
       "skill": "reaper:synthesize",
       "test": "report.md has a one-sentence central finding, bulleted refutable contributions, each finding starts with a concrete example, no chronological narration, open questions are specific"
+    },
+    {
+      "skill": "reaper:search-arxiv",
+      "test": "search command returns valid JSON array with fields: arxiv_id, title, authors, year, abstract, pdf_url. citations command returns references and citations arrays. Tested via: python -m pytest tests/test_search_arxiv.py"
+    },
+    {
+      "skill": "reaper:search-iacr",
+      "test": "search command returns valid JSON array with fields: eprint_id, title, pdf_url, url. url command returns correct ePrint URLs. Tested via: python -m pytest tests/test_search_iacr.py"
+    },
+    {
+      "skill": "reaper:review-literature (H2)",
+      "test": "literature.md includes papers found via arXiv and ePrint search scripts (not just WebSearch). Citation Graph section present with forward/backward citations. Graceful degradation: pipeline completes with WebSearch fallback when scripts unavailable."
+    },
+    {
+      "skill": "reaper:investigate (H2)",
+      "test": "When stuck at step 4, mid-cycle literature search uses search scripts. New papers appended to literature.md under 'Mid-Investigation Additions' section. literature-search action-type logged in results.md."
     }
   ],
   "evaluation_protocol": {

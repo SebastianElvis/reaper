@@ -110,7 +110,31 @@ If a cycle is going nowhere, escalate through these steps:
 1. **Re-read the paper.** Look at sections you skimmed earlier. The answer is often in the details you glossed over.
 2. **Re-read current-understanding.md.** What assumptions haven't been questioned? What's being taken for granted?
 3. **Re-read results.md.** Can two "discard" results be combined into something useful? Patterns in dead ends are informative.
-4. **Search for related work** you haven't found yet. Use WebSearch for specific technical questions that arose during investigation.
+4. **Search for related work** you haven't found yet. Use the search scripts as primary sources:
+
+   ```bash
+   # For crypto/security topics — search IACR ePrint
+   python skills/search-iacr/search_iacr.py search "<specific question>" --max-results 5
+
+   # For broader CS topics — search arXiv
+   python skills/search-arxiv/search_arxiv.py search "<specific question>" --max-results 5 --categories cs.CR,cs.DC
+
+   # For citation context — who builds on or cites a relevant paper
+   python skills/search-arxiv/search_arxiv.py citations <arxiv_id> --max-results 10
+   ```
+
+   Fall back to WebSearch if the scripts are unavailable or for non-academic sources (blog posts, talks, informal results).
+
+   If you find relevant new papers, **append** them to `reaper-workspace/notes/literature.md` under a new section:
+
+   ```markdown
+   ## Mid-Investigation Additions (Cycle NNN)
+
+   | # | Title | Authors | Year | Venue | Key Contribution | Relevance |
+   |---|-------|---------|------|-------|-----------------|-----------|
+   ```
+
+   Log the literature search as a cycle with action-type `literature-search` in `results.md`.
 5. **Try a radically different approach** to the same hypothesis. If you've been trying direct proof, try reduction. If you've been trying construction, try impossibility.
 6. **Formulate a new hypothesis** based on what you've learned so far. The investigation may have revealed that the original question was the wrong question.
 7. **Invert the problem (Hamming).** Can't prove it? Try to disprove it. Can't find a counterexample? Ask what minimal assumption would make the proof work. What seems like a blockage often becomes the key insight.
