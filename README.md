@@ -46,6 +46,22 @@ See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugi
 /reaper path/to/paper.pdf "determine if the security proof in Section 4 holds under asynchrony"
 ```
 
+## How It Works
+
+Reaper executes a four-stage pipeline:
+
+```
+┌──────────────────┐
+│ /reaper:         │───┐
+│  analyze-paper   │   │    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+└──────────────────┘   ├───▶│ /reaper:     │───▶│ /reaper:     │───▶│ /reaper:     │
+┌──────────────────┐   │    │  formalize   │    │  investigate │    │  synthesize  │
+│ /reaper:         │───┘    │  -problem    │    │              │    │              │
+│  review-literature│       └──────────────┘    └───────────┬──┘    └──────────────┘
+└──────────────────┘                                 ▲    │              ▶ report.md
+    (parallel)                                       └keep┘
+```
+
 ## Skills
 
 Each skill can be used independently or composed by the orchestrator:
