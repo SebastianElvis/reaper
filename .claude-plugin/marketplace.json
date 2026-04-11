@@ -3,12 +3,26 @@
   "owner": {
     "name": "Runchao Han"
   },
+  "metadata": {
+    "description": "AI-native scientific research pipeline",
+    "version": "0.1.0"
+  },
   "plugins": [
     {
       "name": "reaper",
-      "source": ".",
       "description": "AI-native scientific research pipeline. Takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.",
-      "version": "0.1.0"
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/reaper",
+        "./skills/analyze-paper",
+        "./skills/review-literature",
+        "./skills/formalize-problem",
+        "./skills/investigate",
+        "./skills/synthesize",
+        "./skills/search-arxiv",
+        "./skills/search-iacr"
+      ]
     }
   ]
 }
