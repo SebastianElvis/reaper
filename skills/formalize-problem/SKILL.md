@@ -137,6 +137,10 @@ Write to `reaper-workspace/notes/problem-statement.md`:
 ...
 ```
 
+### Relationship to Brainstorm
+
+`formalize-problem` handles *initial* formalization: pinning down trust assumptions, the core question, definitional hygiene, and the first set of hypotheses. It runs once at the start of the pipeline. The `brainstorm` skill handles *recurring* ideation — generating additional ideas as the investigation progresses, applying Hamming/Qian heuristics to current state, and proposing follow-up hypotheses based on patterns in results. `brainstorm` appends to the `problem-statement.md` that this skill creates.
+
 ### Quality Criteria
 
 - Every hypothesis is **falsifiable** — a reader could disagree with it

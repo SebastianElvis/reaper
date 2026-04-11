@@ -95,9 +95,7 @@ Run all N cycles without asking "should I continue?" The only valid early stop i
 3. Re-read `results.md`. Can two "discard" results be combined into something useful?
 4. Search for related work you haven't found yet.
 5. Try a radically different approach to the same hypothesis.
-6. Formulate a new hypothesis based on what you've learned so far.
-7. Invert the problem (Hamming): if you can't prove it, try to disprove it. If you can't find a counterexample, ask what minimal assumption makes the proof work. What seems like a blockage often becomes the key insight.
-8. Apply idea generation patterns (Qian): fill in the blank (what combination hasn't been tried?), start small then generalize (what's the simplest case?), build a hammer (can a technique from a previous cycle apply here?).
+6. If all execution-level tactics are exhausted, log the cycle as inconclusive and continue. The orchestrator will call `brainstorm` after the batch to generate new ideas (applying Hamming inversion, Qian's patterns, gap-finding) based on the pattern of failures.
 
 Uncertainty about whether the human wants you to continue is *never* a reason to stop. The human will interrupt when they want you to stop.
 
@@ -130,6 +128,7 @@ reaper/
 │   ├── analyze-paper/SKILL.md              # /reaper:analyze-paper
 │   ├── review-literature/SKILL.md          # /reaper:review-literature
 │   ├── formalize-problem/SKILL.md          # /reaper:formalize-problem
+│   ├── brainstorm/SKILL.md                 # /reaper:brainstorm (recurring ideation)
 │   ├── investigate/SKILL.md                # /reaper:investigate (proof/analysis cycles)
 │   ├── critique/SKILL.md                   # /reaper:critique (human/Codex/self review)
 │   ├── synthesize/SKILL.md                 # /reaper:synthesize (report generation)
@@ -177,12 +176,12 @@ reaper-workspace/
 Each horizon enriches a specific stage of the methodology pipeline. H1 builds the decomposed pipeline from day one. H2 enriches the baseline stage. H3 strengthens the evaluation signal. H4 expands what kinds of research the pipeline can do.
 
 ```
-Methodology stage:     Clarify → Baseline → Formalize → Investigate ↔ Critique → Synthesize
-                         │         │           │            │              │          │
-H1 The Pipeline:         ✓       paper + web  ✓            ✓              ✓          ✓
-H2 The Library:                    + arXiv/ePrint             + mid-loop search
-H3 The Committee:                                             + Codex MCP review
-H4 The Lab:                        + multi-paper              + computation          + LaTeX
+Methodology stage:     Clarify → Baseline → Formalize → Brainstorm → Investigate ↔ Critique → Synthesize
+                         │         │           │            │              │              │          │
+H1 The Pipeline:         ✓       paper + web  ✓            ✓              ✓              ✓          ✓
+H2 The Library:                    + arXiv/ePrint                           + mid-loop search
+H3 The Committee:                                                           + Codex MCP review
+H4 The Lab:                        + multi-paper                            + computation          + LaTeX
 ```
 
 ### Horizon 1: The Pipeline
@@ -207,6 +206,7 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 | `/reaper:analyze-paper` | Stage 1a: Baseline (paper) | Input paper | `notes/paper-summary.md` |
 | `/reaper:review-literature` | Stage 1b: Baseline (literature) | `notes/clarified-goal.md`, `notes/paper-summary.md` | `notes/literature.md` |
 | `/reaper:formalize-problem` | Stage 2: Formalize | `notes/clarified-goal.md`, `notes/paper-summary.md`, `notes/literature.md`, goal prompt | `notes/problem-statement.md` (trust assumptions, security properties, performance goals, ideas) |
+| `/reaper:brainstorm` | Stage 2.5: Recurring ideation | `notes/problem-statement.md`, `notes/current-understanding.md`, `results.md`, `notes/literature.md`, `notes/paper-summary.md` | Appends new ideas to `notes/problem-statement.md` |
 | `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/current-understanding.md` | `experiments/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
 | `/reaper:critique` | Stage 3 sub-step: review | `experiments/`, `notes/current-understanding.md` | `feedback/`, may add hypotheses to `notes/problem-statement.md` |
 | `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `experiments/`, `results.md` | `report.md` |

@@ -70,9 +70,9 @@ Categories:
 
 **scope**: Return control to the orchestrator — this requires re-running `formalize-problem` before investigation. Do not run cycles yourself; instead, write the feedback file and indicate that re-formalization is needed.
 
-**deepen**: Add targeted hypotheses to `problem-statement.md` marked with `[Round N]`, then run `/reaper:investigate 5` (the standard investigation loop).
+**deepen**: Run `/reaper:brainstorm "context from the user's feedback"` to generate targeted hypotheses based on the feedback, then run `/reaper:investigate 5`.
 
-**explore**: Add new hypotheses to `problem-statement.md` marked with `[Round N]`. If the area may need additional literature, use the search scripts first and update `literature.md`. Then run `/reaper:investigate 5`.
+**explore**: If the area may need additional literature, use the search scripts first and update `literature.md`. Then run `/reaper:brainstorm "context from the user's feedback"` to generate hypotheses for the new area, followed by `/reaper:investigate 5`.
 
 **rewrite**: No investigation cycles needed. Return control to the orchestrator to re-run `synthesize` only.
 

@@ -76,29 +76,33 @@ Both must complete before proceeding.
 
 Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline outputs (including `clarified-goal.md`) and produces `notes/problem-statement.md` with trust assumptions, security properties, performance goals, and prioritized ideas.
 
-### Step 5: Investigate → Critique Loop
+### Step 5: Brainstorm → Investigate → Critique Loop
 
-Run an alternating investigate→critique loop. This is the core research engine. The loop structure depends on whether `--codex` was passed:
+Run the core research engine: a recurring loop of brainstorm (generate ideas), investigate (execute on ideas), and critique (external perspective). The loop structure depends on whether `--codex` was passed:
 
 **Default (no `--codex`):**
 ```
-/reaper:investigate 5  →  /reaper:critique --self  →  /reaper:investigate 5
+/reaper:brainstorm  →  /reaper:investigate 5  →  /reaper:critique --self  →  /reaper:brainstorm  →  /reaper:investigate 5
 ```
 
 **With `--codex`:**
 ```
-/reaper:investigate 5  →  /reaper:critique --codex  →  /reaper:investigate 5  →  /reaper:critique --codex
+/reaper:brainstorm  →  /reaper:investigate 5  →  /reaper:critique --codex  →  /reaper:brainstorm  →  /reaper:investigate 5  →  /reaper:critique --codex
 ```
 
 Concretely:
-1. Run **`/reaper:investigate 5`** — first batch of investigation cycles
-2. Run **`/reaper:critique --codex`** (if `--codex`) or **`/reaper:critique --self`** — critique the findings, potentially adding new hypotheses
-3. Run **`/reaper:investigate 5`** — second batch, now incorporating hypotheses from critique
-4. If `--codex`, run **`/reaper:critique --codex`** once more for a final review
+1. Run **`/reaper:brainstorm`** — generate initial ideas based on the formalized problem (supplements the hypotheses from `formalize-problem` with additional angles)
+2. Run **`/reaper:investigate 5`** — first batch of investigation cycles
+3. Run **`/reaper:critique --codex`** (if `--codex`) or **`/reaper:critique --self`** — critique the findings
+4. Run **`/reaper:brainstorm`** — generate new ideas based on what was learned and critique feedback
+5. Run **`/reaper:investigate 5`** — second batch, now incorporating new ideas from brainstorm and critique
+6. If `--codex`, run **`/reaper:critique --codex`** once more for a final review
 
 Adjust cycle counts based on problem complexity (e.g., 3+3 for simple problems, 5+5 for complex ones). The total should be ~10 cycles of investigation.
 
-The critique step may add new hypotheses to `problem-statement.md` (tagged `[Codex-N]` or `[Self-N]`), which the next investigate batch picks up automatically.
+The `brainstorm` step reads the current state and appends new ideas to `problem-statement.md` (tagged `[Brainstorm-N]`). The `critique` step may also add hypotheses (tagged `[Codex-N]` or `[Self-N]`). The next `investigate` batch picks up all unresolved ideas automatically.
+
+If `investigate` returns early because all ideas are resolved, run `brainstorm` before deciding whether to continue or move to synthesis.
 
 This loop runs autonomously — do not interrupt or ask if it should continue.
 

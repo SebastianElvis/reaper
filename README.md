@@ -61,11 +61,11 @@ If not configured, Codex consultation is silently skipped and the pipeline conti
 Reaper executes a five-stage pipeline with an optional human feedback loop:
 
 ```
-clarify-goal ──> analyze-paper    ──> formalize-problem ──> investigate <──> critique ──> synthesize ──> report.md
-                 review-literature                              ^                             ^
-                 (parallel)                                     |                             |
-                                                                +-------- human feedback -----+
-                                                                          /reaper:critique "..."
+clarify-goal ──> analyze-paper    ──> formalize-problem ──> brainstorm ──> investigate <──> critique ──> synthesize ──> report.md
+                 review-literature                              ^                                       ^
+                 (parallel)                                     |                                       |
+                                                                +------------ human feedback -----------+
+                                                                               /reaper:critique "..."
 ```
 
 ## Skills
@@ -74,11 +74,12 @@ Each skill can be used independently or composed by the orchestrator:
 
 | Skill | What it does |
 |-------|-------------|
-| `/reaper` | Full pipeline: clarify → analyze → literature → formalize → investigate ↔ critique → synthesize |
+| `/reaper` | Full pipeline: clarify → analyze → literature → formalize → brainstorm → investigate ↔ critique → synthesize |
 | `/reaper:clarify-goal` | Ask targeted clarifying questions to sharpen a vague research goal |
 | `/reaper:analyze-paper` | Extract structured information from a research paper |
 | `/reaper:review-literature` | Search and summarize related academic work |
 | `/reaper:formalize-problem` | Produce precise, testable hypotheses from a research question |
+| `/reaper:brainstorm` | Generate, prioritize, and refine research ideas based on current state |
 | `/reaper:investigate` | Run investigation cycles with keep-or-discard discipline |
 | `/reaper:critique` | Provide critique via human feedback, Codex consultation, or self-review (can trigger more investigation) |
 | `/reaper:synthesize` | Generate a structured research report from investigation results |
