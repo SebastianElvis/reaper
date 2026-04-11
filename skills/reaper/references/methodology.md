@@ -2,6 +2,13 @@
 
 Reference for conducting theoretical computer science research in cryptography, distributed systems, and blockchain.
 
+## Key References
+
+- **Shoup, "Sequences of Games: A Tool for Taming Complexity in Security Proofs"** (ePrint 2004/332, https://eprint.iacr.org/2004/332.pdf) — canonical tutorial on game-based (sequence of games) proofs. Covers the three transition types: indistinguishability-based, failure-event-based (with the Difference Lemma), and bridging steps. Required reading for any game-based security argument.
+- **Lindell, "How To Simulate It — A Tutorial on the Simulation Proof Technique"** (ePrint 2016/046, https://eprint.iacr.org/2016/046.pdf) — canonical tutorial on simulation-based proofs. Covers semantic security, simulation for semi-honest and malicious adversaries, zero-knowledge, secure computation, and the CRS model. Required reading for any simulation-based security argument.
+
+Consult these tutorials when constructing or verifying any cryptographic security proof. The proof techniques catalog in `investigate/SKILL.md` provides a quick-reference summary.
+
 ## Proof Verification
 
 How to systematically verify an existing proof:

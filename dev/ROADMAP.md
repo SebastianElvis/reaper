@@ -48,9 +48,10 @@ Before investigation begins, the problem must be precisely defined with concrete
 
 **Stage 2: Formalize the problem.** `formalize-problem` then produces a problem statement in `notes/hypotheses.md` containing:
 
-- **Trust assumptions**: What is the system model? Who is honest, who is adversarial, what can the adversary do? (e.g., "static adversary corrupting up to t < n/3 parties in a partially synchronous network")
-- **Security properties**: What must hold? (e.g., "agreement, termination, and external validity under the stated threat model")
+- **Trust assumptions**: Every dimension pinned down unambiguously — communication, timing, PKI/setup, corruption (timing, power, bound), computation, composition, cryptographic hardness, protocol-specific assumptions. A hypothesis without fully specified trust assumptions is rejected.
+- **Security properties**: What must hold, stated as formal predicates, game-based definitions, simulation-based definitions, or precise references to existing definitions. Informal descriptions like "safety" or "liveness" without formal definitions are not acceptable.
 - **Performance metrics/goals**: What are the concrete targets? (e.g., "O(n) communication complexity per decision, finality in 3 rounds")
+- **Impossibility screening**: Each hypothesis is checked against known impossibility results (FLP, DLS, Dolev-Reischuk, etc.). Hypotheses that contradict known impossibilities are flagged and reformulated, not left for the investigate skill to waste cycles on.
 - **Testable claims**: Derived from the above — specific hypotheses with explicit success/failure conditions
 
 Not all hypotheses are equally worth investigating. Among the testable claims, prioritize those whose resolution would be most consequential — a security proof gap that invalidates a deployed protocol matters more than a tighter constant in a complexity bound (Hamming: "If you do not work on important problems, how can you expect to do important work?"). Use Qian's "fill in the blank" pattern to find gaps: map the dimensions of existing work (threat models × protocol families × security properties) and identify unexplored combinations.
