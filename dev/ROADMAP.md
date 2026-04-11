@@ -218,17 +218,17 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 
 - [x] Write `references/methodology.md` (proof verification, security analysis, protocol extension, comparison, counterexample patterns)
 - [x] Write `references/paper-analysis.md` (extraction guide for crypto/distributed systems/blockchain papers)
-- [ ] Define the workspace file contract between skills (the table above, formalized)
-- [ ] Build `/reaper:analyze-paper`; test independently
-- [ ] Build `/reaper:review-literature` (WebSearch only for now); test independently
-- [ ] Build `/reaper:formalize-problem`; test that it produces trust assumptions + security properties + performance goals
-- [ ] Build `/reaper:investigate` with full loop discipline:
+- [x] Define the workspace file contract between skills (the table above, formalized)
+- [x] Build `/reaper:analyze-paper`; test independently
+- [x] Build `/reaper:review-literature` (WebSearch only for now); test independently
+- [x] Build `/reaper:formalize-problem`; test that it produces trust assumptions + security properties + performance goals
+- [x] Build `/reaper:investigate` with full loop discipline:
   - `results.md` structured log with keep/discard per cycle (Principle 3)
   - `current-understanding.md` that only advances on keep (Principle 4)
   - Never-stop and when-stuck guidance (Principle 5)
   - Simplicity criterion for evaluating cycles (Principle 6)
-- [ ] Build `/reaper:synthesize`; test independently
-- [ ] Build the `/reaper` orchestrator that composes them with subagent parallelism
+- [x] Build `/reaper:synthesize`; test independently
+- [x] Build the `/reaper` orchestrator that composes them with subagent parallelism
 - [ ] Test full pipeline end-to-end with 3 real papers:
   - A cryptographic construction with a known proof gap
   - A consensus protocol paper (e.g., compare HotStuff variants)
