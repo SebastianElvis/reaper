@@ -2,7 +2,7 @@
 name: reaper
 description: "Run the full Reaper research pipeline: analyze a paper, review literature, formalize the problem, investigate hypotheses, and synthesize a report. Use when given a research paper and a research goal."
 user-invocable: true
-argument-hint: "<paper-path> \"<research-goal>\""
+argument-hint: "<paper-path> \"<research-goal>\" [--codex]"
 ---
 
 # Reaper: AI-Native Research Pipeline
@@ -13,9 +13,12 @@ You are the Reaper orchestrator. You take a research paper and a research goal, 
 
 ```
 /reaper path/to/paper.pdf "determine if the security proof in Section 4 holds under asynchrony"
+
+# With Codex consultation for automated AI feedback between investigation cycles
+/reaper path/to/paper.pdf "determine if the security proof in Section 4 holds under asynchrony" --codex
 ```
 
-The first argument is the path to the paper (PDF or text). Everything after it in quotes is the research goal.
+The first argument is the path to the paper (PDF or text). Everything after it in quotes is the research goal. Pass `--codex` to enable automated Codex consultation during investigation (requires [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server)).
 
 ## Workflow
 
@@ -75,7 +78,7 @@ Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline out
 
 ### Step 5: Investigate
 
-Run **`/reaper:investigate 10`** — executes 10 investigation cycles (adjust based on problem complexity). Each cycle:
+Run **`/reaper:investigate 10`** (or **`/reaper:investigate 10 --codex`** if the `--codex` flag was passed to the orchestrator) — executes 10 investigation cycles (adjust based on problem complexity). Each cycle:
 - Tests a hypothesis from `hypotheses.md`
 - Logs results to `results.md`
 - Updates `current-understanding.md` only on keep
