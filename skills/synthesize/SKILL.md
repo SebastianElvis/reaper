@@ -1,5 +1,5 @@
 ---
-name: reaper:synthesize
+name: synthesize
 description: "Generate the final research report for the Reaper research pipeline. Synthesizes all investigation results into a structured, publication-quality report."
 user-invocable: true
 ---

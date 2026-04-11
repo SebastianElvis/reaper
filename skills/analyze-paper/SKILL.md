@@ -1,5 +1,5 @@
 ---
-name: reaper:analyze-paper
+name: analyze-paper
 description: "Extract structured information from a research paper for the Reaper research pipeline. Use when you need to analyze a crypto, distributed systems, or blockchain paper."
 user-invocable: true
 argument-hint: "<paper-path>"

@@ -2,6 +2,22 @@
 
 **AI-native scientific research pipeline.** Takes a research paper and a research goal, and autonomously conducts rigorous, multi-step academic research.
 
+## Installation
+
+Install as a Claude Code plugin:
+
+```
+/plugin install reaper@SebastianElvis
+```
+
+Or clone and install locally:
+
+```bash
+git clone https://github.com/SebastianElvis/reaper.git
+cd reaper
+/plugin install .
+```
+
 ## Quick Start
 
 ```
@@ -14,7 +30,7 @@ Each skill can be used independently or composed by the orchestrator:
 
 | Skill | What it does |
 |-------|-------------|
-| `/reaper` | Full pipeline: analyze → literature → formalize → investigate → synthesize |
+| `/reaper:reaper` | Full pipeline: analyze → literature → formalize → investigate → synthesize |
 | `/reaper:analyze-paper` | Extract structured information from a research paper |
 | `/reaper:review-literature` | Search and summarize related academic work |
 | `/reaper:formalize-problem` | Produce precise, testable hypotheses from a research question |
