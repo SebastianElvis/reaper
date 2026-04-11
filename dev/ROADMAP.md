@@ -51,6 +51,8 @@ Before investigation begins, the problem must be precisely defined with concrete
 - **Performance metrics/goals**: What are the concrete targets? (e.g., "O(n) communication complexity per decision, finality in 3 rounds")
 - **Testable claims**: Derived from the above — specific hypotheses with explicit success/failure conditions
 
+Not all hypotheses are equally worth investigating. Among the testable claims, prioritize those whose resolution would be most consequential — a security proof gap that invalidates a deployed protocol matters more than a tighter constant in a complexity bound (Hamming: "If you do not work on important problems, how can you expect to do important work?"). Use Qian's "fill in the blank" pattern to find gaps: map the dimensions of existing work (threat models × protocol families × security properties) and identify unexplored combinations.
+
 Every investigation cycle is then evaluated against these fixed criteria — did the cycle make progress toward confirming or refuting a specific claim?
 
 Progress is tracked in `results.md` (see Principle 3).
@@ -91,17 +93,25 @@ Run all N cycles without asking "should I continue?" The only valid early stop i
 4. Search for related work you haven't found yet.
 5. Try a radically different approach to the same hypothesis.
 6. Formulate a new hypothesis based on what you've learned so far.
+7. Invert the problem (Hamming): if you can't prove it, try to disprove it. If you can't find a counterexample, ask what minimal assumption makes the proof work. What seems like a blockage often becomes the key insight.
+8. Apply idea generation patterns (Qian): fill in the blank (what combination hasn't been tried?), start small then generalize (what's the simplest case?), build a hammer (can a technique from a previous cycle apply here?).
 
 Uncertainty about whether the human wants you to continue is *never* a reason to stop. The human will interrupt when they want you to stop.
 
-### Principle 6: Simplicity Criterion
+### Principle 6: Clarity and Simplicity
 
+**Simplicity in reasoning:**
 - A proof that achieves the same result with fewer assumptions is better.
 - Replacing a 3-page case analysis with a one-paragraph reduction is progress, even if the "result" is unchanged.
 - If removing a hypothesis and still reaching the same conclusion, that's a simplification win — keep it.
 - Don't accumulate tangential findings that don't serve the research goal. Depth on the core question beats breadth across distractions.
 
-When evaluating whether a cycle produced progress, weight clarity and elegance alongside novelty.
+**Clarity in expression** (Peyton Jones: writing is a primary mechanism for doing research, not just for reporting it):
+- **Write early, not last.** Each investigation cycle should update `current-understanding.md` not just with results but with *explanations* of those results, as if explaining at a whiteboard. Writing crystallizes understanding.
+- **One "ping" per finding.** Each cycle should produce one clear, sharp insight. If a cycle's outcome cannot be stated in a single sentence, it needs to be decomposed further.
+- **Contributions must be refutable.** Every claim — whether in `hypotheses.md` or `report.md` — should be specific enough that a reader could disagree with it. "We analyze the security of protocol X" is not a contribution. "We show that protocol X's safety proof fails under asynchrony because the simulator cannot handle abort in round 3" is.
+
+When evaluating whether a cycle produced progress, weight clarity and elegance alongside novelty. A cycle that narrows the search space on an important question is a "keep" even if it didn't resolve the hypothesis.
 
 ---
 
@@ -191,6 +201,12 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 | `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/hypotheses.md`, `notes/current-understanding.md` | `experiments/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
 | `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `experiments/`, `results.md` | `report.md` |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |
+
+**`synthesize` report structure** (following Peyton Jones):
+- **One "ping"**: The report must have one clear, central finding stated upfront. If the research yielded multiple findings, the report must still identify the single most important one.
+- **Explicit, refutable contributions**: A bulleted list of specific claims, each concrete enough that a reader could disagree. Not "we analyze protocol X" but "we show that claim Y fails because Z."
+- **Examples before generality**: Introduce findings with a concrete example (a specific execution trace, a specific adversary strategy) before presenting the general argument.
+- **Narrative flow**: Problem → why it matters → what we found → evidence → how it compares to prior understanding. Not a chronological diary of the investigation.
 
 #### Subagent Parallelism
 
@@ -340,11 +356,17 @@ investigate ──> workspace/experiments/001/analysis.md
 
 ## Design Decisions
 
-### Methodology Heritage
+### Intellectual Heritage
 
-Reaper's loop discipline comes directly from [karpathy/autoresearch](https://github.com/karpathy/autoresearch). The adaptation from ML experimentation to theoretical research required rethinking what "evaluation" and "improvement" mean when there's no single numeric metric, but the core insight carries over perfectly: **constrain the loop enough that the AI can iterate autonomously at high speed, with a clear signal of what constitutes progress.** The structured results log, keep-or-discard mechanism, never-stop policy, and simplicity criterion are all direct adaptations.
+Reaper's methodology draws from four sources:
 
-The key difference: autoresearch has `val_bpb` as an objective oracle. Reaper must rely on softer evaluation signals (hypothesis resolution, logical consistency, rigor). This is why Horizon 3 (multi-model feedback) matters — cross-model verification partially compensates for the lack of an objective metric by adding independent perspectives, analogous to peer review in human research.
+**[karpathy/autoresearch](https://github.com/karpathy/autoresearch)** — The loop discipline. Constrain the loop enough that the AI can iterate autonomously at high speed, with a clear signal of what constitutes progress. The structured results log, keep-or-discard mechanism, never-stop policy, and simplicity criterion are all direct adaptations. The key difference: autoresearch has `val_bpb` as an objective oracle. Reaper must rely on softer evaluation signals (hypothesis resolution, logical consistency, rigor). This is why Horizon 3 (multi-model feedback) matters — cross-model verification partially compensates for the lack of an objective metric.
+
+**[Richard Hamming, "You and Your Research"](https://d37ugbyn3rpeym.cloudfront.net/stripe-press/TAODSAE_zine_press.pdf)** (Stripe Press edition of *The Art of Doing Science and Engineering*) — The importance filter and problem-inversion technique. Hamming's central question — "Why are you not working on the important problems in your field?" — shapes the importance filter in Principle 2: prioritize hypotheses by consequence, not convenience. His technique of inverting blockages into insights (if you can't prove it, try to disprove it) is built into the "when stuck" protocol in Principle 5. Hamming also taught that effort compounds — steady, disciplined investigation cycles accumulate understanding the way compound interest accumulates capital.
+
+**[Zhiyun Qian, "How to Look for Ideas in Computer Science Research"](https://medium.com/digital-diplomacy/how-to-look-for-ideas-in-computer-science-research-7a3fa6f4696f)** — Systematic idea generation patterns. Qian's six patterns (fill-in-the-blank, expansion, build-a-hammer, start-small-then-generalize, reproduce-prior-work, external-sources) are incorporated into Principles 2 and 5, and into the `formalize-problem` skill's approach to generating testable claims. The "fill in the blank" pattern — mapping dimensions of existing research and finding unexplored combinations — is particularly powerful for theoretical research where the design space of threat models, protocol families, and security properties can be systematically enumerated.
+
+**[Simon Peyton Jones, "How to Write a Great Research Paper"](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/How-to-write-a-great-research-paper.pdf)** — Writing as research methodology. Peyton Jones's core insight — that writing is a primary mechanism for doing research, not just for reporting it — is woven into Principle 6 (Clarity and Simplicity). His structural advice (one clear "ping," explicit refutable contributions, examples before generality, narrative flow over chronological recounting) shapes the `synthesize` skill's report format. Most importantly, the idea that you should write *before* you fully understand forces Reaper to crystallize its understanding in `current-understanding.md` at every cycle, not just at the end.
 
 ### Why a Skill, Not Python
 
