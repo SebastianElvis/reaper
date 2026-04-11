@@ -101,14 +101,31 @@ For each result found, assess relevance to the research goal. Classify each pape
 - **Same Goal**: work that shares the same or a similar research goal (same problem, competing solutions, prior attempts)
 - **Same Approach**: work that applies a similar technique/approach to achieve a different goal (methodological relatives)
 
-Within each category, assess relevance:
+#### Venue and Author Weighting
+
+**Venue tiers** — weight results heavily toward top venues. A peer-reviewed top-conference paper is far more trustworthy than an unreviewed preprint.
+
+| Tier | Venues | Weight |
+|------|--------|--------|
+| **Tier 1 (flagship)** | CRYPTO, EUROCRYPT, ASIACRYPT, CCS, S&P (Oakland), NDSS, USENIX Security, PODC, DISC, STOC, FOCS, SODA, TCC | Strongest signal. Prefer these over all others. |
+| **Tier 2 (strong)** | PKC, CT-RSA, FC, ACNS, SCN, OPODIS, SSS, Journal of Cryptology, Distributed Computing (journal), JACM, SICOMP | Strong signal. Treat nearly as tier 1. |
+| **Tier 3 (preprint/other)** | IACR ePrint (unreviewed), arXiv (unreviewed), workshops, lesser conferences | Use for recency and breadth, but verify claims independently. Do not treat unreviewed results as established. |
+
+**Author weighting** — give additional weight to papers by:
+- **Program committee members and editors** of top venues in the relevant area (they shape what gets accepted and reflect community expertise)
+- **Established researchers** with a strong publication record in the specific sub-area (not just generally prolific authors)
+- **Original authors** of foundational results being built upon (they understand the subtleties best)
+
+When two papers make competing claims, prefer the one from the higher-tier venue by authors with more domain-specific expertise. When an ePrint preprint contradicts a published top-conference result, flag it but do not treat the preprint as authoritative without independent verification.
+
+#### Relevance Assessment
+
+Within each category (same-goal / same-approach), assess relevance:
 - **High**: directly addresses the same problem or proves a result we need / uses the exact technique in a way that informs our approach
 - **Medium**: related technique, adjacent problem, or useful building block
 - **Low**: tangentially related
 
-Keep high and medium relevance results. Discard low unless it's a seminal work.
-
-Prioritize results from: IACR ePrint, arXiv (cs.CR, cs.DC), CRYPTO, EUROCRYPT, ASIACRYPT, CCS, S&P, NDSS, PODC, DISC, STOC, FOCS.
+Keep high and medium relevance results. Discard low unless it's a seminal work or by a tier-1 venue / leading author in the area.
 
 ### 7. Download and Read Key Papers
 
@@ -141,7 +158,18 @@ Write a per-paper summary to `reaper-workspace/papers/<id>-notes.md` containing:
 
 These notes serve as a durable reference for the investigate step.
 
-### 8. Write Output
+### 8. Cross-Reference Verification
+
+For each high-relevance downloaded paper, check whether the paper under analysis correctly cites and uses it:
+
+- **Accuracy**: Does the paper under analysis state the prior result accurately? Compare the claim in the paper against the actual theorem statement in the cited work.
+- **Model compatibility**: Are the assumptions of the cited result compatible with the current paper's model? A result proven under synchrony cannot be invoked in an asynchronous protocol without justification.
+- **Comparison fairness**: If the paper claims to "extend," "improve," or "generalize" a prior result, is the comparison apples-to-apples? (Same model, same properties, same adversary class.)
+- **Version drift**: Is the paper citing the latest version of a result, or has the cited work been updated/corrected since?
+
+Document any discrepancies in the per-paper notes (`<id>-notes.md`) under a `### Discrepancies with Paper Under Analysis` heading. Summarize all discrepancies in the `## Gaps Identified` section of the output file — these are high-priority inputs for the formalize-problem step.
+
+### 9. Write Output
 
 Write to `reaper-workspace/notes/literature.md`:
 
