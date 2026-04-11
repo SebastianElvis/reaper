@@ -123,31 +123,29 @@ When evaluating whether a cycle produced progress, weight clarity and elegance a
 ### Skill Repository (this repo)
 
 ```
-autoresearch/
-├── .claude/skills/reaper/
-│   ├── SKILL.md                        # Orchestrator — composes the pipeline
-│   ├── skills/
-│   │   ├── analyze-paper/SKILL.md      # /reaper:analyze-paper
-│   │   ├── review-literature/SKILL.md  # /reaper:review-literature
-│   │   ├── formalize-problem/SKILL.md  # /reaper:formalize-problem
-│   │   ├── investigate/SKILL.md        # /reaper:investigate (proof/analysis cycles)
-│   │   ├── cross-verify/SKILL.md       # /reaper:cross-verify (multi-model feedback)
-│   │   └── synthesize/SKILL.md         # /reaper:synthesize (report generation)
-│   ├── search-arxiv/                   # /reaper:search-arxiv (H2)
+reaper/
+├── skills/
+│   ├── reaper/SKILL.md                     # Orchestrator — composes the pipeline
+│   ├── clarify-goal/SKILL.md               # /reaper:clarify-goal
+│   ├── analyze-paper/SKILL.md              # /reaper:analyze-paper
+│   ├── review-literature/SKILL.md          # /reaper:review-literature
+│   ├── formalize-problem/SKILL.md          # /reaper:formalize-problem
+│   ├── investigate/SKILL.md                # /reaper:investigate (proof/analysis cycles)
+│   ├── critique/SKILL.md                   # /reaper:critique (human/Codex/self review)
+│   ├── synthesize/SKILL.md                 # /reaper:synthesize (report generation)
+│   ├── search-arxiv/                       # /reaper:search-arxiv
 │   │   ├── SKILL.md
-│   │   └── search_arxiv.py            # arXiv API + Semantic Scholar citations
-│   ├── search-iacr/                    # /reaper:search-iacr (H2)
-│   │   ├── SKILL.md
-│   │   └── search_iacr.py             # IACR ePrint scraper
-│   └── references/
-│       ├── methodology.md              # Research methodology patterns
-│       ├── paper-analysis.md           # How to read/extract from papers
-│       └── search-tools.md            # Search tool catalog and decision tree
+│   │   └── search_arxiv.py                 # arXiv API + Semantic Scholar citations
+│   └── search-iacr/                        # /reaper:search-iacr
+│       ├── SKILL.md
+│       └── search_iacr.py                  # IACR ePrint scraper
+├── tests/                                  # Python tests
 ├── dev/
-│   ├── ROADMAP.md                      # This file
-│   └── test-papers/                    # Papers for testing
+│   ├── ROADMAP.md                          # This file
+│   └── test-papers/                        # Papers for testing
 ├── evals/
-│   └── evals.json                      # Test cases for skill evaluation
+│   └── evals.json                          # Test cases for skill evaluation
+├── .claude-plugin/plugin.json              # Plugin metadata
 └── README.md
 ```
 
@@ -179,12 +177,12 @@ reaper-workspace/
 Each horizon enriches a specific stage of the methodology pipeline. H1 builds the decomposed pipeline from day one. H2 enriches the baseline stage. H3 strengthens the evaluation signal. H4 expands what kinds of research the pipeline can do.
 
 ```
-Methodology stage:     Clarify → Baseline → Formalize → Investigate → Synthesize
-                         │         │           │            │             │
-H1 The Pipeline:         ✓       paper + web  ✓            ✓             ✓
-H2 The Library:                    + arXiv/ePrint MCP         + mid-loop search
-H3 The Committee:                                             + multi-model review
-H4 The Lab:                        + multi-paper              + computation   + LaTeX
+Methodology stage:     Clarify → Baseline → Formalize → Investigate ↔ Critique → Synthesize
+                         │         │           │            │              │          │
+H1 The Pipeline:         ✓       paper + web  ✓            ✓              ✓          ✓
+H2 The Library:                    + arXiv/ePrint             + mid-loop search
+H3 The Committee:                                             + Codex MCP review
+H4 The Lab:                        + multi-paper              + computation          + LaTeX
 ```
 
 ### Horizon 1: The Pipeline
@@ -210,6 +208,7 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 | `/reaper:review-literature` | Stage 1b: Baseline (literature) | `notes/clarified-goal.md`, `notes/paper-summary.md` | `notes/literature.md` |
 | `/reaper:formalize-problem` | Stage 2: Formalize | `notes/clarified-goal.md`, `notes/paper-summary.md`, `notes/literature.md`, goal prompt | `notes/hypotheses.md` (trust assumptions, security properties, performance goals, testable claims) |
 | `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/hypotheses.md`, `notes/current-understanding.md` | `experiments/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
+| `/reaper:critique` | Stage 3 sub-step: review | `experiments/`, `notes/current-understanding.md` | `feedback/`, may add hypotheses to `notes/hypotheses.md` |
 | `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `experiments/`, `results.md` | `report.md` |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |
 
@@ -279,37 +278,39 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 
 **Methodology stage:** Strengthens the evaluation signal in Stage 3 (investigate) by adding multi-model adversarial review.
 
-**Goal:** After investigation cycles, send the analysis to other AI models for adversarial feedback — finding flaws, suggesting alternative approaches, sanity-checking conclusions. This compensates for the lack of an objective numeric metric by adding independent perspectives, analogous to peer review in human research.
+**Goal:** After investigation cycles, get external critique via human feedback, Codex MCP consultation, or self-review — finding flaws, suggesting alternative approaches, sanity-checking conclusions. This compensates for the lack of an objective numeric metric by adding independent perspectives, analogous to peer review in human research.
 
-**What success looks like:** Reaper sends its proof that "protocol X is insecure under asynchrony" to external models. One catches a flaw in the reduction argument. The feedback goes through keep-or-discard — it improves `current-understanding.md`, so it's kept. The final report includes the correction.
+**What success looks like:** Reaper sends its proof that "protocol X is insecure under asynchrony" to Codex as devil's advocate. Codex catches a flaw in the reduction argument. The critique triggers additional investigation cycles, the flaw is addressed, and the final report includes the correction. Human users can also inject feedback at any point via `/reaper:critique "your analysis misses the abort case"`.
 
 #### Architecture
 
 ```
-investigate ──> workspace/experiments/001/analysis.md
-                        │
-        ┌───────────────┼───────────────┐
-        ▼               ▼               ▼
-  Codex MCP        Gemini MCP       (future)
-  "find flaws"   "alternative
-                  approach?"
-        │               │               │
-        └───────┬───────┘───────────────┘
-                ▼
-      workspace/feedback/
-      ├── codex-review.md
-      └── gemini-review.md
-                │
-                ▼
-      keep-or-discard: does the feedback
-      improve current-understanding.md?
+investigate ──> /reaper:critique
+                     │
+         ┌───────────┼───────────┐
+         ▼           ▼           ▼
+    human feedback  Codex MCP   self-review
+    "your proof     "find       "re-examine
+     misses X"      flaws"      assumptions"
+         │           │           │
+         └─────┬─────┘───────────┘
+               ▼
+     workspace/feedback/
+     ├── round-N.md
+     └── codex-consultation-N.md
+               │
+               ▼
+     keep-or-discard + may trigger
+     more investigation cycles
 ```
 
-#### New Skill
+#### Implemented Skill
 
 | Skill | Methodology Stage | Reads | Writes |
 |-------|------------------|-------|--------|
-| `/reaper:cross-verify` | Stage 3 sub-step: adversarial review | `experiments/NNN/analysis.md` + review prompt | `feedback/*.md` |
+| `/reaper:critique` | Stage 3 sub-step: adversarial review | `experiments/`, `notes/current-understanding.md` | `feedback/*.md`, may add hypotheses |
+
+The original `cross-verify` concept was implemented as the more general `/reaper:critique` skill, which supports three modes: human feedback, Codex MCP consultation (devil's advocate / inspiration), and self-review.
 
 #### MCP Servers
 
@@ -320,19 +321,16 @@ investigate ──> workspace/experiments/001/analysis.md
 
 #### Tasks
 
-- [ ] Install and configure codex-mcp-server; document setup
-- [ ] Build `/reaper:cross-verify` skill:
-  - Takes an analysis file + a review prompt
-  - Sends to one or more external models via MCP
-  - Collects responses into `workspace/feedback/`
-  - Spawns parallel subagents (one per external model) for concurrent feedback
-- [ ] Define feedback prompt templates:
-  - "Adversarial review" — find flaws in this reasoning
-  - "Alternative approach" — how would you tackle this problem differently?
-  - "Sanity check" — does this conclusion follow from the premises?
-- [ ] Integrate cross-verify into the orchestrator (after investigate cycles, before synthesize)
-- [ ] Apply keep-or-discard to external feedback
-- [ ] Update `synthesize` to incorporate feedback into the report
+- [x] Build `/reaper:critique` skill (replaces planned `cross-verify`):
+  - Human feedback mode: user provides critique text
+  - Codex consultation mode: alternates devil's advocate / inspiration via MCP
+  - Self-review mode: self-critique of current findings
+  - Can trigger additional investigation cycles
+- [x] Define feedback prompt templates (devil's advocate, alternative approach)
+- [x] Integrate critique into the orchestrator (investigate ↔ critique loop)
+- [x] Apply keep-or-discard to external feedback
+- [x] Document codex-mcp-server setup in README
+- [ ] Add more MCP model backends (Gemini, Grok, open-source models)
 - [ ] Test: does multi-model feedback catch errors that single-model analysis misses?
 
 ### Horizon 4: The Lab
