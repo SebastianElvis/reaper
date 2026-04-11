@@ -1,5 +1,5 @@
 ---
-name: reaper:investigate
+name: investigate
 description: "Run investigation cycles for the Reaper research pipeline. Each cycle tests a hypothesis through proof attempts, counterexample searches, or analysis, then applies keep-or-discard discipline."
 user-invocable: true
 argument-hint: "[number-of-cycles]"
