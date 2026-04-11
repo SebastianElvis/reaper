@@ -1,6 +1,6 @@
 # Reaper
 
-**AI-native scientific research pipeline.** A [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins) that takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.
+**Reaper (REAd PapER)** — an AI-native scientific research pipeline. A [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins) that takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.
 
 [![Claude Code Plugin](https://img.shields.io/badge/Claude_Code-Plugin-blue)](https://code.claude.com/docs/en/discover-plugins)
 
@@ -108,6 +108,15 @@ See `dev/ROADMAP.md` for the full methodology and development roadmap.
 - **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph — *complete*
 - **Horizon 3 (The Committee)**: Multi-model adversarial review — planned
 - **Horizon 4 (The Lab)**: Multi-paper, computation, LaTeX — planned
+
+## Acknowledgements
+
+Reaper's methodology draws from four sources:
+
+- **[karpathy/autoresearch](https://github.com/karpathy/autoresearch)** — Loop discipline: constrain the loop so the AI can iterate autonomously with a clear signal of progress. The structured results log, keep-or-discard mechanism, and never-stop policy are direct adaptations.
+- **[Richard Hamming, *The Art of Doing Science and Engineering*](https://d37ugbyn3rpeym.cloudfront.net/stripe-press/TAODSAE_zine_press.pdf)** — The importance filter ("Why are you not working on the important problems?") and the technique of inverting blockages into insights.
+- **[Zhiyun Qian, "How to Look for Ideas in Computer Science Research"](https://medium.com/digital-diplomacy/how-to-look-for-ideas-in-computer-science-research-7a3fa6f4696f)** — Systematic idea generation patterns (fill-in-the-blank, start-small-then-generalize, build-a-hammer) for formulating testable claims.
+- **[Simon Peyton Jones, "How to Write a Great Research Paper"](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/How-to-write-a-great-research-paper.pdf)** — Writing as a primary mechanism for doing research, not just reporting it. Shapes the report structure: one clear "ping," explicit refutable contributions, examples before generality.
 
 ## License
 
