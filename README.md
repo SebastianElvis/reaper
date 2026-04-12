@@ -174,7 +174,7 @@ See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full methodology and development 
 
 See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full roadmap.
 
-- **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete*
+- **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete; LaTeX report output planned*
 - **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph — *complete*
 - **Horizon 3 (The Committee)**: Multi-model critique via `/reaper:critique --codex` — *Codex complete, Gemini/DeepSeek/local planned*
 - **Horizon 3.5 (The Polyglot)**: Platform portability — run Reaper on Codex CLI, Gemini CLI, [OpenClaw](https://openclaw.ai/) — *planned*

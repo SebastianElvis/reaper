@@ -167,7 +167,10 @@ reaper-workspace/
 │   └── NNN-<name>/                     # One directory per hypothesis
 ├── feedbacks/                          # Append-only — one file per event, never modified
 ├── logs/                               # Append-only — one file per event, never modified
-└── report.md                           # Final synthesized output
+└── report/                             # Final synthesized output (LaTeX project)
+    ├── main.tex                        # Paper source — compilable with latexmk
+    ├── references.bib                  # BibTeX entries from literature review
+    └── Makefile                        # `make` → PDF via latexmk
 ```
 
 ---
@@ -199,7 +202,7 @@ H6 The Examiner:                                           + reformulation  + (s
 - `notes/ideas.md` containing the research ideas/hypotheses and their resolution status
 - `notes/results.md` showing cycle-by-cycle progression with keep/discard decisions
 - `notes/current-understanding.md` with the accumulated findings
-- `report.md` that a researcher would find genuinely useful
+- `report/` containing a compilable LaTeX project that a researcher could submit to a venue
 
 And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a structured summary, `/reaper:formalize-problem` for just a problem statement, etc.
 
@@ -214,7 +217,7 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 | `/reaper:brainstorm` | Stage 2.5: Recurring ideation | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md`, `notes/results.md`, `notes/literature.md`, `notes/paper-summary.md` | Updates `notes/ideas.md` (adds new, edits existing inline) |
 | `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md` | `investigations/NNN-<name>/` (reuses on revisit), updates `notes/results.md` inline, edits `current-understanding.md` on keep |
 | `/reaper:critique` | Stage 3 sub-step: review | `investigations/`, `notes/current-understanding.md`, `notes/ideas.md` | `feedbacks/`, `logs/`, may add hypotheses to `notes/ideas.md` |
-| `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `investigations/`, `notes/results.md` | `report.md` |
+| `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `investigations/`, `notes/results.md` | `report/` (LaTeX project: `main.tex`, `references.bib`, `Makefile`) |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |
 
 **`synthesize` report structure** (following Peyton Jones):
@@ -247,6 +250,15 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 - [x] Create eval framework (`evals/evals.json`) with test cases and quality criteria
 - [x] Create test paper specifications (`dev/test-papers/README.md`)
 - [x] Tune skill descriptions for reliable triggering (added action verbs, specific outputs, broader trigger phrases)
+- [ ] Upgrade `synthesize` to produce a compilable LaTeX project instead of markdown:
+  - [ ] Change output from `report.md` to `report/` directory (`main.tex`, `references.bib`, `Makefile`)
+  - [ ] Use `article` class by default; support venue-specific document classes (`llncs`, `acmart`, `IEEEtran`) selectable via clarified goal or user argument
+  - [ ] Map existing paper structure to LaTeX: `\begin{definition}`, `\begin{lemma}`, `\begin{theorem}`, `\begin{proof}` via `amsthm`; `\begin{conjecture}` for unproven claims
+  - [ ] Generate `references.bib` from `notes/literature.md` entries with `\cite{}` references in the body
+  - [ ] Include a `Makefile` that runs `latexmk -pdf main.tex` so `make` produces a PDF
+  - [ ] Update the `synthesize` SKILL.md template: replace the markdown template with LaTeX equivalents
+  - [ ] Ensure the orchestrator and other skills that reference `report.md` (e.g., critique reading the report) are updated to read `report/main.tex`
+  - [ ] Test: does `make` in `report/` produce a valid PDF without manual fixes?
 - [ ] Test full pipeline end-to-end with 3 real papers:
   - A cryptographic construction with a known proof gap
   - A consensus protocol paper (e.g., compare HotStuff variants)
@@ -544,7 +556,7 @@ The `critique` skill's self-review mode currently identifies "weak claims" and "
 - [ ] Update `notes/results.md` format to include evidence level column alongside existing confidence and outcome
 - [ ] Update `investigate` skill: tag every claim with evidence level, require elevation plan for heuristic-level keeps
 - [ ] Update `critique` skill: self-review checks evidence level vs. confidence, Codex consultation includes evidence context
-- [ ] Update `synthesize` skill: distinguish proven claims from conjectures in the report
+- [ ] Update `synthesize` skill: distinguish proven claims from conjectures in the report (leverages LaTeX theorem/conjecture environments from H1)
 - [ ] Update orchestrator adaptation signals: factor in evidence distribution, not just keep/discard ratio
 - [ ] Test: does evidence tagging change keep/discard decisions compared to current behavior?
 
@@ -596,7 +608,7 @@ The investigate skill already has access to Bash for running external tools. Int
 
 - [ ] Add proactive reformulation trigger to orchestrator: count consecutive discards/inconclusives, escalate at N=5
 - [ ] Update `formalize-problem` skill: accept "reformulation mode" with prior failure evidence alongside existing initial mode
-- [ ] Update `synthesize` skill: generate investigation references for each claim in the report
+- [ ] Update `synthesize` skill: generate investigation references for each claim in the report (uses LaTeX `\label`/`\ref` cross-references and BibTeX `\cite{}` from H1)
 - [ ] Add `references/computation.md` — decision tree for when mechanical checking is worth attempting (Z3 for bounded search, Tamarin for protocol models)
 - [ ] (Stretch) Build Z3 integration for bounded counterexample search — lowest barrier, highest payoff
 - [ ] (Stretch) Build Tamarin integration for protocol security claims
