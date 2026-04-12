@@ -36,4 +36,5 @@ pip install arxiv requests beautifulsoup4
 - When adding, removing, or renaming a skill, update `.claude-plugin/marketplace.json` to keep the `skills` array in sync. Also keep `version` in both `plugin.json` and `marketplace.json` consistent with the current release.
 - The license is Apache-2.0. If `plugin.json` references a license field, it must say `"Apache-2.0"`.
 - When cutting a release tag, the tag message should summarize changes since the last tag (use `git log <last-tag>..HEAD`).
+- Always use squash merge for PRs.
 - Before finishing a task, check if important docs (README.md, CLAUDE.md, dev/ROADMAP.md) need to be updated to reflect your changes.
