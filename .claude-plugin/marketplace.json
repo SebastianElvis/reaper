@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "reaper",
-      "description": "AI-native scientific research pipeline. Takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.",
+      "description": "AI-native scientific research pipeline. Takes a research goal — optionally with a research paper — and autonomously conducts rigorous, multi-step academic research.",
       "source": "./",
       "strict": true,
       "skills": [

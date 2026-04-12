@@ -28,7 +28,7 @@ Do NOT rely on context window. Re-read workspace files, but **load selectively**
 - `reaper-workspace/notes/ideas.md` — the ideas and their resolution status
 
 **Read for background (skim, don't deep-read):**
-- `reaper-workspace/notes/paper-summary.md` — focus on "Problem Statement" and "Red Flags" sections
+- `reaper-workspace/notes/paper-summary.md` — focus on "Problem Statement" and "Red Flags" sections (skip if not present)
 - `reaper-workspace/notes/literature.md` — focus on "Landscape Summary" and "Key Prior Results" sections
 
 **Load investigation directories selectively:**

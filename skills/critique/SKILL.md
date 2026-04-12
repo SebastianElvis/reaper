@@ -32,7 +32,7 @@ Provide external perspective on investigation results. Three modes: human feedba
 - `reaper-workspace/feedbacks/` — prior feedback rounds
 
 **Lazy-load only when needed:**
-- `reaper-workspace/notes/paper-summary.md` — the source paper
+- `reaper-workspace/notes/paper-summary.md` — the source paper (if provided)
 - `reaper-workspace/notes/literature.md` — known prior work
 - `reaper-workspace/papers/` — downloaded PDFs and per-paper notes
 
