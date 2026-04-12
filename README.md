@@ -1,60 +1,25 @@
 # Reaper
 
-**Reaper (REAd PapER)** — an AI-native scientific research pipeline. A [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins) that takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research. Ships with reference files for cryptography and distributed systems, but the skills are domain-agnostic — swap the reference files to adapt to other domains.
+**Reaper (REAd PapER)** — an AI-native scientific research pipeline. A [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins) that takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.
 
 [![Claude Code Plugin](https://img.shields.io/badge/Claude_Code-Plugin-blue)](https://code.claude.com/docs/en/discover-plugins)
 
-## Installation
+## What Reaper Does
 
-### From the marketplace
-
-Add the marketplace and install the plugin:
-
-```
-/plugin marketplace add SebastianElvis/reaper
-/plugin install reaper@SebastianElvis-reaper
-```
-
-### Manual installation via Git
-
-Clone the repository and add it as a local marketplace:
-
-```bash
-git clone https://github.com/SebastianElvis/reaper.git
-/plugin marketplace add ./reaper
-/plugin install reaper@reaper
-```
-
-Or manually copy skills into your Claude configuration:
-
-```bash
-# Clone the repository
-git clone https://github.com/SebastianElvis/reaper.git
-
-# Global installation (available in all projects)
-cp -r reaper/skills/* ~/.claude/skills/
-
-# Or project-level installation (available in current project only)
-cp -r reaper/skills/* ./.claude/skills/
-```
-
-See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugins) for more details on installing plugins.
-
-### Optional: Codex MCP for AI consultation
-
-Pass `--codex` to enable pipeline-wide Codex consultation — every skill gains a checkpoint where it can consult OpenAI Codex for a second opinion. The orchestrator controls when consultations happen (see `skills/reaper/references/codex-consultation.md` for the full protocol). To enable, register the [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server):
-
-```bash
-claude mcp add codex-cli -- npx -y codex-mcp-server
-```
-
-If not configured, Codex consultation is silently skipped and the pipeline continues normally.
-
-## Quick Start
+Give Reaper a PDF and a question. It reads the paper, searches for related work, formalizes hypotheses, investigates them in parallel, critiques its own findings, and delivers a structured research report — all without manual prompting between steps.
 
 ```
 /reaper path/to/paper.pdf "determine if the security proof in Section 4 holds under asynchrony"
 ```
+
+**Key capabilities:**
+
+- **Autonomous multi-stage pipeline** — goal clarification, paper analysis, literature review, hypothesis formalization, parallel investigation, critique, and synthesis all chain automatically
+- **Parallel investigation with keep-or-discard discipline** — multiple hypotheses are investigated concurrently; only genuine progress advances the working state, while dead ends stay logged
+- **Built-in academic search** — arXiv and IACR ePrint search with PDF download and citation graph tracing
+- **Domain-agnostic design** — ships with cryptography and distributed systems references, but swap the reference files to adapt to any research domain
+- **Optional AI consultation** — enable Codex MCP for a second opinion at every pipeline stage
+- **Composable skills** — each pipeline stage is an independent skill you can run standalone
 
 ## How It Works
 
@@ -101,13 +66,59 @@ Each skill can be used independently or composed by the orchestrator:
 | `/reaper:search-arxiv` | Search arXiv papers, download PDFs, and trace citation graphs |
 | `/reaper:search-iacr` | Search IACR ePrint archive for cryptography papers |
 
-## Prerequisites
+## Installation
+
+### Prerequisites
 
 The search skills require Python packages:
 
 ```bash
 pip install arxiv requests beautifulsoup4
 ```
+
+### From the marketplace
+
+Add the marketplace and install the plugin:
+
+```
+/plugin marketplace add SebastianElvis/reaper
+/plugin install reaper@SebastianElvis-reaper
+```
+
+### Manual installation via Git
+
+Clone the repository and add it as a local marketplace:
+
+```bash
+git clone https://github.com/SebastianElvis/reaper.git
+/plugin marketplace add ./reaper
+/plugin install reaper@reaper
+```
+
+Or manually copy skills into your Claude configuration:
+
+```bash
+# Clone the repository
+git clone https://github.com/SebastianElvis/reaper.git
+
+# Global installation (available in all projects)
+cp -r reaper/skills/* ~/.claude/skills/
+
+# Or project-level installation (available in current project only)
+cp -r reaper/skills/* ./.claude/skills/
+```
+
+See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugins) for more details on installing plugins.
+
+### Optional: Codex MCP for AI consultation
+
+Pass `--codex` to enable pipeline-wide Codex consultation — every skill gains a checkpoint where it can consult OpenAI Codex for a second opinion. The orchestrator controls when consultations happen (see `skills/reaper/references/codex-consultation.md` for the full protocol). To enable, register the [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server):
+
+```bash
+claude mcp add codex-cli -- npx -y codex-mcp-server
+```
+
+If not configured, Codex consultation is silently skipped and the pipeline continues normally.
 
 ## Workspace
 
