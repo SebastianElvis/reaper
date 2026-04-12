@@ -174,14 +174,15 @@ reaper-workspace/
 
 ## Horizons
 
-Each horizon enriches a specific stage of the methodology pipeline. H1 builds the decomposed pipeline from day one. H2 adds crypto-specific search. H3 strengthens the evaluation signal. H4 expands to the broader CS academic network. H5 makes the system honest about evidence quality. H6 adds proactive reformulation and claim provenance.
+Each horizon enriches a specific stage of the methodology pipeline. H1 builds the decomposed pipeline from day one. H2 adds crypto-specific search. H3 strengthens the evaluation signal with multi-model feedback. H3.5 makes Reaper portable across AI agent platforms. H4 expands to the broader CS academic network. H5 makes the system honest about evidence quality. H6 adds proactive reformulation and claim provenance.
 
 ```
 Methodology stage:     Clarify → Baseline → Formalize → Brainstorm → Investigate ↔ Critique → Synthesize
                          │         │           │            │              │              │          │
 H1 The Pipeline:         ✓       paper + web  ✓            ✓              ✓              ✓          ✓
 H2 The Library:                    + arXiv/ePrint                           + mid-loop search
-H3 The Committee:                                                           + Codex MCP review
+H3 The Committee:                                                           + multi-model review (Codex, Gemini, DeepSeek, local)
+H3.5 The Polyglot:       ◇         ◇           ◇            ◇              ◇              ◇          ◇  (all stages portable)
 H4 The Academy:                    + Scholar/DBLP/venues + author search     + mid-loop author/venue
 H5 The Apprentice:                                                          + evidence taxonomy        + proven vs conjecture
 H6 The Examiner:                                           + reformulation  + (stretch: Z3/Tamarin)    + claim provenance
@@ -282,26 +283,35 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 
 **Methodology stage:** Strengthens the evaluation signal in Stage 3 (investigate) by adding multi-model adversarial review.
 
-**Goal:** After investigation cycles, get external critique via human feedback, Codex MCP consultation, or self-review — finding flaws, suggesting alternative approaches, sanity-checking conclusions. This compensates for the lack of an objective numeric metric by adding independent perspectives, analogous to peer review in human research.
+**Goal:** After investigation cycles, get external critique via human feedback, multi-model consultation, or self-review — finding flaws, suggesting alternative approaches, sanity-checking conclusions. This compensates for the lack of an objective numeric metric by adding independent perspectives, analogous to peer review in human research. Different models catch different classes of errors: formal reasoning models (DeepSeek R1) excel at proof checking, long-context models (Gemini) can review entire paper corpora, and adversarial reasoners (o3) stress-test arguments.
 
-**What success looks like:** Reaper sends its proof that "protocol X is insecure under asynchrony" to Codex as devil's advocate. Codex catches a flaw in the reduction argument. The critique triggers additional investigation cycles, the flaw is addressed, and the final report includes the correction. Human users can also inject feedback at any point via `/reaper:critique "your analysis misses the abort case"`.
+**What success looks like:** Reaper sends its proof that "protocol X is insecure under asynchrony" to multiple models as devil's advocates. DeepSeek R1 catches a gap in the formal reduction. Gemini, having ingested the full paper corpus, points out a related construction the literature review missed. The critique triggers additional investigation cycles, the flaws are addressed, and the final report includes the corrections. Human users can also inject feedback at any point via `/reaper:critique "your analysis misses the abort case"`. When no API keys are configured, the pipeline degrades gracefully to self-review only.
 
 #### Architecture
 
 ```
 investigate ──> /reaper:critique
                      │
-         ┌───────────┼───────────┐
-         ▼           ▼           ▼
-    human feedback  Codex MCP   self-review
-    "your proof     "find       "re-examine
-     misses X"      flaws"      assumptions"
-         │           │           │
-         └─────┬─────┘───────────┘
+         ┌───────────┼───────────────────────┐
+         ▼           ▼                       ▼
+    human feedback  model consultation      self-review
+    "your proof     (routed by task type)    "re-examine
+     misses X"           │                   assumptions"
+         │     ┌─────────┼──────────┐        │
+         │     ▼         ▼          ▼        │
+         │   Codex/o3  Gemini    DeepSeek    │
+         │   (adversar- (breadth/ (formal/   │
+         │    ial)      context)  math)      │
+         │     │         │          │        │
+         │     ▼         ▼          ▼        │
+         │   optional: local models (Llama,  │
+         │   Qwen, Mistral via ollama)       │
+         │     │         │          │        │
+         └─────┴─────────┴──────────┴────────┘
                ▼
      workspace/feedbacks/
      ├── round-N.md
-     └── codex-consultation-N.md
+     └── <model>-consultation-N.md
                │
                ▼
      keep-or-discard + may trigger
@@ -316,12 +326,40 @@ investigate ──> /reaper:critique
 
 The original `cross-verify` concept was implemented as the more general `/reaper:critique` skill, which supports three modes: human feedback, Codex MCP consultation (devil's advocate / inspiration), and self-review.
 
+#### Model Backends
+
+Different models have different strengths. The critique skill should route consultations based on task type:
+
+| Model | Access Method | Strength | Best For |
+|-------|--------------|----------|----------|
+| **OpenAI Codex/o3** | MCP (`codex-mcp-server`) | Adversarial reasoning, code analysis | Devil's advocate review, stress-testing arguments |
+| **Google Gemini** | MCP or API | 1M+ token context, multimodal | Reviewing full paper corpora, catching missed related work |
+| **DeepSeek R1** | API (`api.deepseek.com`) | Math & formal reasoning | Proof checking, formal reductions, algebraic claims |
+| **Grok** | xAI API | Broad training data | Alternative perspectives, sanity checks |
+| **Mistral Large** | API (`api.mistral.ai`) | Multilingual, European research | Non-English papers, EU venue coverage |
+| **Qwen 2.5** | API or local (ollama) | Math/CS, CJK languages | Chinese crypto/systems papers, formal reasoning |
+| **Llama 4** | Local (ollama) | Fully offline, no API costs | Privacy-sensitive research, offline use, cost control |
+
+**Routing heuristic** (implemented in critique skill):
+- **Proof checking / formal claims** → DeepSeek R1 (strongest at mathematical reasoning)
+- **Adversarial review / stress testing** → o3 (strongest at finding flaws in arguments)
+- **Breadth / missed references** → Gemini (longest context, can ingest full literature)
+- **General sanity check** → any available model; prefer local models to reduce cost
+- **Fallback** → self-review if no external models configured
+
 #### MCP Servers
 
 | Server | Repository | Purpose |
 |--------|-----------|---------|
 | codex-mcp-server | https://github.com/tuannvm/codex-mcp-server | Route queries to OpenAI Codex/o3 for adversarial review |
-| (others TBD) | | Gemini, Grok, open-source models |
+| (Gemini TBD) | | Google Gemini for long-context review |
+| (DeepSeek TBD) | | DeepSeek R1 for formal reasoning |
+| (ollama TBD) | | Local models (Llama, Qwen, Mistral) via ollama |
+
+**Design notes:**
+- MCP is the preferred integration path (keeps skills platform-agnostic). For models without an MCP server, a thin Python wrapper script (like the search scripts in H2) can bridge the gap.
+- All model backends are optional. The critique skill must degrade gracefully: try configured models in priority order, fall back to self-review.
+- Model consultation follows the same protocol as Codex today: compressed context (~800 words), structured prompt (devil's advocate or inspiration), response integrated into `feedbacks/`.
 
 #### Tasks
 
@@ -334,8 +372,80 @@ The original `cross-verify` concept was implemented as the more general `/reaper
 - [x] Integrate critique into the orchestrator (investigate ↔ critique loop)
 - [x] Apply keep-or-discard to external feedback
 - [x] Document codex-mcp-server setup in README
-- [ ] Add more MCP model backends (Gemini, Grok, open-source models)
+- [ ] Generalize critique skill's Codex-specific protocol to a model-agnostic consultation protocol (model name as parameter, not hardcoded)
+- [ ] Add Gemini backend (MCP or API wrapper) for long-context review
+- [ ] Add DeepSeek R1 backend (API wrapper) for formal reasoning / proof checking
+- [ ] Add local model support via ollama (Llama, Qwen, Mistral) for offline/private use
+- [ ] Add Grok backend (xAI API) for alternative perspectives
+- [ ] Implement routing heuristic: match consultation task type to best-suited model
+- [ ] Update `references/codex-consultation.md` → `references/model-consultation.md` (generalize per-skill checkpoints to be model-agnostic)
+- [ ] Update README: document multi-model setup (API keys, ollama install, MCP registration)
 - [ ] Test: does multi-model feedback catch errors that single-model analysis misses?
+- [ ] Test: does routing (proof→DeepSeek, adversarial→o3, breadth→Gemini) outperform uniform model selection?
+
+### Horizon 3.5: The Polyglot (Platform Portability)
+
+**Methodology stage:** All stages — makes the entire pipeline portable across AI agent platforms.
+
+**Current state:** Reaper is a Claude Code plugin. Skills are defined as SKILL.md files with Claude Code frontmatter, invoked via `/reaper:*` slash commands, and depend on Claude Code's tool set (Agent, Bash, Read, Write, WebSearch, Glob, Grep). The workspace file contract (`reaper-workspace/`) and the methodology are platform-agnostic, but the skill format is not.
+
+**Goal:** Abstract Reaper's skill definitions so the pipeline can run on other AI coding agent platforms — starting with those closest in architecture (Codex CLI, Gemini CLI), then expanding to IDE-based and autonomous agents. The workspace file contract is already portable (just files); the work is in adapting skill invocation, tool usage, and orchestration to each platform's conventions.
+
+**What success looks like:** A researcher using Codex CLI can run the Reaper pipeline with comparable quality to Claude Code. The same research goal, same seed paper, same workspace output format — different execution engine. Skills are authored once and transpiled/adapted per platform.
+
+#### Target Platforms
+
+| Platform | Plugin Format | Tool Equivalents | Feasibility | Priority |
+|----------|--------------|-----------------|-------------|----------|
+| **Claude Code** | `.claude-plugin/` + SKILL.md | Agent, Bash, Read, Write, WebSearch | Current | — |
+| **OpenAI Codex CLI** | Agent instructions + sandbox | `shell`, file I/O, `web_search` | High | 1st |
+| **Gemini CLI** | GEMINI.md + extensions | Bash, file tools, search | High | 2nd |
+| **OpenClaw** | Skills via ClawHub | Shell, file I/O, browser, persistent memory | High | 3rd |
+| **Cline / Cursor** | Rules files + tool access | IDE file tools, terminal, browser | Low | Later |
+
+**Design notes:**
+- The **workspace file contract** is the portability anchor. All platforms can read/write files. As long as skills produce the same workspace structure, the methodology works regardless of execution engine.
+- **Tool mapping** is the main challenge. Each platform has different names and capabilities for the same operations (e.g., Claude's `Agent` subagent spawning vs. Codex's sandbox forking). A mapping table per platform defines equivalents.
+- **Orchestration** is the hardest part. Claude Code's Agent tool enables parallel subagent spawning (e.g., investigate multiple hypotheses concurrently). Platforms without native parallelism fall back to sequential execution — slower but functionally identical.
+- **Skill transpilation** vs. **native authoring**: Start with manual adaptation (write platform-specific skill files for Codex CLI), then generalize if patterns emerge. Premature abstraction (a universal skill DSL) is worse than two well-adapted implementations.
+
+#### Architecture
+
+```
+skills/                          # Canonical skill definitions (Claude Code format)
+├── reaper/SKILL.md
+├── analyze-paper/SKILL.md
+├── ...
+│
+adapters/                        # Platform-specific adaptations
+├── codex-cli/
+│   ├── README.md                # Setup instructions for Codex CLI
+│   ├── agent-instructions.md    # Codex CLI agent config (equivalent to orchestrator SKILL.md)
+│   └── tool-mapping.md          # Claude tools → Codex equivalents
+├── gemini-cli/
+│   ├── README.md
+│   ├── GEMINI.md                # Gemini CLI config
+│   └── tool-mapping.md
+├── openclaw/
+│   ├── README.md                # Setup instructions for OpenClaw
+│   ├── skill-config.md          # OpenClaw skill definition (ClawHub format)
+│   └── tool-mapping.md          # Claude tools → OpenClaw equivalents
+└── ...
+```
+
+#### Tasks
+
+- [ ] Define platform-neutral skill interface spec (inputs, outputs, file contracts, required tool capabilities)
+- [ ] Create tool mapping table: Claude Code tools → equivalents for each target platform
+- [ ] Build Codex CLI adapter: translate orchestrator + key skills (analyze-paper, investigate, critique, synthesize) to Codex CLI format
+- [ ] Build Gemini CLI adapter: translate orchestrator + key skills to Gemini CLI format
+- [ ] Build OpenClaw adapter: translate skills to ClawHub skill format, leverage OpenClaw's persistent memory for workspace state and browser automation for paper fetching
+- [ ] Document per-platform setup instructions (API keys, tool installation, workspace conventions)
+- [ ] Handle platform capability gaps: graceful degradation when a platform lacks subagent parallelism or WebSearch
+- [ ] Test: same research goal on Claude Code vs. Codex CLI — compare workspace output quality
+- [ ] Test: same research goal on Claude Code vs. Gemini CLI — compare workspace output quality
+- [ ] Test: same research goal on Claude Code vs. OpenClaw — compare workspace output quality
+- [ ] Evaluate whether a shared skill DSL is worth building (only after ≥2 adapters exist to extract patterns from)
 
 ### Horizon 4: The Academy
 
@@ -464,7 +574,7 @@ The reformulated `problem-statement.md` replaces the old one (old version archiv
 Every claim in `report.md` should reference the investigation cycle(s) that support it. The `synthesize` skill already reads investigations selectively; provenance links are a natural extension:
 
 - Each claim references the investigation directory and notes/results.md cycle that produced it
-- Evidence level (from H4) is included so readers know the strength of support
+- Evidence level (from H5) is included so readers know the strength of support
 - Claims supported by multiple cycles reference all of them
 
 This doesn't require a rigid format — the `synthesize` skill should produce natural prose with inline references, not a mechanical template.
