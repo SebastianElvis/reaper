@@ -74,7 +74,7 @@ Both must complete before proceeding.
 
 ### Step 4: Formalize the Problem
 
-Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline outputs (including `clarified-goal.md`) and produces `notes/problem-statement.md` with trust assumptions, security properties, performance goals, and prioritized ideas.
+Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline outputs (including `clarified-goal.md`) and produces `notes/problem-statement.md` (trust assumptions, security properties, performance goals) and `notes/ideas.md` (prioritized ideas).
 
 ### Step 5: Brainstorm → Investigate → Critique Loop
 
@@ -115,7 +115,7 @@ If `investigate` returns with a re-formalization signal (any cycle logged with o
 
 #### Loop Mechanics
 
-The `brainstorm` step reads the current state and appends new ideas to `problem-statement.md` (tagged `[Brainstorm-N]`). The `critique` step may also add hypotheses (tagged `[Codex-N]` or `[Self-N]`). The next `investigate` batch picks up all unresolved ideas automatically.
+The `brainstorm` step reads the current state and appends new ideas to `ideas.md` (tagged `[Brainstorm-N]`). The `critique` step may also add hypotheses (tagged `[Codex-N]` or `[Self-N]`). The next `investigate` batch picks up all unresolved ideas automatically.
 
 This loop runs autonomously — do not interrupt or ask if it should continue.
 
@@ -153,7 +153,7 @@ If the context window is compressed or the orchestrator loses track of its posit
 
 1. **Check which files exist** in `reaper-workspace/notes/`
 2. **Read `results.md`** to determine investigation progress (count cycles, check for unresolved hypotheses)
-3. **Read `problem-statement.md`** to find unresolved hypotheses (cross-reference with `results.md`)
+3. **Read `ideas.md`** to find unresolved hypotheses (cross-reference with `results.md`)
 4. **Check for `report.md`** to determine if synthesis is complete
 5. **Check `feedback/`** for iteration rounds
 
@@ -163,7 +163,7 @@ If the context window is compressed or the orchestrator loses track of its posit
 |---|---|---|---|---|
 | missing | - | - | - | Run Step 3 (baseline) |
 | exists | missing | - | - | Run Step 4 (formalize) |
-| exists | exists | 0 | - | Run Step 5 (brainstorm + investigate) |
-| exists | exists | >0, unresolved H | - | Continue Step 5 (investigate or brainstorm) |
+| exists | exists | 0 | - | Run Step 5 (brainstorm + investigate). Check `ideas.md` for unresolved hypotheses. |
+| exists | exists | >0, unresolved H | - | Continue Step 5 (investigate or brainstorm). Check `ideas.md` for unresolved hypotheses. |
 | exists | exists | >0, all H resolved | missing | Run Step 6 (synthesize) |
 | exists | exists | >0 | exists | Run Step 7-8 (present + offer iteration) |

@@ -28,7 +28,8 @@ The recurring ideation step. Reads the current research state and proposes new o
 ## Inputs
 
 **Always read** before starting:
-- `reaper-workspace/notes/problem-statement.md` — the current ideas and their resolution status
+- `reaper-workspace/notes/problem-statement.md` — model assumptions and property definitions
+- `reaper-workspace/notes/ideas.md` — the current ideas and their resolution status
 - `reaper-workspace/notes/current-understanding.md` — the "branch tip" of accumulated knowledge
 - `reaper-workspace/results.md` — what's been tried and what happened. **If the file is long (20+ rows), read the batch summaries at the end instead of every individual row.** Look for patterns in failures across batches, not individual cycle details.
 
@@ -97,7 +98,7 @@ Not all ideas are equally worth investigating. Rank by consequence — ask: "If 
 
 ### 5. Write Output
 
-Append new ideas to `reaper-workspace/notes/problem-statement.md` under a clearly marked section:
+Append new ideas to `reaper-workspace/notes/ideas.md` under a clearly marked section:
 
 ```markdown
 ## Ideas — Brainstorm Round N
@@ -117,7 +118,7 @@ Where N is one more than the highest existing brainstorm round (or 1 if none exi
 - At most 3-5 new ideas per round — focus beats breadth
 - Every idea must be **falsifiable** — a reader could disagree with it
 - Every idea must have **explicit** success and failure conditions
-- Do not duplicate existing unresolved ideas — check `problem-statement.md` first
+- Do not duplicate existing unresolved ideas — check `ideas.md` first
 - If the context hint from the argument suggests a direction, weight it heavily but don't ignore other promising directions
 
 ### 6. Report

@@ -52,7 +52,7 @@ Before investigation begins, the problem must be precisely defined with concrete
 - **Security properties**: What must hold, stated as formal predicates, game-based definitions, simulation-based definitions, or precise references to existing definitions. Informal descriptions like "safety" or "liveness" without formal definitions are not acceptable.
 - **Performance metrics/goals**: What are the concrete targets? (e.g., "O(n) communication complexity per decision, finality in 3 rounds")
 - **Impossibility screening**: Each hypothesis is checked against known impossibility results (FLP, DLS, Dolev-Reischuk, etc.). Hypotheses that contradict known impossibilities are flagged and reformulated, not left for the investigate skill to waste cycles on.
-- **Ideas**: Derived from the above — specific hypotheses with explicit success/failure conditions
+- **Ideas** (written to a separate `notes/ideas.md`): Derived from the above — specific hypotheses with explicit success/failure conditions
 
 Not all hypotheses are equally worth investigating. Among the ideas, prioritize those whose resolution would be most consequential — a security proof gap that invalidates a deployed protocol matters more than a tighter constant in a complexity bound (Hamming: "If you do not work on important problems, how can you expect to do important work?"). Use Qian's "fill in the blank" pattern to find gaps: map the dimensions of existing work (threat models × protocol families × security properties) and identify unexplored combinations.
 
@@ -158,7 +158,8 @@ reaper-workspace/
 │   ├── clarified-goal.md              # Refined goal, scope, assumptions, Q&A
 │   ├── paper-summary.md                # Structured extraction from the paper
 │   ├── literature.md                   # Related work found during search
-│   ├── problem-statement.md                   # Problem statement + ideas
+│   ├── problem-statement.md                   # Problem statement (model, properties, metrics)
+│   ├── ideas.md                               # Research ideas/hypotheses (grows over time)
 │   └── current-understanding.md        # "Branch tip" — only advances on keep
 ├── investigations/
 │   └── NNN-<name>/                     # One directory per investigation cycle
@@ -192,6 +193,7 @@ H6 The Examiner:                                           + reformulation  + (s
 
 **What success looks like:** `/reaper paper.pdf "check if the security proof in Section 4 holds under asynchrony"` produces a workspace with:
 - `notes/problem-statement.md` containing a precise problem statement (trust assumptions, security properties, performance goals)
+- `notes/ideas.md` containing the research ideas/hypotheses and their resolution status
 - `results.md` showing cycle-by-cycle progression with keep/discard decisions
 - `current-understanding.md` with the accumulated findings
 - `report.md` that a researcher would find genuinely useful
@@ -205,10 +207,10 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 | `/reaper:clarify-goal` | Stage 0: Clarify | Input paper, goal prompt | `notes/clarified-goal.md` (refined goal, scope, assumptions, Q&A) |
 | `/reaper:analyze-paper` | Stage 1a: Baseline (paper) | Input paper | `notes/paper-summary.md` |
 | `/reaper:review-literature` | Stage 1b: Baseline (literature) | `notes/clarified-goal.md`, `notes/paper-summary.md` | `notes/literature.md` |
-| `/reaper:formalize-problem` | Stage 2: Formalize | `notes/clarified-goal.md`, `notes/paper-summary.md`, `notes/literature.md`, goal prompt | `notes/problem-statement.md` (trust assumptions, security properties, performance goals, ideas) |
-| `/reaper:brainstorm` | Stage 2.5: Recurring ideation | `notes/problem-statement.md`, `notes/current-understanding.md`, `results.md`, `notes/literature.md`, `notes/paper-summary.md` | Appends new ideas to `notes/problem-statement.md` |
-| `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/current-understanding.md` | `investigations/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
-| `/reaper:critique` | Stage 3 sub-step: review | `investigations/`, `notes/current-understanding.md` | `feedback/`, may add hypotheses to `notes/problem-statement.md` |
+| `/reaper:formalize-problem` | Stage 2: Formalize | `notes/clarified-goal.md`, `notes/paper-summary.md`, `notes/literature.md`, goal prompt | `notes/problem-statement.md` (trust assumptions, security properties, performance goals), `notes/ideas.md` (initial ideas) |
+| `/reaper:brainstorm` | Stage 2.5: Recurring ideation | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md`, `results.md`, `notes/literature.md`, `notes/paper-summary.md` | Appends new ideas to `notes/ideas.md` |
+| `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md` | `investigations/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
+| `/reaper:critique` | Stage 3 sub-step: review | `investigations/`, `notes/current-understanding.md`, `notes/ideas.md` | `feedback/`, may add hypotheses to `notes/ideas.md` |
 | `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `investigations/`, `results.md` | `report.md` |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |
 

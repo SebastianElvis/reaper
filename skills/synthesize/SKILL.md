@@ -23,7 +23,8 @@ Do NOT rely on context window. Re-read workspace files, but **load selectively**
 **Always read:**
 - `reaper-workspace/notes/current-understanding.md` — the accumulated findings (primary source)
 - `reaper-workspace/results.md` — the cycle-by-cycle record including batch summaries
-- `reaper-workspace/notes/problem-statement.md` — the hypotheses and their resolution
+- `reaper-workspace/notes/problem-statement.md` — model assumptions and property definitions
+- `reaper-workspace/notes/ideas.md` — the ideas and their resolution status
 
 **Read for background (skim, don't deep-read):**
 - `reaper-workspace/notes/paper-summary.md` — focus on "Problem Statement" and "Red Flags" sections

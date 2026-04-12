@@ -49,13 +49,13 @@ Log every Codex consultation to the skill's own output file (e.g., a `## Codex C
 **Act on**: Run additional searches for any suggested terms; add results to the literature survey.
 
 ### formalize-problem
-**When**: After drafting hypotheses, before writing `problem-statement.md`.
+**When**: After drafting hypotheses, before writing `ideas.md`.
 **Ask**: "Here are the hypotheses I plan to investigate for this research goal. Are any poorly formed, redundant, or obviously contradicting known results? Am I missing an important angle?"
 **Send**: Research goal (1 sentence) + model assumptions summary + hypothesis list (~500 words).
 **Act on**: Revise, merge, or add hypotheses based on feedback. Tag any Codex-suggested hypotheses `[Codex-F]`.
 
 ### brainstorm
-**When**: After generating candidate ideas, before appending to `problem-statement.md`.
+**When**: After generating candidate ideas, before appending to `ideas.md`.
 **Ask**: "Given these investigation results so far and the new ideas I'm considering, what non-obvious angles or cross-domain connections am I missing?"
 **Send**: Last 3 batch summaries from `results.md` + candidate ideas (~500 words).
 **Act on**: Add promising suggestions as hypotheses tagged `[Codex-B]`. Discard obvious or redundant ones.
