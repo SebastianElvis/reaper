@@ -136,8 +136,13 @@ reaper-workspace/
 │   └── results.md                  # One row per hypothesis, updated inline on revisit
 ├── investigations/                 # Evolving — reuse directory on revisit, edit inline
 │   └── NNN-<name>/                 # One directory per hypothesis
+│       ├── analysis.md             # Reasoning, attempts, dead ends, insights
+│       └── proof.md                # Formal proofs (theorems, lemmas, corollaries)
 ├── feedbacks/                      # Append-only — one file per event, never modified
+│   ├── round-N.md                  # Human feedback classified by type
+│   └── codex-consultation-N.md     # Codex critique (alternates devil's advocate / inspiration)
 ├── logs/                           # Append-only — one file per event, never modified
+│   └── self-review-N.md            # Automated self-critique of current findings
 └── report.md                       # Final synthesized output
 ```
 
