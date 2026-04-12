@@ -27,7 +27,8 @@ Provide external perspective on investigation results. Three modes: human feedba
 **Always read** before starting:
 - `reaper-workspace/notes/current-understanding.md` — the "branch tip" of accumulated knowledge
 - `reaper-workspace/results.md` — what's been tried and what happened
-- `reaper-workspace/notes/problem-statement.md` — the ideas to investigate
+- `reaper-workspace/notes/problem-statement.md` — model assumptions and property definitions
+- `reaper-workspace/notes/ideas.md` — the ideas to investigate
 - `reaper-workspace/feedback/` — prior feedback rounds
 
 **Lazy-load only when needed:**
@@ -97,7 +98,7 @@ Check `reaper-workspace/investigations/` for existing `codex-consultation-*.md` 
 - **Inspiration / Alternative Angles** (even N: 2nd, 4th, 6th, ...):
   Ask Codex for fresh perspectives. Send it a **compressed context**:
   - The **last 5 findings** from `current-understanding.md` (~500 words)
-  - The **unresolved hypotheses only** from `problem-statement.md` (skip resolved ones)
+  - The **unresolved hypotheses only** from `ideas.md` (skip resolved ones)
   - The prompt: *"You are consulting on a research investigation. Suggest alternative proof strategies, related techniques from other fields, or hypotheses the investigators haven't considered. Focus on non-obvious connections and approaches that could break through current blockers."*
 
 **Context efficiency**: Sending compressed context (~800 words) to Codex instead of full files (~5000 words) reduces latency and improves response quality by focusing Codex on what matters most.
@@ -106,7 +107,7 @@ Check `reaper-workspace/investigations/` for existing `codex-consultation-*.md` 
 
 1. **Log** the Codex response to `reaper-workspace/investigations/codex-consultation-N.md`.
 2. **Triage** the feedback:
-   - **Actionable critique**: If Codex identifies a genuine gap or flaw, add a new hypothesis to `problem-statement.md` marked `[Codex-N]`.
+   - **Actionable critique**: If Codex identifies a genuine gap or flaw, add a new hypothesis to `ideas.md` marked `[Codex-N]`.
    - **Alternative approach**: If Codex suggests a promising technique, add it as a hypothesis marked `[Codex-N]`.
    - **Already addressed**: Note this in the consultation log and move on.
    - **Irrelevant or wrong**: Dismiss with a brief note in the log.
@@ -122,14 +123,14 @@ The agent reviews its own investigation results for gaps, inconsistencies, or mi
 
 ### Process
 
-1. Read `current-understanding.md`, `results.md`, and `problem-statement.md`.
+1. Read `current-understanding.md`, `results.md`, and `ideas.md`.
 2. Identify:
    - **Weak claims**: Findings with low or medium confidence that haven't been strengthened.
    - **Untested assumptions**: Assumptions listed in hypotheses or proofs that haven't been validated.
    - **Missing angles**: Obvious questions raised by the current findings that haven't been investigated.
    - **Inconsistencies**: Claims in `current-understanding.md` that conflict with each other or with `results.md`.
 3. Write the self-review to `reaper-workspace/investigations/self-review-N.md` (where N is one more than the count of existing self-review files).
-4. For each actionable finding, add a hypothesis to `problem-statement.md` marked `[Self-N]`.
+4. For each actionable finding, add a hypothesis to `ideas.md` marked `[Self-N]`.
 5. If actionable hypotheses were added, run `/reaper:investigate 3` to address them.
 
 ## Quality Criteria

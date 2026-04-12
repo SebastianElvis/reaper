@@ -130,7 +130,8 @@ reaper-workspace/
 │   ├── clarified-goal.md           # Refined goal, scope, assumptions, Q&A
 │   ├── paper-summary.md            # Structured paper extraction
 │   ├── literature.md               # Related work survey
-│   ├── problem-statement.md        # Formalized problem + ideas
+│   ├── problem-statement.md        # Formalized problem (model, properties, metrics)
+│   ├── ideas.md                    # Research ideas/hypotheses (grows over time)
 │   └── current-understanding.md    # "Branch tip" — advances only on keep
 ├── investigations/
 │   └── NNN-<name>/                 # One directory per investigation cycle
