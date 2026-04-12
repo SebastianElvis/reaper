@@ -49,7 +49,7 @@ Write to `reaper-workspace/report.md` following the structure of a formal academ
 
 ## Abstract
 
-[One paragraph: problem, approach, main result(s), significance. State the main theorem informally here.]
+[Problem, approach, main result(s), significance. State the main theorem informally here. No more than 350 words — be concise. Split into multiple short paragraphs if needed for readability.]
 
 ## 1. Introduction
 
@@ -135,7 +135,7 @@ For counterexamples and attacks, use a concrete execution trace:
 
 ## References
 
-[Papers cited during the investigation, formatted consistently.]
+[Papers cited during the investigation, formatted consistently. For each paper, attach a link to its PDF (e.g., arXiv, IACR ePrint, or publisher PDF URL).]
 
 ## Appendix A: Investigation Log
 
