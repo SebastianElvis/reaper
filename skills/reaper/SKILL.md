@@ -22,6 +22,15 @@ The first argument is the path to the paper (PDF or text). Everything after it i
 
 When `--codex` is set, propagate this context to all skill invocations. Each skill will consult Codex only at its designated checkpoint (defined in `references/codex-consultation.md`), using compressed context and a shared session ID for continuity across the pipeline.
 
+## Design Principles
+
+1. **Separation of concerns**: Each skill has one job. Skills communicate through workspace files, not shared memory.
+2. **Fixed evaluation signal**: Every investigation cycle produces a binary keep/discard verdict.
+3. **Structured results log**: `notes/results.md` is the single source of truth for what has been tried and what happened.
+4. **Keep-or-discard loop**: Only "keep" findings flow into `current-understanding.md`. Discards stay in the audit trail.
+5. **Never stop**: The pipeline runs to completion. Uncertainty about user intent is never a reason to pause.
+6. **Clarity and simplicity**: Prefer simpler proofs, fewer assumptions, shorter arguments.
+
 ## Workflow
 
 ### Step 1: Initialize Workspace
@@ -38,6 +47,18 @@ reaper-workspace/
 ├── feedbacks/                      # Append-only — one file per event, never modified
 ├── logs/                           # Append-only — one file per cycle, never modified
 ```
+
+**File mutation rules:**
+
+| Category | Files | Policy |
+|----------|-------|--------|
+| Evolving (inline edit) | `notes/current-understanding.md`, `notes/results.md`, `notes/ideas.md`, `notes/problem-statement.md`, `papers/*-notes.md`, `investigations/*/analysis.md`, `investigations/*/proof.md` | Edit in place. Single writer per file per batch. |
+| Append-only | `logs/cycle-*.md`, `feedbacks/round-*.md`, `feedbacks/codex-consultation-*.md` | Create once, never modify. |
+| Write-once | `notes/paper-summary.md`, `notes/literature.md`, `notes/clarified-goal.md`, `report.md` | Created by one skill. May be regenerated on re-run but not incrementally edited by other skills. |
+
+**File naming conventions:** Investigation dirs: `NNN-<slug>/` (zero-padded). Cycle logs: `cycle-NNN-<slug>.md`. Feedback: `round-N.md`, `codex-consultation-N.md`. Paper notes: `<id>-notes.md`.
+
+**Lazy-load protocol:** Early-pipeline skills (`formalize-problem`, `analyze-paper`) read source files eagerly. Loop skills (`brainstorm`, `investigate`, `critique`, `synthesize`) use `current-understanding.md` as primary source and lazy-load `paper-summary.md` and `literature.md` only when stuck or when a specific hypothesis requires it.
 
 Initialize `reaper-workspace/notes/results.md` with:
 ```markdown
@@ -112,7 +133,13 @@ Where N is determined by the complexity assessment above.
 
 #### Re-Formalization Handling
 
-If `investigate` returns with a re-formalization signal (any cycle logged with outcome `reformulate`), re-run **`/reaper:formalize-problem`** before continuing the loop. The re-formalization should incorporate the findings from the investigation cycle that triggered it. After re-formalization, restart the brainstorm-investigate loop with the updated problem statement and reset the cycle budget for the new formulation.
+If `investigate` returns with a re-formalization signal (any cycle logged with outcome `reformulate`):
+
+1. **Preserve state**: Do NOT clear `notes/results.md`, `notes/current-understanding.md`, or existing investigation directories.
+2. **Archive old formulation**: Rename `notes/problem-statement.md` to `notes/problem-statement-v<N>.md` before re-running.
+3. **Re-run `formalize-problem`**: It reads the reformulation signal from the triggering cycle's `analysis.md`.
+4. **Reset ideas selectively**: In `ideas.md`, mark hypotheses that depended on the old formulation as `[superseded by v<N>]`. Add new hypotheses below.
+5. **Restart loop**: Fresh cycle budget for the new formulation.
 
 #### Loop Mechanics
 
@@ -139,6 +166,28 @@ After presenting results, let the user know they can iterate:
 > If you'd like to refine, deepen, or challenge any aspect of this research, use `/reaper:critique "your feedback here"`.
 
 Do **not** block waiting for a response — the pipeline is complete. The user can invoke `/reaper:critique` with quoted feedback at any time to start a feedback round. The critique skill classifies the feedback, may run targeted investigation cycles, and then you should re-run `/reaper:synthesize` to produce an updated report.
+
+## Skill Dependency Graph
+
+```
+clarify-goal ──► analyze-paper ──┐
+                                 ├──► formalize-problem ──► brainstorm ◄──► investigate ◄──► critique
+               review-literature ┘                                                           │
+                                                                          synthesize ◄───────┘
+```
+
+| Skill | Requires | Produces |
+|-------|----------|----------|
+| clarify-goal | (paper path) | `notes/clarified-goal.md` |
+| analyze-paper | (paper path) | `notes/paper-summary.md` |
+| review-literature | (research goal) | `notes/literature.md`, `papers/*` |
+| formalize-problem | `clarified-goal.md`, `paper-summary.md` | `problem-statement.md`, `ideas.md` |
+| brainstorm | `problem-statement.md`, `ideas.md`, `current-understanding.md`, `results.md` | Updates `ideas.md` |
+| investigate | `problem-statement.md`, `ideas.md`, `current-understanding.md`, `results.md` | Updates `results.md`, `current-understanding.md`, `ideas.md`; creates `investigations/*`, `logs/*` |
+| critique | `current-understanding.md`, `results.md`, `problem-statement.md`, `ideas.md` | `feedbacks/*`; may update `ideas.md` |
+| synthesize | `current-understanding.md`, `results.md`, `problem-statement.md`, `ideas.md` | `report.md` |
+| search-arxiv | (query) | stdout |
+| search-iacr | (query) | stdout |
 
 ## Important Notes
 

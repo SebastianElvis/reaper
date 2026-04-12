@@ -76,6 +76,13 @@ The file should contain:
 
 Tell the user the refined goal and confirm before the pipeline proceeds.
 
+## Quality Criteria
+
+- Questions are specific to the paper and goal, not generic
+- Each question offers concrete options or defaults
+- The refined goal in `clarified-goal.md` is precise enough for `formalize-problem` to act on without further clarification
+- If the paper PDF is unreadable, report the error — do not proceed with fabricated context
+
 ## Important Notes
 
 - This skill is interactive — it requires user input. Do not skip the question-asking step.

@@ -113,3 +113,4 @@ Write ideas to a separate file `reaper-workspace/notes/ideas.md`:
 - Trust assumptions are complete — no missing dimensions
 - The hypotheses collectively cover the research goal — resolving all of them would answer the original question
 - At most 5-7 hypotheses — focus beats breadth. If you have more, merge or drop the low-priority ones
+- If required inputs (`paper-summary.md`, `clarified-goal.md`) are missing, return an error indicating which prerequisite step must run first

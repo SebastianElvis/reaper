@@ -120,6 +120,7 @@ Where N is one more than the highest existing brainstorm round (or 1 if none exi
 
 **Constraints**:
 - At most 3-5 new ideas per round — focus beats breadth
+- Every idea must be **atomic** — investigable in a single cycle. Split compound ideas (e.g., "prove safety AND liveness") into separate hypotheses
 - Every idea must be **falsifiable** — a reader could disagree with it
 - Every idea must have **explicit** success and failure conditions
 - Do not duplicate existing unresolved ideas — check `ideas.md` first
@@ -141,3 +142,4 @@ After writing, briefly summarize to the orchestrator:
 - The source/motivation for each idea is documented
 - At most 3-5 ideas per round — if you have more, merge or drop the low-priority ones
 - The brainstorm round is fast — no experiments, no proof attempts, no literature searches within this skill
+- If `problem-statement.md` or `ideas.md` is missing, return an error to the orchestrator
