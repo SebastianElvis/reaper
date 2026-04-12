@@ -1,6 +1,6 @@
 {
   "name": "reaper",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "AI-native scientific research pipeline. Takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.",
   "author": {
     "name": "Runchao Han"
