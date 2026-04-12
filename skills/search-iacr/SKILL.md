@@ -65,9 +65,9 @@ When invoked directly:
 3. Format the results as a readable table:
 
 ```markdown
-| # | Title | Authors | Year | ePrint ID |
-|---|-------|---------|------|-----------|
-| 1 | ... | ... | ... | ... |
+| # | Title | Authors | Year | ePrint ID | Link |
+|---|-------|---------|------|-----------|------|
+| 1 | ... | ... | ... | ... | [ePrint](https://eprint.iacr.org/YYYY/NNNN) |
 ```
 
 4. For enriched results (top 5), show the abstract excerpt.

@@ -45,6 +45,7 @@ Write the extracted information to `reaper-workspace/notes/paper-summary.md` wit
 - **Authors**:
 - **Venue/Year**:
 - **Paper ID**: (ePrint, arXiv, DOI)
+- **Link**: (e.g., https://arxiv.org/abs/XXXX.XXXXX or https://eprint.iacr.org/YYYY/NNNN)
 
 ## Problem Statement
 What problem does this paper solve? Why does it matter?
