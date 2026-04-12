@@ -31,13 +31,11 @@ Create the workspace directory structure:
 ```
 reaper-workspace/
 ├── notes/
-│   ├── current-understanding.md    # Initialize empty — "branch tip"
-│   └── scratchpad.md               # Initialize empty
+│   └── current-understanding.md    # Initialize empty — "branch tip"
 ├── papers/                         # Downloaded PDFs and per-paper notes
 ├── investigations/
 ├── feedback/
-├── results.md                      # Initialize with table header
-└── log.md                          # Initialize empty
+└── results.md                      # Initialize with table header
 ```
 
 Initialize `reaper-workspace/results.md` with:
