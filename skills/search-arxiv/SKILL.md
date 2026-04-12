@@ -57,9 +57,9 @@ When invoked directly:
 3. Format the results as a readable table:
 
 ```markdown
-| # | Title | Authors | Year | arXiv ID | Categories |
-|---|-------|---------|------|----------|------------|
-| 1 | ... | ... | ... | ... | ... |
+| # | Title | Authors | Year | arXiv ID | Link | Categories |
+|---|-------|---------|------|----------|------|------------|
+| 1 | ... | ... | ... | ... | [arXiv](https://arxiv.org/abs/XXXX.XXXXX) | ... |
 ```
 
 4. For each highly relevant result, show the abstract excerpt.

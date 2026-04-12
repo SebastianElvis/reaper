@@ -138,6 +138,7 @@ After downloading, **read each paper** using the Read tool (which can read PDFs)
 
 Write a per-paper summary to `reaper-workspace/papers/<id>-notes.md` (evolving — update inline if revisited during mid-investigation search):
 
+- **Link**: URL to the paper (arXiv, ePrint, or DOI link).
 - **Mirror**: Restate the paper's aims, results, and novelty in your own words (one paragraph).
 - **Contribution**: What this paper advances over prior work and how.
 - **Key results**: Main theorems, definitions, and techniques (stated precisely).
@@ -173,17 +174,17 @@ Write to `reaper-workspace/notes/literature.md`:
 
 Papers that address the same or a closely related research goal.
 
-| # | Title | Authors | Year | Venue | Key Contribution | Relation to Our Goal | Local Path |
-|---|-------|---------|------|-------|-----------------|---------------------|------------|
-| 1 | ... | ... | ... | ... | [1-sentence] | [how this relates to our specific goal] | `papers/<filename>` |
+| # | Title | Authors | Year | Venue | Key Contribution | Relation to Our Goal | Link | Local Path |
+|---|-------|---------|------|-------|-----------------|---------------------|------|------------|
+| 1 | ... | ... | ... | ... | [1-sentence] | [how this relates to our specific goal] | [arXiv](https://arxiv.org/abs/XXXX.XXXXX) or [ePrint](https://eprint.iacr.org/YYYY/NNNN) | `papers/<filename>` |
 
 ## Same-Approach Works
 
 Papers that apply similar techniques or approaches to different problems.
 
-| # | Title | Authors | Year | Venue | Key Contribution | Shared Technique | Local Path |
-|---|-------|---------|------|-------|-----------------|-----------------|------------|
-| 1 | ... | ... | ... | ... | [1-sentence] | [what technique/approach we share and how they use it] | `papers/<filename>` |
+| # | Title | Authors | Year | Venue | Key Contribution | Shared Technique | Link | Local Path |
+|---|-------|---------|------|-------|-----------------|-----------------|------|------------|
+| 1 | ... | ... | ... | ... | [1-sentence] | [what technique/approach we share and how they use it] | [arXiv](https://arxiv.org/abs/XXXX.XXXXX) or [ePrint](https://eprint.iacr.org/YYYY/NNNN) | `papers/<filename>` |
 
 ## Citation Graph
 
@@ -201,9 +202,9 @@ Papers that apply similar techniques or approaches to different problems.
 
 Summary of all downloaded papers and their local paths for quick reference during investigation.
 
-| Paper | Local PDF | Notes |
-|-------|----------|-------|
-| [Short title] | `papers/<filename>.pdf` | `papers/<id>-notes.md` |
+| Paper | Link | Local PDF | Notes |
+|-------|------|----------|-------|
+| [Short title] | [arXiv](https://arxiv.org/abs/XXXX.XXXXX) or [ePrint](https://eprint.iacr.org/YYYY/NNNN) | `papers/<filename>.pdf` | `papers/<id>-notes.md` |
 ```
 
 ### Graceful Degradation
