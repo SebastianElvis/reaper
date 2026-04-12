@@ -2,6 +2,7 @@
 name: synthesize
 description: "Generate a research paper from investigation results, structured as a formal academic paper with definitions, theorems, lemmas, and proofs. Use when asked to synthesize, summarize, or write up research findings after investigation cycles."
 user-invocable: true
+argument-hint: ""
 ---
 
 # Synthesize
@@ -159,6 +160,14 @@ For counterexamples and attacks, use a concrete execution trace:
 - Proofs cite the proof technique used (reduction, simulation, induction, game-hopping, etc.)
 - Distinguish between what is proven and what is conjectured — label conjectures clearly
 - If a proof has gaps (e.g., a step that relies on intuition), state this honestly as a remark
+
+### Confidence Handling
+
+Preserve confidence levels from `notes/results.md` exactly as logged — do not upgrade. The investigate skill defaults one level lower than instinct; synthesize must not undo that calibration. Map to paper constructs: **high** → theorems with full proofs, **medium** → propositions with explicit gap statements, **low** → clearly labeled conjectures.
+
+### Failure Recovery
+
+If `current-understanding.md` is empty or missing, reconstruct from `results.md` batch summaries and `investigations/*/analysis.md` before writing. If both are empty, return an error — there is nothing to synthesize.
 
 ### Quality Criteria
 

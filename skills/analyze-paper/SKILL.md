@@ -85,3 +85,4 @@ Any concerns identified during reading (see references/paper-analysis.md for com
 - The system model section is complete — no missing dimensions (network, adversary, trust, communication, crypto)
 - Red flags section is honest — if the paper looks solid, say so; if there are concerns, list them specifically
 - The summary is useful standalone — a reader who hasn't seen the paper should understand the key claims and approach
+- If the PDF is unreadable, try page-by-page with the `pages` parameter. If it still fails, report the error — do not fabricate a summary

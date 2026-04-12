@@ -107,7 +107,7 @@ Check `reaper-workspace/feedbacks/` for existing `codex-consultation-*.md` files
 
 1. **Log** the Codex response to `reaper-workspace/feedbacks/codex-consultation-N.md`.
 2. **Triage** the feedback:
-   - **Actionable critique**: If Codex identifies a genuine gap or flaw, add a new hypothesis to `ideas.md` marked `[Codex-N]`.
+   - **Actionable critique**: If Codex identifies a genuine gap or flaw, add a new hypothesis to `ideas.md` with the next available H-number (continuing from the highest existing H# in `ideas.md`), tagged `[Codex-N]` in the Source field.
    - **Alternative approach**: If Codex suggests a promising technique, add it as a hypothesis marked `[Codex-N]`.
    - **Already addressed**: Note this in the consultation log and move on.
    - **Irrelevant or wrong**: Dismiss with a brief note in the log.
@@ -129,7 +129,7 @@ The agent reviews its own investigation results for gaps, inconsistencies, or mi
    - **Untested assumptions**: Assumptions listed in hypotheses or proofs that haven't been validated.
    - **Missing angles**: Obvious questions raised by the current findings that haven't been investigated.
    - **Inconsistencies**: Claims in `current-understanding.md` that conflict with each other or with `notes/results.md`.
-3. For each actionable finding, add a hypothesis to `ideas.md` marked `[Self-N]` (where N is one more than the count of existing self-review cycles).
+3. For each actionable finding, add a hypothesis to `ideas.md` with the next available H-number, tagged `[Self-N]` in the Source field (where N is one more than the count of existing self-review rounds).
 4. If actionable hypotheses were added, run `/reaper:investigate 3` to address them. The self-review findings are recorded as part of the cycle logs in `reaper-workspace/logs/` — no separate self-review file is needed.
 
 ## Quality Criteria

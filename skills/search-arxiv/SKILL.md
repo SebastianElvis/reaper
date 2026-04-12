@@ -43,6 +43,11 @@ python skills/search-arxiv/search_arxiv.py citations 2305.12345 --max-results 20
 
 Returns JSON with `references` (backward citations — what this paper builds on) and `citations` (forward citations — who cites this paper). Each entry has `title`, `authors`, `year`, `arxiv_id`, `url`.
 
+## Role
+
+- **Standalone**: Invoked directly by the user to search for papers.
+- **Building block**: Called by `review-literature` and `investigate` via the underlying Python script.
+
 ## Instructions
 
 When invoked directly:
@@ -58,6 +63,12 @@ When invoked directly:
 ```
 
 4. For each highly relevant result, show the abstract excerpt.
+
+## Quality Criteria
+
+- Search returns results (graceful error message if API is down or script fails)
+- Results are formatted as a readable table with abstract excerpts for top hits
+- If the script fails (missing deps, network error), report the error to the caller
 
 ## Dependencies
 
