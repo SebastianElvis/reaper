@@ -119,14 +119,12 @@ reaper-workspace/
 │   ├── clarified-goal.md           # Refined goal, scope, assumptions, Q&A
 │   ├── paper-summary.md            # Structured paper extraction
 │   ├── literature.md               # Related work survey
-│   ├── problem-statement.md               # Formalized problem + ideas
-│   ├── current-understanding.md    # "Branch tip" — advances only on keep
-│   └── scratchpad.md               # Free-form reasoning
+│   ├── problem-statement.md        # Formalized problem + ideas
+│   └── current-understanding.md    # "Branch tip" — advances only on keep
 ├── investigations/
 │   └── NNN-<name>/                 # One directory per investigation cycle
 ├── feedback/                       # Human iteration feedback (round-N.md per round)
 ├── results.md                      # Cycle-by-cycle log with keep/discard
-├── log.md                          # Timestamped narrative
 └── report.md                       # Final synthesized output
 ```
 
@@ -135,20 +133,24 @@ reaper-workspace/
 Reaper's research loop follows six principles:
 
 1. **Separation of Concerns** — AI writes to workspace, human provides the goal, skill definitions are fixed
-2. **Fixed Evaluation Signal** — Precise hypotheses with explicit success/failure conditions
-3. **Structured Results Log** — Every cycle gets a row in results.md
-4. **Keep-or-Discard Loop** — current-understanding.md only advances on genuine progress
-5. **Never Stop** — Run all cycles without asking permission to continue
-6. **Clarity and Simplicity** — One "ping" per finding, refutable claims, fewer assumptions = better
+2. **Fixed Evaluation Signal** — Clarify the goal, establish baseline via paper analysis and literature review, then formalize into precise hypotheses with trust assumptions, security properties, and impossibility screening
+3. **Structured Results Log** — Every investigation cycle gets a row in `results.md` with hypothesis, action, outcome, confidence, and keep/discard status
+4. **Keep-or-Discard Loop** — `current-understanding.md` only advances on genuine progress; dead ends stay logged but don't pollute working state
+5. **Never Stop** — Run all cycles without asking permission to continue; if stuck, re-read the paper, question assumptions, combine discarded results, search for more related work, or try a radically different approach
+6. **Clarity and Simplicity** — One "ping" per finding, refutable claims, fewer assumptions = better; write early to crystallize understanding, not just to report it
 
-See `dev/ROADMAP.md` for the full methodology and development roadmap.
+See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full methodology and development roadmap.
 
 ## Development Status
+
+See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full roadmap.
 
 - **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete*
 - **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph — *complete*
 - **Horizon 3 (The Committee)**: Codex MCP critique via `/reaper:critique --codex` — *complete (optional dependency)*
-- **Horizon 4 (The Lab)**: Multi-paper, computation, LaTeX — planned
+- **Horizon 4 (The Academy)**: Broader topic search (Scholar/DBLP), author-centric and venue-centric search — *planned*
+- **Horizon 5 (The Apprentice)**: Evidence quality taxonomy, evidence-aware critique — *planned*
+- **Horizon 6 (The Examiner)**: Proactive reformulation trigger, claim provenance, formal verification — *planned*
 
 ## Acknowledgements
 

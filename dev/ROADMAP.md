@@ -159,13 +159,11 @@ reaper-workspace/
 │   ├── paper-summary.md                # Structured extraction from the paper
 │   ├── literature.md                   # Related work found during search
 │   ├── problem-statement.md                   # Problem statement + ideas
-│   ├── current-understanding.md        # "Branch tip" — only advances on keep
-│   └── scratchpad.md                   # Free-form reasoning
+│   └── current-understanding.md        # "Branch tip" — only advances on keep
 ├── investigations/
 │   └── NNN-<name>/                     # One directory per investigation cycle
 ├── feedback/                           # Cross-model review responses
 ├── results.md                          # Structured cycle log (keep/discard per cycle)
-├── log.md                              # Append-only timestamped narrative log
 └── report.md                           # Final synthesized output
 ```
 

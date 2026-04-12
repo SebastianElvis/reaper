@@ -11,7 +11,7 @@ claude mcp add codex-cli -- npx -y codex-mcp-server
 
 ## Fallback
 
-If the Codex MCP tools are unavailable (server not registered, connection failure, timeout), **skip silently and continue**. Log a note in the skill's output file or `reaper-workspace/log.md` that Codex consultation was requested but unavailable. Never block the pipeline on Codex.
+If the Codex MCP tools are unavailable (server not registered, connection failure, timeout), **skip silently and continue**. Log a note in the skill's output file that Codex consultation was requested but unavailable. Never block the pipeline on Codex.
 
 ## Session Continuity
 
@@ -28,9 +28,8 @@ Always send **compressed context** to Codex — never full workspace files. Each
 
 ## Logging
 
-Log every Codex consultation to `reaper-workspace/log.md` with:
+Log every Codex consultation to the skill's own output file (e.g., a `## Codex Consultation` section at the end) with:
 - Timestamp
-- Skill that consulted
 - What was asked
 - Summary of response (1-2 sentences)
 - Whether any action was taken (e.g., hypothesis added, output revised)

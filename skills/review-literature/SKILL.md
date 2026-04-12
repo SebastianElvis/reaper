@@ -209,9 +209,8 @@ Summary of all downloaded papers and their local paths for quick reference durin
 ### Graceful Degradation
 
 If the Python search scripts fail (missing dependencies, network errors):
-1. Log the failure to `reaper-workspace/log.md` with a timestamp and error message.
-2. Fall back to WebSearch for all queries.
-3. Note in `literature.md` that structured search was unavailable: `> **Note**: arXiv/ePrint API search was unavailable for this review. Results are from web search only.`
+1. Fall back to WebSearch for all queries.
+2. Note in `literature.md` that structured search was unavailable, with a timestamp and error message: `> **Note**: arXiv/ePrint API search was unavailable for this review (error: ...). Results are from web search only.`
 
 If PDF download fails for a paper, note it in the table (leave Local Path as "unavailable") and proceed with abstract-level understanding. The review must still meet quality criteria even in degraded mode.
 
