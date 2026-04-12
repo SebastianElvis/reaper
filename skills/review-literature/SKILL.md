@@ -130,22 +130,20 @@ python skills/search-arxiv/search_arxiv.py download <arxiv_id> --output-dir reap
 python skills/search-iacr/search_iacr.py download <eprint_id> --output-dir reaper-workspace/papers
 ```
 
-After downloading, **read each paper** using the Read tool (which can read PDFs). Do not just skim the abstract — understand the paper's internals:
+After downloading, **read each paper** using the Read tool (which can read PDFs). Apply [Keshav's three-pass method](http://ccr.sigcomm.org/online/files/p83-keshavA.pdf) combined with [Stiller-Reeve's review structure](https://www.nature.com/articles/d41586-018-06991-0):
 
-- **Problem formulation**: What exactly is being solved? What are the formal definitions?
-- **Techniques**: What proof techniques, constructions, or algorithms are used?
-- **Key results**: What are the main theorems, lemmas, and their implications?
-- **Assumptions and limitations**: What trust/system model? What doesn't the paper handle?
-- **Relation to our goal**: How does this paper's approach or result specifically connect to our research goal?
+1. **First pass** — title, abstract, intro, headings, conclusions. Get the category, context, and claimed contributions. Stop here for low-relevance papers.
+2. **Second pass** — grasp arguments, note key figures and theorems, skip proof details. Enough for medium-relevance papers.
+3. **Third pass** (high-relevance only) — challenge assumptions, verify proof sketches, re-derive key results.
 
-For long papers, focus on the introduction, main results/theorems, key proofs, and conclusion. Read specific sections in more depth when they are directly relevant to the research goal.
+Write a per-paper summary to `reaper-workspace/papers/<id>-notes.md`:
 
-Write a per-paper summary to `reaper-workspace/papers/<id>-notes.md` containing:
-- One-paragraph summary of the paper's contribution
-- Key definitions and theorems (stated precisely)
-- Techniques used and why they work
-- Limitations and open questions from the paper
-- Specific relevance to our research goal
+- **Mirror**: Restate the paper's aims, results, and novelty in your own words (one paragraph).
+- **Contribution**: What this paper advances over prior work and how.
+- **Key results**: Main theorems, definitions, and techniques (stated precisely).
+- **Strengths** (label major/minor): novelty, methodology fit, proof rigor, evaluation quality, clarity.
+- **Weaknesses** (label major/minor/fatal): broken methodology, missing proofs, unjustified claims, unfair comparisons, unclear writing, overclaimed results.
+- **Relevance to our research** — tag one or more: *problem definition*, *formalization*, *solution technique*, *negative result*, *literature/context*, *writing model*. One sentence per tag explaining how.
 
 These notes serve as a durable reference for the investigate step.
 
@@ -223,7 +221,7 @@ If PDF download fails for a paper, note it in the table (leave Local Path as "un
 - Results include papers from both arXiv and IACR ePrint (when the topic is crypto-related)
 - Papers are split into same-goal and same-approach categories — both categories should have entries
 - High-relevance papers are downloaded and read, with per-paper notes in `reaper-workspace/papers/`
-- Per-paper notes contain precise theorem statements and technique descriptions, not just abstract-level summaries
+- Per-paper notes contain mirror, contribution, key results, strengths/weaknesses, and relevance tags — not just abstract-level summaries
 - Citation graph section shows forward and backward citations for key papers
 - Landscape summary gives a reader unfamiliar with the area a useful mental map
 - Each related work has a specific relevance statement (not just "related to our topic")
