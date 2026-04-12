@@ -10,14 +10,14 @@
         "paper-summary": "notes/paper-summary.md must contain verbatim theorem statements, complete system model, and red flags section identifying the proof gap",
         "literature": "notes/literature.md must contain at least 10 related works with specific relevance statements",
         "hypotheses": "notes/problem-statement.md must contain falsifiable claims with explicit success/failure conditions targeting the proof gap",
-        "results": "results.md must have at least 5 cycle rows with keep/discard decisions",
+        "results": "notes/results.md must have at least 5 cycle rows with keep/discard decisions",
         "current-understanding": "notes/current-understanding.md must identify the specific proof gap (not just 'there may be issues')",
         "report": "report.md must have a one-sentence central finding, refutable contributions, and concrete examples"
       },
       "quality_criteria": [
         "The proof gap is identified with specificity (which lemma, which step, what goes wrong)",
         "The report explains the gap with a concrete execution trace or adversary strategy",
-        "current-understanding.md only advances on keep cycles (verify via results.md cross-check)",
+        "current-understanding.md only advances on keep cycles (verify via notes/results.md cross-check)",
         "No hallucinated references in literature.md"
       ],
       "suggested_papers": [
@@ -36,7 +36,7 @@
         "paper-summary": "notes/paper-summary.md must include communication/round complexity claims and the exact network/adversary model",
         "literature": "notes/literature.md must cover competing protocols (PBFT, Tendermint, HotStuff, etc.) with consistent comparison dimensions",
         "hypotheses": "notes/problem-statement.md must include claims about relative performance under the same model",
-        "results": "results.md must show comparison cycles using consistent dimensions from methodology.md",
+        "results": "notes/results.md must show comparison cycles using consistent dimensions from methodology.md",
         "current-understanding": "notes/current-understanding.md must contain a structured comparison table",
         "report": "report.md must identify at least one unfair or misleading comparison in the original paper (if any)"
       },
@@ -62,7 +62,7 @@
         "paper-summary": "notes/paper-summary.md must flag any red flags (synchrony/asynchrony mismatch, missing liveness argument, vague security definition)",
         "literature": "notes/literature.md must include relevant impossibility results and known attacks on similar constructions",
         "hypotheses": "notes/problem-statement.md must include hypotheses about whether specific claims are valid",
-        "results": "results.md must show at least one counterexample search cycle",
+        "results": "notes/results.md must show at least one counterexample search cycle",
         "current-understanding": "notes/current-understanding.md must clearly state which claims hold, which fail, and which are undetermined",
         "report": "report.md must present any counterexample with a concrete execution trace"
       },
@@ -95,7 +95,7 @@
     },
     {
       "skill": "reaper:investigate",
-      "test": "After N cycles: results.md has exactly N rows, investigation directories 001 through NNN exist with analysis.md files, current-understanding.md changed only on keep cycles, every cycle outcome is statable in one sentence"
+      "test": "After N cycles: notes/results.md has one row per hypothesis (updated inline on revisit, not duplicated), investigation directories 001 through NNN exist with analysis.md files, current-understanding.md changed only on keep cycles, every cycle outcome is statable in one sentence"
     },
     {
       "skill": "reaper:synthesize",
@@ -115,7 +115,7 @@
     },
     {
       "skill": "reaper:investigate (H2)",
-      "test": "When stuck at step 4, mid-cycle literature search uses search scripts. New papers appended to literature.md under 'Mid-Investigation Additions' section. literature-search action-type logged in results.md."
+      "test": "When stuck at step 4, mid-cycle literature search uses search scripts. New papers integrated into literature.md inline (added to appropriate existing sections). literature-search action-type logged in notes/results.md."
     }
   ],
   "evaluation_protocol": {

@@ -136,7 +136,7 @@ After downloading, **read each paper** using the Read tool (which can read PDFs)
 2. **Second pass** — grasp arguments, note key figures and theorems, skip proof details. Enough for medium-relevance papers.
 3. **Third pass** (high-relevance only) — challenge assumptions, verify proof sketches, re-derive key results.
 
-Write a per-paper summary to `reaper-workspace/papers/<id>-notes.md`:
+Write a per-paper summary to `reaper-workspace/papers/<id>-notes.md` (evolving — update inline if revisited during mid-investigation search):
 
 - **Mirror**: Restate the paper's aims, results, and novelty in your own words (one paragraph).
 - **Contribution**: What this paper advances over prior work and how.

@@ -126,17 +126,18 @@ When Reaper runs, it creates a `reaper-workspace/` directory:
 
 ```
 reaper-workspace/
-├── notes/
+├── notes/                          # Evolving — edited inline to reflect latest state
 │   ├── clarified-goal.md           # Refined goal, scope, assumptions, Q&A
 │   ├── paper-summary.md            # Structured paper extraction
 │   ├── literature.md               # Related work survey
 │   ├── problem-statement.md        # Formalized problem (model, properties, metrics)
-│   ├── ideas.md                    # Research ideas/hypotheses (grows over time)
-│   └── current-understanding.md    # "Branch tip" — advances only on keep
-├── investigations/
-│   └── NNN-<name>/                 # One directory per investigation cycle
-├── feedback/                       # Human iteration feedback (round-N.md per round)
-├── results.md                      # Cycle-by-cycle log with keep/discard
+│   ├── ideas.md                    # Research ideas/hypotheses (edited inline on revisit)
+│   ├── current-understanding.md    # "Branch tip" — advances only on keep
+│   └── results.md                  # One row per hypothesis, updated inline on revisit
+├── investigations/                 # Evolving — reuse directory on revisit, edit inline
+│   └── NNN-<name>/                 # One directory per hypothesis
+├── feedbacks/                      # Append-only — one file per event, never modified
+├── logs/                           # Append-only — one file per event, never modified
 └── report.md                       # Final synthesized output
 ```
 
@@ -146,7 +147,7 @@ Reaper's research loop follows six principles:
 
 1. **Separation of Concerns** — AI writes to workspace, human provides the goal, skill definitions are fixed
 2. **Fixed Evaluation Signal** — Clarify the goal, establish baseline via paper analysis and literature review, then formalize into precise hypotheses with trust assumptions, security properties, and impossibility screening
-3. **Structured Results Log** — Every investigation cycle gets a row in `results.md` with hypothesis, action, outcome, confidence, and keep/discard status
+3. **Structured Results Log** — Every hypothesis gets one row in `notes/results.md` with action, outcome, confidence, and keep/discard status; revisits update the row inline rather than appending duplicates
 4. **Keep-or-Discard Loop** — `current-understanding.md` only advances on genuine progress; dead ends stay logged but don't pollute working state
 5. **Never Stop** — Run all cycles without asking permission to continue; if stuck, re-read the paper, question assumptions, combine discarded results, search for more related work, or try a radically different approach
 6. **Clarity and Simplicity** — One "ping" per finding, refutable claims, fewer assumptions = better; write early to crystallize understanding, not just to report it

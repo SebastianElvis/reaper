@@ -94,7 +94,7 @@ Need very recent papers?
    ```bash
    python skills/search-arxiv/search_arxiv.py download <id> --output-dir reaper-workspace/papers/
    ```
-3. Append findings to `literature.md` under `## Mid-Investigation Additions`
+3. Integrate findings into `literature.md` inline (add to appropriate existing sections)
 
 ### Citation Chasing
 
