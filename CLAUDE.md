@@ -35,6 +35,6 @@ pip install arxiv requests beautifulsoup4
 - No JavaScript/TypeScript in this project — it's Claude skills + Python only.
 - When adding, removing, or renaming a skill, update `.claude-plugin/marketplace.json` to keep the `skills` array in sync. Also keep `version` in both `plugin.json` and `marketplace.json` consistent with the current release.
 - The license is Apache-2.0. If `plugin.json` references a license field, it must say `"Apache-2.0"`.
-- When cutting a release tag, the tag message should summarize changes since the last tag (use `git log <last-tag>..HEAD`).
+- When cutting a release tag: (1) bump version in `plugin.json` and `marketplace.json`, (2) commit and merge the version bump PR to `main` first, (3) then create the annotated tag pointing at the merged commit on `main`. The tag must always point to a commit on `main`, never a feature branch. The tag message should summarize changes since the last tag (use `git log <last-tag>..HEAD`).
 - Always use squash merge for PRs.
 - Before finishing a task, check if important docs (README.md, CLAUDE.md, dev/ROADMAP.md) need to be updated to reflect your changes.
