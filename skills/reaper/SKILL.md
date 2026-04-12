@@ -36,7 +36,7 @@ reaper-workspace/
 ├── papers/                         # Evolving — per-paper notes can be updated
 ├── investigations/                 # Evolving — reuse directory on revisit, edit inline
 ├── feedbacks/                      # Append-only — one file per event, never modified
-├── logs/                           # Append-only — one file per event, never modified
+├── logs/                           # Append-only — one file per cycle, never modified
 ```
 
 Initialize `reaper-workspace/notes/results.md` with:
