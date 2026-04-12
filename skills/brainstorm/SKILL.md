@@ -31,7 +31,7 @@ The recurring ideation step. Reads the current research state and proposes new o
 - `reaper-workspace/notes/problem-statement.md` — model assumptions and property definitions
 - `reaper-workspace/notes/ideas.md` — the current ideas and their resolution status
 - `reaper-workspace/notes/current-understanding.md` — the "branch tip" of accumulated knowledge
-- `reaper-workspace/results.md` — what's been tried and what happened. **If the file is long (20+ rows), read the batch summaries at the end instead of every individual row.** Look for patterns in failures across batches, not individual cycle details.
+- `reaper-workspace/notes/results.md` — what's been tried and what happened. **If the file is long (20+ rows), read the batch summaries at the end instead of every individual row.** Look for patterns in failures across batches, not individual cycle details.
 
 **Lazy-load only when needed** (skip these unless you're stuck or exploring a specific direction):
 - `reaper-workspace/notes/paper-summary.md` — the source paper
@@ -98,7 +98,11 @@ Not all ideas are equally worth investigating. Rank by consequence — ask: "If 
 
 ### 5. Write Output
 
-Append new ideas to `reaper-workspace/notes/ideas.md` under a clearly marked section:
+Update `reaper-workspace/notes/ideas.md`:
+- **New ideas**: Add under a clearly marked section.
+- **Existing ideas**: If an idea should be deprioritized, marked as subsumed, or have its statement refined based on new understanding, **edit it inline** rather than leaving stale entries.
+
+New ideas use this format:
 
 ```markdown
 ## Ideas — Brainstorm Round N

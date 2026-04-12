@@ -27,7 +27,7 @@ Default: 5 cycles if no argument given.
 - `reaper-workspace/notes/problem-statement.md` — model assumptions and property definitions
 - `reaper-workspace/notes/ideas.md` — the ideas to investigate
 - `reaper-workspace/notes/current-understanding.md` — the "branch tip" of accumulated knowledge
-- `reaper-workspace/results.md` — what's been tried and what happened
+- `reaper-workspace/notes/results.md` — what's been tried and what happened
 
 **Lazy-load only when needed** (do not read upfront — load only if a cycle's hypothesis requires it or the "when stuck" protocol calls for it):
 - `reaper-workspace/notes/paper-summary.md` — the source paper
@@ -43,15 +43,15 @@ Investigation runs in **batches**, not sequential cycles. Independent hypotheses
 
 ```
 while cycles_remaining > 0 and not converged:
-    Plan:     read ideas.md + results.md → dependency graph → batch of independent hypotheses
+    Plan:     read ideas.md + notes/results.md → dependency graph → batch of independent hypotheses
     Dispatch: spawn one subagent per hypothesis (parallel, in one message)
-    Merge:    collect results → append to results.md → integrate "keep" insights into current-understanding.md
+    Merge:    collect results → update notes/results.md → integrate "keep" insights into current-understanding.md
 ```
 
 ### Plan Batch
 
-1. Read `ideas.md` and `results.md`
-2. Identify all **unresolved** hypotheses. Check `results.md` to avoid repeating failed approaches.
+1. Read `ideas.md` and `notes/results.md`
+2. Identify all **unresolved** hypotheses. Check `notes/results.md` to avoid repeating failed approaches.
 3. Build a dependency graph: does resolving H2 require knowing the outcome of H1? If so, H2 depends on H1.
 4. Select the largest set of **independent** hypotheses that can run concurrently. Cap the batch size at `cycles_remaining`.
 5. Allocate cycle numbers: pre-assign a contiguous range per subagent (e.g., batch 1 gets 001-003, batch 2 gets 004-006). Each subagent gets one or more consecutive numbers from its range.
@@ -66,7 +66,7 @@ Spawn one subagent per hypothesis in the batch using the Agent tool. **Launch al
 - The hypothesis to investigate
 - A **hypothesis-relevant excerpt** of `current-understanding.md` (read-only for the duration of the batch) — extract only the 2-3 findings most relevant to this subagent's hypothesis, not the full file. This keeps subagent context lean. Include a note: "For additional context, see current-understanding.md."
 - The full single-cycle protocol (Steps A–E below)
-- Instructions to return: cycle rows for `results.md`, keep/discard verdict, and if keep: the insight to merge
+- Instructions to return: cycle rows for `notes/results.md`, keep/discard verdict, and if keep: the insight to merge
 
 **Context efficiency**: Do NOT send the full `current-understanding.md` to every subagent. Instead, read it once in the main agent, identify which findings are relevant to each hypothesis, and send only those. A typical excerpt is 200-500 words vs 2000-5000 for the full file.
 
@@ -74,7 +74,9 @@ Each subagent runs the single-cycle protocol independently:
 
 #### Step A: Create Investigation Directory
 
-Create `reaper-workspace/investigations/NNN-<slug>/` where:
+If this cycle revisits a hypothesis that already has an investigation directory, **reuse that directory** — update its `analysis.md` and `proof.md` inline rather than creating a new directory. The cycle number in the directory name stays the same (the original); the `notes/results.md` row will be updated with the new cycle number.
+
+For a new hypothesis, create `reaper-workspace/investigations/NNN-<slug>/` where:
 - `NNN` is the assigned zero-padded cycle number (001, 002, ...)
 - `<slug>` is a short descriptor (e.g., `proof-lemma3`, `counterex-2party`, `alt-reduction`)
 
@@ -89,7 +91,7 @@ Do the actual research. This is the core intellectual work. Depending on the hyp
 - **Comparison**: Compare approaches along specific dimensions (complexity, assumptions, properties).
 - **Performance analysis**: Prove complexity bounds, communication costs, round complexity, or other quantitative metrics. All performance claims must follow the formal proof structure below.
 
-Write all work — reasoning, attempts, dead ends, insights — to `reaper-workspace/investigations/NNN-<slug>/analysis.md`.
+Write all work — reasoning, attempts, dead ends, insights — to `reaper-workspace/investigations/NNN-<slug>/analysis.md`. If revisiting, **edit the existing `analysis.md` inline** — update conclusions, revise reasoning, and integrate new findings into the existing structure rather than appending a new section. The file should always reflect the current best understanding of this hypothesis.
 
 ##### Intra-Cycle Parallelism
 
@@ -173,7 +175,7 @@ Log composition limitations in the investigation's `analysis.md` even if the ori
 
 #### Step D: Log
 
-Prepare a row for `reaper-workspace/results.md`:
+Prepare a row for `reaper-workspace/notes/results.md`:
 
 ```
 | NNN | H# | action-type | outcome | confidence | status | one-sentence description |
@@ -184,6 +186,8 @@ Where:
 - **outcome**: confirmed, refuted, partially-confirmed, inconclusive, new-hypothesis, reformulate
 - **confidence**: high, medium, low (see calibration below)
 - **status**: keep or discard
+
+**Update-in-place rule**: If this cycle revisits a hypothesis that already has a row in `notes/results.md`, the subagent should flag this as an update (not a new row). The main agent will update the existing row inline during the merge phase rather than appending a duplicate. The cycle number, outcome, confidence, and description should all reflect the latest result. The previous investigation directory remains in `investigations/` for the audit trail.
 
 Subagents return this row to the main agent rather than appending directly.
 
@@ -209,10 +213,10 @@ Subagents do NOT write to `current-understanding.md` directly — they return th
 
 After all subagents in a batch complete:
 
-1. **Append rows** to `reaper-workspace/results.md`, ordered by cycle number
+1. **Update or append rows** in `reaper-workspace/notes/results.md`. If a cycle revisits a hypothesis that already has a row, **update the existing row inline** with the new cycle number, outcome, confidence, and description — do not append a duplicate. Only append a new row for hypotheses appearing in the table for the first time. Keep rows ordered by hypothesis number.
 2. **Integrate "keep" insights** into `reaper-workspace/notes/current-understanding.md` — the main agent writes this, preserving the single-writer constraint. Write as if explaining at a whiteboard — crystallize understanding, don't just append notes. The file should be coherent end-to-end, not a chronological log.
-3. **Check for new hypotheses** generated by the batch (subagents may propose them). Add to `ideas.md`.
-4. **Write batch summary** to `reaper-workspace/results.md` after the row table:
+3. **Check for new hypotheses** generated by the batch (subagents may propose them). Add to `ideas.md`. If a hypothesis's status changed (resolved, deprioritized, subsumed), **update it inline** in `ideas.md`.
+4. **Write batch summary** to `reaper-workspace/notes/results.md` after the row table:
    ```markdown
    ## Batch Summary (Cycles NNN-MMM)
    Keep findings:
@@ -237,9 +241,9 @@ Run all N cycles. The only valid early stop is **genuine convergence**: all hypo
 
 ## When Stuck
 
-If a cycle is going nowhere, follow the escalation protocol in `references/methodology.md` (section "When Stuck: 8-Step Escalation"). The steps progress from re-reading existing materials, through searching for new literature (see `references/search-tools.md` for search commands), to trying radically different approaches.
+If a cycle is going nowhere, follow the escalation protocol in `references/methodology.md` (section "When Stuck: 8-Step Escalation"). The steps progress from re-reading existing materials, through searching for new literature (see `references/search-tools.md` for search commands, which use `search_arxiv.py` and `search_iacr.py`), to trying radically different approaches.
 
-When searching for new literature mid-investigation, download relevant papers to `reaper-workspace/papers/`, write per-paper notes (`<id>-notes.md`), and append to `reaper-workspace/notes/literature.md` under a `## Mid-Investigation Additions (Cycle NNN)` section. Log the search as a cycle with action-type `literature-search` in `results.md`.
+When searching for new literature mid-investigation, download relevant papers to `reaper-workspace/papers/`, write per-paper notes (`<id>-notes.md`), and **integrate findings into `reaper-workspace/notes/literature.md` inline** — add new entries to the appropriate existing sections rather than appending a separate "Mid-Investigation Additions" section. Log the search as a cycle with action-type `literature-search` in `notes/results.md`.
 
 If all escalation tactics are exhausted and the hypothesis remains stuck, log the cycle as `inconclusive` and continue to the next hypothesis. The orchestrator will call `brainstorm` after the batch to generate new ideas based on the pattern of failures.
 
@@ -263,7 +267,7 @@ If an investigation cycle reveals that the problem formulation itself is wrong (
    - What is wrong with the current formulation
    - What evidence from this cycle demonstrates the problem
    - What the corrected formulation should look like (proposed changes to model assumptions, core question, or properties)
-3. Write `REFORMULATE` as the first line of the cycle description in `results.md`, followed by a one-sentence summary.
+3. Write `REFORMULATE` as the first line of the cycle description in `notes/results.md`, followed by a one-sentence summary.
 4. **Stop the current investigation batch** and return control to the orchestrator. Do not continue investigating hypotheses based on a known-incorrect formulation.
 
 The orchestrator will re-run `/reaper:formalize-problem` incorporating the re-formalization signal before resuming investigation.
@@ -272,11 +276,11 @@ If any cycle in a batch returns outcome `reformulate`, stop dispatching further 
 
 ## Quality Criteria
 
-- Every cycle has a row in `results.md` — no exceptions
+- Every hypothesis has exactly one row in `notes/results.md` reflecting its latest state — revisits update inline, not append
 - `current-understanding.md` only changes on keep cycles
-- Each investigation directory has an `analysis.md` with full reasoning
+- Each investigation directory has an `analysis.md` reflecting the current best understanding (edited inline on revisit)
 - The "one ping" test: every cycle's outcome can be stated in one sentence
 - No cycles wasted on tangential exploration that doesn't serve the research goal
-- When stuck, the 9-step protocol is followed before giving up on a hypothesis
+- When stuck, the 8-step protocol is followed before giving up on a hypothesis
 - Independent hypotheses are batched in parallel by default; sequential only when dependencies exist
 - `current-understanding.md` is written only by the main agent during the merge phase, never by subagents

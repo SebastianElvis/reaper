@@ -30,15 +30,16 @@ Create the workspace directory structure:
 
 ```
 reaper-workspace/
-├── notes/
-│   └── current-understanding.md    # Initialize empty — "branch tip"
-├── papers/                         # Downloaded PDFs and per-paper notes
-├── investigations/
-├── feedback/
-└── results.md                      # Initialize with table header
+├── notes/                          # Evolving — edited inline to reflect latest state
+│   ├── current-understanding.md    # Initialize empty — "branch tip"
+│   └── results.md                  # Initialize with table header — one row per hypothesis, updated inline on revisit
+├── papers/                         # Evolving — per-paper notes can be updated
+├── investigations/                 # Evolving — reuse directory on revisit, edit inline
+├── feedbacks/                      # Append-only — one file per event, never modified
+├── logs/                           # Append-only — one file per event, never modified
 ```
 
-Initialize `reaper-workspace/results.md` with:
+Initialize `reaper-workspace/notes/results.md` with:
 ```markdown
 # Investigation Results
 
@@ -115,7 +116,7 @@ If `investigate` returns with a re-formalization signal (any cycle logged with o
 
 #### Loop Mechanics
 
-The `brainstorm` step reads the current state and appends new ideas to `ideas.md` (tagged `[Brainstorm-N]`). The `critique` step may also add hypotheses (tagged `[Codex-N]` or `[Self-N]`). The next `investigate` batch picks up all unresolved ideas automatically.
+The `brainstorm` step reads the current state and updates `ideas.md` (adding new ideas, editing existing ones inline) (tagged `[Brainstorm-N]`). The `critique` step may also add hypotheses (tagged `[Codex-N]` or `[Self-N]`). The next `investigate` batch picks up all unresolved ideas automatically.
 
 This loop runs autonomously — do not interrupt or ask if it should continue.
 
@@ -152,14 +153,14 @@ Do **not** block waiting for a response — the pipeline is complete. The user c
 If the context window is compressed or the orchestrator loses track of its position, reconstruct the pipeline state from workspace files alone:
 
 1. **Check which files exist** in `reaper-workspace/notes/`
-2. **Read `results.md`** to determine investigation progress (count cycles, check for unresolved hypotheses)
-3. **Read `ideas.md`** to find unresolved hypotheses (cross-reference with `results.md`)
+2. **Read `notes/results.md`** to determine investigation progress (count cycles, check for unresolved hypotheses)
+3. **Read `ideas.md`** to find unresolved hypotheses (cross-reference with `notes/results.md`)
 4. **Check for `report.md`** to determine if synthesis is complete
-5. **Check `feedback/`** for iteration rounds
+5. **Check `feedbacks/`** for iteration rounds
 
 **Decision table:**
 
-| `paper-summary.md` | `problem-statement.md` | `results.md` rows | `report.md` | Action |
+| `paper-summary.md` | `problem-statement.md` | `notes/results.md` rows | `report.md` | Action |
 |---|---|---|---|---|
 | missing | - | - | - | Run Step 3 (baseline) |
 | exists | missing | - | - | Run Step 4 (formalize) |

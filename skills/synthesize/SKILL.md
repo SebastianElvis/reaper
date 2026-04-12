@@ -22,7 +22,7 @@ Do NOT rely on context window. Re-read workspace files, but **load selectively**
 
 **Always read:**
 - `reaper-workspace/notes/current-understanding.md` — the accumulated findings (primary source)
-- `reaper-workspace/results.md` — the cycle-by-cycle record including batch summaries
+- `reaper-workspace/notes/results.md` — the cycle-by-cycle record including batch summaries
 - `reaper-workspace/notes/problem-statement.md` — model assumptions and property definitions
 - `reaper-workspace/notes/ideas.md` — the ideas and their resolution status
 
@@ -31,8 +31,8 @@ Do NOT rely on context window. Re-read workspace files, but **load selectively**
 - `reaper-workspace/notes/literature.md` — focus on "Landscape Summary" and "Key Prior Results" sections
 
 **Load investigation directories selectively:**
-- Read `results.md` batch summaries first — these provide a condensed view of each batch's findings
-- Only read `investigations/*/analysis.md` for **keep cycles** (check the "Status" column in `results.md`). Skip discard investigations entirely.
+- Read `notes/results.md` batch summaries first — these provide a condensed view of each batch's findings
+- Only read `investigations/*/analysis.md` for **keep hypotheses** (check the "Status" column in `notes/results.md`). Skip discard investigations entirely. Each `analysis.md` reflects the latest state of its hypothesis (edited inline on revisit).
 - If batch summaries are present and sufficient, you may skip individual `analysis.md` files for cycles already summarized
 - For investigations with formal proofs (`proof.md`), only read if the report needs to cite a specific proof step
 
@@ -139,7 +139,7 @@ For counterexamples and attacks, use a concrete execution trace:
 
 ## Appendix A: Investigation Log
 
-[Summary table from results.md — the full cycle-by-cycle record for reproducibility.]
+[Summary table from notes/results.md — the full cycle-by-cycle record for reproducibility.]
 ```
 
 ### 4. Writing Principles

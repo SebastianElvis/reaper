@@ -24,7 +24,7 @@ Always send **compressed context** to Codex — never full workspace files. Each
 - **Cap at ~800 words** of input context per consultation
 - Extract only the information Codex needs to answer the specific question
 - Include a 1-sentence framing of the research goal for orientation
-- Prefer summaries over raw data (batch summaries over full results.md rows, key findings over full current-understanding.md)
+- Prefer summaries over raw data (batch summaries over full notes/results.md rows, key findings over full current-understanding.md)
 
 ## Logging
 
@@ -55,9 +55,9 @@ Log every Codex consultation to the skill's own output file (e.g., a `## Codex C
 **Act on**: Revise, merge, or add hypotheses based on feedback. Tag any Codex-suggested hypotheses `[Codex-F]`.
 
 ### brainstorm
-**When**: After generating candidate ideas, before appending to `ideas.md`.
+**When**: After generating candidate ideas, before updating `ideas.md`.
 **Ask**: "Given these investigation results so far and the new ideas I'm considering, what non-obvious angles or cross-domain connections am I missing?"
-**Send**: Last 3 batch summaries from `results.md` + candidate ideas (~500 words).
+**Send**: Last 3 batch summaries from `notes/results.md` + candidate ideas (~500 words).
 **Act on**: Add promising suggestions as hypotheses tagged `[Codex-B]`. Discard obvious or redundant ones.
 
 ### investigate

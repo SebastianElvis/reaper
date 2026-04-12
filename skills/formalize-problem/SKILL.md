@@ -103,7 +103,7 @@ Write ideas to a separate file `reaper-workspace/notes/ideas.md`:
 
 ### Relationship to Brainstorm
 
-`formalize-problem` handles *initial* formalization: pinning down trust assumptions, the core question, definitional hygiene, and the first set of hypotheses. It runs once at the start of the pipeline. The `brainstorm` skill handles *recurring* ideation — generating additional ideas as the investigation progresses, applying Hamming/Qian heuristics to current state, and proposing follow-up hypotheses based on patterns in results. `brainstorm` appends to the `ideas.md` that this skill creates.
+`formalize-problem` handles *initial* formalization: pinning down trust assumptions, the core question, definitional hygiene, and the first set of hypotheses. It runs once at the start of the pipeline. The `brainstorm` skill handles *recurring* ideation — generating additional ideas as the investigation progresses, applying Hamming/Qian heuristics to current state, and proposing follow-up hypotheses based on patterns in results. `brainstorm` updates the `ideas.md` that this skill creates (adding new ideas and editing existing ones inline).
 
 ### Quality Criteria
 

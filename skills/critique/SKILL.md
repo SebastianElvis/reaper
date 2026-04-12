@@ -26,10 +26,10 @@ Provide external perspective on investigation results. Three modes: human feedba
 
 **Always read** before starting:
 - `reaper-workspace/notes/current-understanding.md` — the "branch tip" of accumulated knowledge
-- `reaper-workspace/results.md` — what's been tried and what happened
+- `reaper-workspace/notes/results.md` — what's been tried and what happened
 - `reaper-workspace/notes/problem-statement.md` — model assumptions and property definitions
 - `reaper-workspace/notes/ideas.md` — the ideas to investigate
-- `reaper-workspace/feedback/` — prior feedback rounds
+- `reaper-workspace/feedbacks/` — prior feedback rounds
 
 **Lazy-load only when needed:**
 - `reaper-workspace/notes/paper-summary.md` — the source paper
@@ -42,11 +42,11 @@ When the argument is quoted text, the skill enters human feedback mode. This is 
 
 ### 1. Determine the Feedback Round
 
-Check `reaper-workspace/feedback/` for existing `round-*.md` files. The new round number is one greater than the highest existing round, or 1 if none exist.
+Check `reaper-workspace/feedbacks/` for existing `round-*.md` files. The new round number is one greater than the highest existing round, or 1 if none exist.
 
 ### 2. Classify and Save Feedback
 
-Classify the user's feedback and write `reaper-workspace/feedback/round-N.md`:
+Classify the user's feedback and write `reaper-workspace/feedbacks/round-N.md`:
 
 ```markdown
 # Feedback Round N
@@ -87,12 +87,12 @@ See `references/codex-consultation.md` for MCP setup, fallback behavior, session
 
 ### Determining the Role
 
-Check `reaper-workspace/investigations/` for existing `codex-consultation-*.md` files. Count them to determine the consultation number N. Alternate roles:
+Check `reaper-workspace/feedbacks/` for existing `codex-consultation-*.md` files. Count them to determine the consultation number N. Alternate roles:
 
 - **Devil's Advocate** (odd N: 1st, 3rd, 5th, ...):
   Ask Codex to challenge the current findings. Send it a **compressed context** (not full files):
   - The **last 5 findings** from `current-understanding.md` (extract the most recent insights, ~500 words — not the full file)
-  - A **summary row** from `results.md` (e.g., "Last 10 cycles: 6 keep, 4 discard; key patterns: [list]")
+  - A **summary row** from `notes/results.md` (e.g., "Last 10 cycles: 6 keep, 4 discard; key patterns: [list]")
   - The prompt: *"You are reviewing a research investigation. Play devil's advocate: identify the weakest claims, unstated assumptions, logical gaps, or alternative explanations that the investigators may have missed. Be specific — point to exact claims and explain why they might be wrong."*
 
 - **Inspiration / Alternative Angles** (even N: 2nd, 4th, 6th, ...):
@@ -105,7 +105,7 @@ Check `reaper-workspace/investigations/` for existing `codex-consultation-*.md` 
 
 ### Processing Codex Feedback
 
-1. **Log** the Codex response to `reaper-workspace/investigations/codex-consultation-N.md`.
+1. **Log** the Codex response to `reaper-workspace/feedbacks/codex-consultation-N.md`.
 2. **Triage** the feedback:
    - **Actionable critique**: If Codex identifies a genuine gap or flaw, add a new hypothesis to `ideas.md` marked `[Codex-N]`.
    - **Alternative approach**: If Codex suggests a promising technique, add it as a hypothesis marked `[Codex-N]`.
@@ -123,19 +123,19 @@ The agent reviews its own investigation results for gaps, inconsistencies, or mi
 
 ### Process
 
-1. Read `current-understanding.md`, `results.md`, and `ideas.md`.
+1. Read `current-understanding.md`, `notes/results.md`, and `ideas.md`.
 2. Identify:
    - **Weak claims**: Findings with low or medium confidence that haven't been strengthened.
    - **Untested assumptions**: Assumptions listed in hypotheses or proofs that haven't been validated.
    - **Missing angles**: Obvious questions raised by the current findings that haven't been investigated.
-   - **Inconsistencies**: Claims in `current-understanding.md` that conflict with each other or with `results.md`.
-3. Write the self-review to `reaper-workspace/investigations/self-review-N.md` (where N is one more than the count of existing self-review files).
+   - **Inconsistencies**: Claims in `current-understanding.md` that conflict with each other or with `notes/results.md`.
+3. Write the self-review to `reaper-workspace/logs/self-review-N.md` (where N is one more than the count of existing self-review files).
 4. For each actionable finding, add a hypothesis to `ideas.md` marked `[Self-N]`.
 5. If actionable hypotheses were added, run `/reaper:investigate 3` to address them.
 
 ## Quality Criteria
 
-- Every critique mode produces a logged artifact in `reaper-workspace/investigations/` or `reaper-workspace/feedback/`
+- Every critique mode produces a logged artifact in `reaper-workspace/feedbacks/` or `reaper-workspace/logs/` (append-only — create new files with incrementing N, never modify existing ones)
 - Human feedback is classified before action is taken
 - Codex consultations alternate between devil's advocate and inspiration roles
 - Self-reviews identify specific, actionable gaps — not vague concerns

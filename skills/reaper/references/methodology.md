@@ -121,7 +121,7 @@ When an investigation cycle is going nowhere:
 
 2. **Re-read current-understanding.md.** What are you taking for granted? What assumptions haven't been questioned? Is there a hidden "of course" that might be wrong?
 
-3. **Re-read results.md.** Look across discard cycles. Two dead ends might point to the same underlying issue. Patterns in failures are informative.
+3. **Re-read notes/results.md.** Look across discard cycles. Two dead ends might point to the same underlying issue. Patterns in failures are informative.
 
 4. **Search for related work.** The specific technical question you're stuck on may have been answered elsewhere. Search for the precise sub-problem.
 

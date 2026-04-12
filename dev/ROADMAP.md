@@ -28,7 +28,7 @@ Reaper's research loop is built on six principles that ensure autonomous, discip
 
 The AI and the human have non-overlapping territories:
 
-- **AI writes to `workspace/`** — notes, investigations, results, reports. This is the AI's exclusive working space.
+- **AI writes to `workspace/`** — notes, investigations, results, reports. This is the AI's exclusive working space. Files in `notes/`, `investigations/`, and `papers/` are **evolving documents** edited inline to reflect the latest understanding. Files in `feedbacks/` and `logs/` are **append-only snapshots** — each is created once and never modified.
 - **Human writes the research goal prompt** — the paper to analyze and what to investigate. This is the sole steering mechanism.
 - **SKILL.md files and workspace file contracts are fixed** — they define the pipeline, evaluation criteria, and interfaces between skills. Neither the AI nor the human modifies them during a run.
 
@@ -58,31 +58,32 @@ Not all hypotheses are equally worth investigating. Among the ideas, prioritize 
 
 Every investigation cycle is then evaluated against these fixed criteria — did the cycle make progress toward confirming or refuting a specific claim?
 
-Progress is tracked in `results.md` (see Principle 3).
+Progress is tracked in `notes/results.md` (see Principle 3).
 
 ### Principle 3: Structured Results Log
 
-`workspace/results.md` logs every investigation cycle in a structured table:
+`workspace/notes/results.md` tracks every hypothesis in a structured table — **one row per hypothesis, updated inline on revisit**:
 
 ```markdown
 | Cycle | Hypothesis | Action | Outcome | Confidence | Status | Description |
 |-------|-----------|--------|---------|------------|--------|-------------|
-| 001 | H1 | Proof verification | Refuted | High | keep | Found gap in Lemma 3.2 — simulator doesn't handle abort |
-| 002 | H2 | Counterexample search | Inconclusive | Low | discard | Tried 2-party case, no counterexample found, approach too narrow |
 | 003 | H1 | Alternative proof | Confirmed | Medium | keep | Constructed fix for Lemma 3.2 using rewinding |
+| 002 | H2 | Counterexample search | Inconclusive | Low | discard | Tried 2-party case, no counterexample found, approach too narrow |
 ```
 
-- **keep**: The cycle produced a meaningful advance in understanding. Findings propagate to `notes/current-understanding.md`.
-- **discard**: The cycle was a dead end. It stays logged in `results.md` and its investigation directory, but does not update the running state.
+When a hypothesis is revisited (e.g., H1 initially refuted in cycle 001, then confirmed via alternative proof in cycle 003), the existing row is **updated inline** — cycle number, outcome, confidence, and description all reflect the latest result. The full history of prior attempts is preserved in the `investigations/` directories.
 
-This is the ground-truth scoreboard. Every cycle gets a row, no exceptions.
+- **keep**: The cycle produced a meaningful advance in understanding. Findings propagate to `notes/current-understanding.md`.
+- **discard**: The cycle was a dead end. It stays logged in `notes/results.md` and its investigation directory, but does not update the running state.
+
+This is the ground-truth scoreboard. Every hypothesis gets exactly one row reflecting its current state.
 
 ### Principle 4: Keep-or-Discard Loop
 
 `notes/current-understanding.md` is the "branch tip." It represents the best current understanding of the research question. After each investigation cycle:
 
-- If the cycle produced genuine progress (new finding, resolved hypothesis, corrected error) → **keep**: update `current-understanding.md` with the new insight.
-- If the cycle was unproductive (dead end, inconclusive without useful narrowing, redundant with prior work) → **discard**: log it in `results.md`, leave the investigation directory for the audit trail, but do not touch `current-understanding.md`.
+- If the cycle produced genuine progress (new finding, resolved hypothesis, corrected error) → **keep**: edit `current-understanding.md` inline to integrate the new insight — revise existing sections, not just append.
+- If the cycle was unproductive (dead end, inconclusive without useful narrowing, redundant with prior work) → **discard**: log it in `notes/results.md`, leave the investigation directory for the audit trail, but do not touch `current-understanding.md`.
 
 The AI always works from the best-known state. This prevents accumulation of noise in the working state while preserving the full history for audit.
 
@@ -92,7 +93,7 @@ Run all N cycles without asking "should I continue?" The only valid early stop i
 
 1. Re-read the paper. Look at sections you skimmed earlier.
 2. Re-read `notes/current-understanding.md`. What assumptions haven't been questioned?
-3. Re-read `results.md`. Can two "discard" results be combined into something useful?
+3. Re-read `notes/results.md`. Can two "discard" results be combined into something useful?
 4. Search for related work you haven't found yet.
 5. Try a radically different approach to the same hypothesis.
 6. If all execution-level tactics are exhausted, log the cycle as inconclusive and continue. The orchestrator will call `brainstorm` after the batch to generate new ideas (applying Hamming inversion, Qian's patterns, gap-finding) based on the pattern of failures.
@@ -154,17 +155,18 @@ When a user invokes `/reaper`, this structure is created in their working direct
 
 ```
 reaper-workspace/
-├── notes/
+├── notes/                              # Evolving — edited inline to reflect latest state
 │   ├── clarified-goal.md              # Refined goal, scope, assumptions, Q&A
 │   ├── paper-summary.md                # Structured extraction from the paper
 │   ├── literature.md                   # Related work found during search
 │   ├── problem-statement.md                   # Problem statement (model, properties, metrics)
-│   ├── ideas.md                               # Research ideas/hypotheses (grows over time)
-│   └── current-understanding.md        # "Branch tip" — only advances on keep
-├── investigations/
-│   └── NNN-<name>/                     # One directory per investigation cycle
-├── feedback/                           # Cross-model review responses
-├── results.md                          # Structured cycle log (keep/discard per cycle)
+│   ├── ideas.md                               # Research ideas/hypotheses (edited inline on revisit)
+│   ├── current-understanding.md        # "Branch tip" — only advances on keep
+│   └── results.md                      # One row per hypothesis, updated inline on revisit
+├── investigations/                     # Evolving — reuse directory on revisit, edit inline
+│   └── NNN-<name>/                     # One directory per hypothesis
+├── feedbacks/                          # Append-only — one file per event, never modified
+├── logs/                               # Append-only — one file per event, never modified
 └── report.md                           # Final synthesized output
 ```
 
@@ -194,8 +196,8 @@ H6 The Examiner:                                           + reformulation  + (s
 **What success looks like:** `/reaper paper.pdf "check if the security proof in Section 4 holds under asynchrony"` produces a workspace with:
 - `notes/problem-statement.md` containing a precise problem statement (trust assumptions, security properties, performance goals)
 - `notes/ideas.md` containing the research ideas/hypotheses and their resolution status
-- `results.md` showing cycle-by-cycle progression with keep/discard decisions
-- `current-understanding.md` with the accumulated findings
+- `notes/results.md` showing cycle-by-cycle progression with keep/discard decisions
+- `notes/current-understanding.md` with the accumulated findings
 - `report.md` that a researcher would find genuinely useful
 
 And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a structured summary, `/reaper:formalize-problem` for just a problem statement, etc.
@@ -208,10 +210,10 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 | `/reaper:analyze-paper` | Stage 1a: Baseline (paper) | Input paper | `notes/paper-summary.md` |
 | `/reaper:review-literature` | Stage 1b: Baseline (literature) | `notes/clarified-goal.md`, `notes/paper-summary.md` | `notes/literature.md` |
 | `/reaper:formalize-problem` | Stage 2: Formalize | `notes/clarified-goal.md`, `notes/paper-summary.md`, `notes/literature.md`, goal prompt | `notes/problem-statement.md` (trust assumptions, security properties, performance goals), `notes/ideas.md` (initial ideas) |
-| `/reaper:brainstorm` | Stage 2.5: Recurring ideation | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md`, `results.md`, `notes/literature.md`, `notes/paper-summary.md` | Appends new ideas to `notes/ideas.md` |
-| `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md` | `investigations/NNN-<name>/`, appends to `results.md`, conditionally updates `current-understanding.md` |
-| `/reaper:critique` | Stage 3 sub-step: review | `investigations/`, `notes/current-understanding.md`, `notes/ideas.md` | `feedback/`, may add hypotheses to `notes/ideas.md` |
-| `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `investigations/`, `results.md` | `report.md` |
+| `/reaper:brainstorm` | Stage 2.5: Recurring ideation | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md`, `notes/results.md`, `notes/literature.md`, `notes/paper-summary.md` | Updates `notes/ideas.md` (adds new, edits existing inline) |
+| `/reaper:investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md` | `investigations/NNN-<name>/` (reuses on revisit), updates `notes/results.md` inline, edits `current-understanding.md` on keep |
+| `/reaper:critique` | Stage 3 sub-step: review | `investigations/`, `notes/current-understanding.md`, `notes/ideas.md` | `feedbacks/`, `logs/`, may add hypotheses to `notes/ideas.md` |
+| `/reaper:synthesize` | Stage 4: Synthesize | All `notes/`, `investigations/`, `notes/results.md` | `report.md` |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |
 
 **`synthesize` report structure** (following Peyton Jones):
@@ -235,7 +237,7 @@ And each skill works standalone: `/reaper:analyze-paper paper.pdf` for just a st
 - [x] Build `/reaper:review-literature` (WebSearch only for now); test independently
 - [x] Build `/reaper:formalize-problem`; test that it produces trust assumptions + security properties + performance goals
 - [x] Build `/reaper:investigate` with full loop discipline:
-  - `results.md` structured log with keep/discard per cycle (Principle 3)
+  - `notes/results.md` structured log with keep/discard per cycle (Principle 3)
   - `current-understanding.md` that only advances on keep (Principle 4)
   - Never-stop and when-stuck guidance (Principle 5)
   - Simplicity criterion for evaluating cycles (Principle 6)
@@ -297,7 +299,7 @@ investigate ──> /reaper:critique
          │           │           │
          └─────┬─────┘───────────┘
                ▼
-     workspace/feedback/
+     workspace/feedbacks/
      ├── round-N.md
      └── codex-consultation-N.md
                │
@@ -310,7 +312,7 @@ investigate ──> /reaper:critique
 
 | Skill | Methodology Stage | Reads | Writes |
 |-------|------------------|-------|--------|
-| `/reaper:critique` | Stage 3 sub-step: adversarial review | `investigations/`, `notes/current-understanding.md` | `feedback/*.md`, may add hypotheses |
+| `/reaper:critique` | Stage 3 sub-step: adversarial review | `investigations/`, `notes/current-understanding.md` | `feedbacks/*.md`, `logs/*.md`, may add hypotheses |
 
 The original `cross-verify` concept was implemented as the more general `/reaper:critique` skill, which supports three modes: human feedback, Codex MCP consultation (devil's advocate / inspiration), and self-review.
 
@@ -405,7 +407,7 @@ The `investigate` skill's mid-cycle search should also gain access to author and
 
 #### Evidence Taxonomy
 
-Every claim in `results.md` and `current-understanding.md` must be tagged with an evidence level:
+Every claim in `notes/results.md` and `current-understanding.md` must be tagged with an evidence level:
 
 | Level | Meaning | Example |
 |-------|---------|---------|
@@ -429,7 +431,7 @@ The `critique` skill's self-review mode currently identifies "weak claims" and "
 #### Tasks
 
 - [ ] Define and document the evidence taxonomy (the table above, integrated into `investigate` and `critique` skills)
-- [ ] Update `results.md` format to include evidence level column alongside existing confidence and outcome
+- [ ] Update `notes/results.md` format to include evidence level column alongside existing confidence and outcome
 - [ ] Update `investigate` skill: tag every claim with evidence level, require elevation plan for heuristic-level keeps
 - [ ] Update `critique` skill: self-review checks evidence level vs. confidence, Codex consultation includes evidence context
 - [ ] Update `synthesize` skill: distinguish proven claims from conjectures in the report
@@ -452,7 +454,7 @@ The existing reactive mechanism (`outcome: reformulate`) handles cases where a c
 
 **Trigger condition:** After N consecutive discard/inconclusive results (default N=5), or when the `critique` skill flags a systematic pattern of failure, the orchestrator invokes `formalize-problem` again with:
 - The original inputs (paper, goal, literature)
-- The accumulated evidence of what doesn't work (from `results.md`)
+- The accumulated evidence of what doesn't work (from `notes/results.md`)
 - An explicit directive: "The current formalization may be flawed. Re-examine the trust assumptions, security property definitions, and hypothesis framing in light of these failed attempts."
 
 The reformulated `problem-statement.md` replaces the old one (old version archived in `investigations/`). Investigation continues from the new formulation. This complements the existing reactive path — both can coexist.
@@ -461,7 +463,7 @@ The reformulated `problem-statement.md` replaces the old one (old version archiv
 
 Every claim in `report.md` should reference the investigation cycle(s) that support it. The `synthesize` skill already reads investigations selectively; provenance links are a natural extension:
 
-- Each claim references the investigation directory and results.md cycle that produced it
+- Each claim references the investigation directory and notes/results.md cycle that produced it
 - Evidence level (from H4) is included so readers know the strength of support
 - Claims supported by multiple cycles reference all of them
 
