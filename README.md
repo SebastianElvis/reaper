@@ -18,7 +18,7 @@ Give Reaper a PDF and a question. It reads the paper, searches for related work,
 - **Parallel investigation with keep-or-discard discipline** — multiple hypotheses are investigated concurrently; only genuine progress advances the working state, while dead ends stay logged
 - **Built-in academic search** — arXiv and IACR ePrint search with PDF download and citation graph tracing
 - **Domain-agnostic design** — ships with cryptography and distributed systems references, but swap the reference files to adapt to any research domain
-- **Optional AI consultation** — enable Codex MCP for a second opinion at every pipeline stage
+- **Multi-model AI consultation** — optionally consult Codex, Gemini, DeepSeek, or local models for a second opinion at every pipeline stage
 - **Composable skills** — each pipeline stage is an independent skill you can run standalone
 
 ## How It Works
@@ -110,15 +110,26 @@ cp -r reaper/skills/* ./.claude/skills/
 
 See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugins) for more details on installing plugins.
 
-### Optional: Codex MCP for AI consultation
+### Optional: Multi-model AI consultation
 
-Pass `--codex` to enable pipeline-wide Codex consultation — every skill gains a checkpoint where it can consult OpenAI Codex for a second opinion. The orchestrator controls when consultations happen (see `skills/reaper/references/codex-consultation.md` for the full protocol). To enable, register the [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server):
+Pass `--codex` to enable pipeline-wide AI consultation — every skill gains a checkpoint where it can consult an external model for a second opinion. The orchestrator controls when consultations happen and routes to the best-suited model (see `skills/reaper/references/codex-consultation.md` for the protocol).
+
+**Supported backends:**
+
+| Model | Setup | Strength |
+|-------|-------|----------|
+| OpenAI Codex/o3 | `claude mcp add codex-cli -- npx -y codex-mcp-server` | Adversarial review, stress-testing arguments |
+| Google Gemini | *(coming soon)* | Long-context review across full paper corpora |
+| DeepSeek R1 | *(coming soon)* | Proof checking, formal reasoning |
+| Local models | *(coming soon — via ollama)* | Offline/private use, cost control |
+
+To start with Codex (the currently supported backend), register the [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server):
 
 ```bash
 claude mcp add codex-cli -- npx -y codex-mcp-server
 ```
 
-If not configured, Codex consultation is silently skipped and the pipeline continues normally.
+If no model backends are configured, AI consultation is silently skipped and the pipeline continues with self-review only.
 
 ## Workspace
 
@@ -165,7 +176,8 @@ See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full roadmap.
 
 - **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete*
 - **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph — *complete*
-- **Horizon 3 (The Committee)**: Codex MCP critique via `/reaper:critique --codex` — *complete (optional dependency)*
+- **Horizon 3 (The Committee)**: Multi-model critique via `/reaper:critique --codex` — *Codex complete, Gemini/DeepSeek/local planned*
+- **Horizon 3.5 (The Polyglot)**: Platform portability — run Reaper on Codex CLI, Gemini CLI, [OpenClaw](https://openclaw.ai/) — *planned*
 - **Horizon 4 (The Academy)**: Broader topic search (Scholar/DBLP), author-centric and venue-centric search — *planned*
 - **Horizon 5 (The Apprentice)**: Evidence quality taxonomy, evidence-aware critique — *planned*
 - **Horizon 6 (The Examiner)**: Proactive reformulation trigger, claim provenance, formal verification — *planned*
