@@ -129,13 +129,12 @@ The agent reviews its own investigation results for gaps, inconsistencies, or mi
    - **Untested assumptions**: Assumptions listed in hypotheses or proofs that haven't been validated.
    - **Missing angles**: Obvious questions raised by the current findings that haven't been investigated.
    - **Inconsistencies**: Claims in `current-understanding.md` that conflict with each other or with `notes/results.md`.
-3. Write the self-review to `reaper-workspace/logs/self-review-N.md` (where N is one more than the count of existing self-review files).
-4. For each actionable finding, add a hypothesis to `ideas.md` marked `[Self-N]`.
-5. If actionable hypotheses were added, run `/reaper:investigate 3` to address them.
+3. For each actionable finding, add a hypothesis to `ideas.md` marked `[Self-N]` (where N is one more than the count of existing self-review cycles).
+4. If actionable hypotheses were added, run `/reaper:investigate 3` to address them. The self-review findings are recorded as part of the cycle logs in `reaper-workspace/logs/` — no separate self-review file is needed.
 
 ## Quality Criteria
 
-- Every critique mode produces a logged artifact in `reaper-workspace/feedbacks/` or `reaper-workspace/logs/` (append-only — create new files with incrementing N, never modify existing ones)
+- Each investigate-critique loop produces a cycle log in `reaper-workspace/logs/` (append-only)
 - Human feedback is classified before action is taken
 - Codex consultations alternate between devil's advocate and inspiration roles
 - Self-reviews identify specific, actionable gaps — not vague concerns

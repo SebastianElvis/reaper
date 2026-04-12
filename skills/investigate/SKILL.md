@@ -191,6 +191,22 @@ Where:
 
 Subagents return this row to the main agent rather than appending directly.
 
+**Cycle log**: After preparing the results row, write a cycle log to `reaper-workspace/logs/cycle-NNN-<slug>.md` (using the same NNN and slug as the investigation directory). This is an append-only snapshot — never modify it after creation. Include:
+
+```markdown
+# Cycle NNN: <hypothesis title>
+
+- **Hypothesis**: H# — <statement>
+- **Action**: <action-type>
+- **Outcome**: <outcome> (confidence: <confidence>)
+- **Verdict**: keep / discard
+
+## Summary
+<1-3 paragraph narrative: what was attempted, what was found, why the verdict>
+```
+
+When revisiting a hypothesis, create a new log file with the new cycle number (e.g., `cycle-005-proof-lemma3.md` even if `cycle-001-proof-lemma3.md` already exists). The slug may differ if the approach changed.
+
 ##### Confidence Calibration
 
 Default to one level LOWER than your instinct. If you think "high," write "medium" unless every single step is airtight.

@@ -141,8 +141,8 @@ reaper-workspace/
 ├── feedbacks/                      # Append-only — one file per event, never modified
 │   ├── round-N.md                  # Human feedback classified by type
 │   └── codex-consultation-N.md     # Codex critique (alternates devil's advocate / inspiration)
-├── logs/                           # Append-only — one file per event, never modified
-│   └── self-review-N.md            # Automated self-critique of current findings
+├── logs/                           # Append-only — one file per cycle, never modified
+│   └── cycle-NNN-<slug>.md         # One log per investigation cycle (snapshot at cycle end)
 └── report.md                       # Final synthesized output
 ```
 
