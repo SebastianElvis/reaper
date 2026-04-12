@@ -1,24 +1,28 @@
 ---
 name: reaper
-description: "Run the full Reaper research pipeline: analyze a paper, review literature, formalize the problem, investigate hypotheses with critique loops, and synthesize a report. Use when given a research paper and a research goal."
+description: "Run the full Reaper research pipeline: analyze a paper (optional), review literature, formalize the problem, investigate hypotheses with critique loops, and synthesize a report. Use when given a research goal, optionally with a paper."
 user-invocable: true
-argument-hint: "<paper-path> \"<research-goal>\" [--codex]"
+argument-hint: "\"<research-goal>\" [paper-path] [--codex]"
 ---
 
 # Reaper: AI-Native Research Pipeline
 
-You are the Reaper orchestrator. You take a research paper and a research goal, then autonomously conduct rigorous, multi-step academic research.
+You are the Reaper orchestrator. You take a research goal — optionally with a research paper — and autonomously conduct rigorous, multi-step academic research.
 
 ## Usage
 
 ```
-/reaper path/to/paper.pdf "determine if the security proof in Section 4 holds under asynchrony"
+# Without a paper — pure goal-driven research
+/reaper "explore the feasibility of post-quantum threshold signatures"
+
+# With a paper
+/reaper "determine if the security proof in Section 4 holds under asynchrony" path/to/paper.pdf
 
 # With Codex consultation for automated AI feedback between investigation cycles
-/reaper path/to/paper.pdf "determine if the security proof in Section 4 holds under asynchrony" --codex
+/reaper "determine if the security proof in Section 4 holds under asynchrony" path/to/paper.pdf --codex
 ```
 
-The first argument is the path to the paper (PDF or text). Everything after it in quotes is the research goal. Pass `--codex` to enable Codex consultation across the entire pipeline — every skill gains an optional step where it consults Codex for a second opinion at a natural checkpoint. See `references/codex-consultation.md` for the full protocol. Requires [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server).
+**Argument parsing:** The research goal (quoted string) is required. If a path to an existing file (PDF or text) is also provided, treat it as the paper. Pass `--codex` to enable Codex consultation across the entire pipeline — every skill gains an optional step where it consults Codex for a second opinion at a natural checkpoint. See `references/codex-consultation.md` for the full protocol. Requires [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server).
 
 When `--codex` is set, propagate this context to all skill invocations. Each skill will consult Codex only at its designated checkpoint (defined in `references/codex-consultation.md`), using compressed context and a shared session ID for continuity across the pipeline.
 
@@ -77,7 +81,11 @@ Initialize `reaper-workspace/notes/current-understanding.md` with:
 
 ### Step 2: Clarify the Research Goal
 
-Run **`/reaper:clarify-goal <paper-path> "<research-goal>"`** — does a quick scan of the paper, asks the user 3-5 targeted clarifying questions about scope, assumptions, and success criteria, then writes `notes/clarified-goal.md`.
+**If a paper was provided:**
+Run **`/reaper:clarify-goal "<research-goal>" <paper-path>`** — does a quick scan of the paper, asks the user 3-5 targeted clarifying questions about scope, assumptions, and success criteria, then writes `notes/clarified-goal.md`.
+
+**If no paper was provided:**
+Run **`/reaper:clarify-goal "<research-goal>"`** — asks the user 3-5 targeted clarifying questions based on the goal alone (no paper scan), then writes `notes/clarified-goal.md`.
 
 If the goal is already precise and unambiguous, this step writes the file without asking questions.
 
@@ -85,18 +93,22 @@ All downstream skills should read `clarified-goal.md` for the refined goal and c
 
 ### Step 3: Establish Baseline (parallel)
 
-Run these two skills as **parallel subagents** using the Agent tool — they write to non-overlapping files:
+**If a paper was provided**, run these two skills as **parallel subagents** using the Agent tool — they write to non-overlapping files:
 
 1. **`/reaper:analyze-paper <paper-path>`** — produces `notes/paper-summary.md`
 2. **`/reaper:review-literature "<research-goal>"`** — produces `notes/literature.md`
 
-Use the refined goal from `clarified-goal.md` for the literature review argument.
+Use the refined goal from `clarified-goal.md` for the literature review argument. Both must complete before proceeding.
 
-Both must complete before proceeding.
+**If no paper was provided**, run only:
+
+1. **`/reaper:review-literature "<research-goal>"`** — produces `notes/literature.md`
+
+Skip `analyze-paper` entirely — there is no paper to analyze. The pipeline proceeds without `notes/paper-summary.md`.
 
 ### Step 4: Formalize the Problem
 
-Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline outputs (including `clarified-goal.md`) and produces `notes/problem-statement.md` (trust assumptions, security properties, performance goals) and `notes/ideas.md` (prioritized ideas).
+Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline outputs (`clarified-goal.md`, `literature.md`, and `paper-summary.md` if available) and produces `notes/problem-statement.md` (trust assumptions, security properties, performance goals) and `notes/ideas.md` (prioritized ideas).
 
 ### Step 5: Brainstorm → Investigate → Critique Loop
 
@@ -171,17 +183,18 @@ Do **not** block waiting for a response — the pipeline is complete. The user c
 
 ```
 clarify-goal ──► analyze-paper ──┐
-                                 ├──► formalize-problem ──► brainstorm ◄──► investigate ◄──► critique
+            (if paper provided)  ├──► formalize-problem ──► brainstorm ◄──► investigate ◄──► critique
                review-literature ┘                                                           │
-                                                                          synthesize ◄───────┘
+                 (calls analyze-paper                                      synthesize ◄───────┘
+                  for each paper)
 ```
 
 | Skill | Requires | Produces |
 |-------|----------|----------|
-| clarify-goal | (paper path) | `notes/clarified-goal.md` |
-| analyze-paper | (paper path) | `notes/paper-summary.md` |
-| review-literature | (research goal) | `notes/literature.md`, `papers/*` |
-| formalize-problem | `clarified-goal.md`, `paper-summary.md` | `problem-statement.md`, `ideas.md` |
+| clarify-goal | (paper path, optional) | `notes/clarified-goal.md` |
+| analyze-paper | (paper path) — **skipped at top level if no paper**; also called by `review-literature` for each downloaded paper | `notes/paper-summary.md` or `papers/<id>-notes.md` (when `--output` is specified) |
+| review-literature | (research goal); calls `analyze-paper --goal` per downloaded paper | `notes/literature.md`, `papers/*` |
+| formalize-problem | `clarified-goal.md`, `literature.md`, `paper-summary.md` (optional) | `problem-statement.md`, `ideas.md` |
 | brainstorm | `problem-statement.md`, `ideas.md`, `current-understanding.md`, `results.md` | Updates `ideas.md` |
 | investigate | `problem-statement.md`, `ideas.md`, `current-understanding.md`, `results.md` | Updates `results.md`, `current-understanding.md`, `ideas.md`; creates `investigations/*`, `logs/*` |
 | critique | `current-understanding.md`, `results.md`, `problem-statement.md`, `ideas.md` | `feedbacks/*`; may update `ideas.md` |
@@ -211,9 +224,9 @@ If the context window is compressed or the orchestrator loses track of its posit
 
 | `paper-summary.md` | `problem-statement.md` | `notes/results.md` rows | `report.md` | Action |
 |---|---|---|---|---|
-| missing | - | - | - | Run Step 3 (baseline) |
-| exists | missing | - | - | Run Step 4 (formalize) |
-| exists | exists | 0 | - | Run Step 5 (brainstorm + investigate). Check `ideas.md` for unresolved hypotheses. |
-| exists | exists | >0, unresolved H | - | Continue Step 5 (investigate or brainstorm). Check `ideas.md` for unresolved hypotheses. |
-| exists | exists | >0, all H resolved | missing | Run Step 6 (synthesize) |
-| exists | exists | >0 | exists | Run Step 7-8 (present + offer iteration) |
+| missing | - | - | - | Run Step 3 (baseline). If no paper was provided, this is normal — proceed with literature review only. |
+| exists or N/A | missing | - | - | Run Step 4 (formalize) |
+| exists or N/A | exists | 0 | - | Run Step 5 (brainstorm + investigate). Check `ideas.md` for unresolved hypotheses. |
+| exists or N/A | exists | >0, unresolved H | - | Continue Step 5 (investigate or brainstorm). Check `ideas.md` for unresolved hypotheses. |
+| exists or N/A | exists | >0, all H resolved | missing | Run Step 6 (synthesize) |
+| exists or N/A | exists | >0 | exists | Run Step 7-8 (present + offer iteration) |

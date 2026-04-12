@@ -21,11 +21,11 @@ Transform a research goal into precise, testable hypotheses with explicit succes
 
 **Always read:**
 - `reaper-workspace/notes/clarified-goal.md` — refined research goal, scope, assumptions, and success criteria
-- `reaper-workspace/notes/paper-summary.md` — what the paper claims and how
+- `reaper-workspace/notes/paper-summary.md` — what the paper claims and how. **If this file does not exist** (paper-less mode), proceed without it — use the literature review and clarified goal as primary inputs instead.
 - The research goal from the argument (use the refined goal from `clarified-goal.md` if available)
 
 **Read selectively from:**
-- `reaper-workspace/notes/literature.md` — focus on the "Key Prior Results" and "Gaps Identified" sections, not the full paper tables. Only deep-read individual paper entries if a specific prior result is needed for hypothesis screening.
+- `reaper-workspace/notes/literature.md` — focus on the "Key Prior Results" and "Gaps Identified" sections, not the full paper tables. Only deep-read individual paper entries if a specific prior result is needed for hypothesis screening. **In paper-less mode, this becomes the primary technical context** — read it more thoroughly.
 
 ### 2. Identify the Core Question
 
@@ -113,4 +113,4 @@ Write ideas to a separate file `reaper-workspace/notes/ideas.md`:
 - Trust assumptions are complete — no missing dimensions
 - The hypotheses collectively cover the research goal — resolving all of them would answer the original question
 - At most 5-7 hypotheses — focus beats breadth. If you have more, merge or drop the low-priority ones
-- If required inputs (`paper-summary.md`, `clarified-goal.md`) are missing, return an error indicating which prerequisite step must run first
+- `clarified-goal.md` is always required — return an error if missing. `paper-summary.md` is optional (absent in paper-less mode) — if missing, rely on `literature.md` and `clarified-goal.md` instead

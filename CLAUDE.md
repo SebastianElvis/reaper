@@ -1,6 +1,6 @@
 # Reaper
 
-AI-native scientific research pipeline distributed as a Claude Code plugin. Takes a research paper + research goal and autonomously runs a multi-step research loop. Ships with reference files for cryptography and distributed systems, but the skills themselves are domain-agnostic — swap the reference files to adapt to other research domains.
+AI-native scientific research pipeline distributed as a Claude Code plugin. Takes a research goal — optionally with a research paper — and autonomously runs a multi-step research loop. Ships with reference files for cryptography and distributed systems, but the skills themselves are domain-agnostic — swap the reference files to adapt to other research domains.
 
 ## Project structure
 

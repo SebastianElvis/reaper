@@ -30,7 +30,7 @@ Default: 5 cycles if no argument given.
 - `reaper-workspace/notes/results.md` — what's been tried and what happened
 
 **Lazy-load only when needed** (do not read upfront — load only if a cycle's hypothesis requires it or the "when stuck" protocol calls for it):
-- `reaper-workspace/notes/paper-summary.md` — the source paper
+- `reaper-workspace/notes/paper-summary.md` — the source paper (if provided)
 - `reaper-workspace/notes/literature.md` — known prior work (organized by same-goal and same-approach)
 - `reaper-workspace/papers/` — downloaded PDFs and per-paper notes (`<id>-notes.md`) from the literature review
 - `references/methodology.md` — proof/analysis patterns

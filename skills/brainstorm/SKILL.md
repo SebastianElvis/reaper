@@ -34,7 +34,7 @@ The recurring ideation step. Reads the current research state and proposes new o
 - `reaper-workspace/notes/results.md` — what's been tried and what happened. **If the file is long (20+ rows), read the batch summaries at the end instead of every individual row.** Look for patterns in failures across batches, not individual cycle details.
 
 **Lazy-load only when needed** (skip these unless you're stuck or exploring a specific direction):
-- `reaper-workspace/notes/paper-summary.md` — the source paper
+- `reaper-workspace/notes/paper-summary.md` — the source paper (if provided)
 - `reaper-workspace/notes/literature.md` — known prior work
 - `reaper-workspace/notes/clarified-goal.md` — refined research goal and scope
 - `reaper-workspace/papers/` — downloaded PDFs and per-paper notes

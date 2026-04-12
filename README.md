@@ -1,15 +1,19 @@
 # Reaper
 
-**Reaper (REAd PapER)** — an AI-native scientific research pipeline. A [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins) that takes a research paper and a research goal, then autonomously conducts rigorous, multi-step academic research.
+**Reaper (REAd PapER)** — an AI-native scientific research pipeline. A [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins) that takes a research goal — optionally with a research paper — and autonomously conducts rigorous, multi-step academic research.
 
 [![Claude Code Plugin](https://img.shields.io/badge/Claude_Code-Plugin-blue)](https://code.claude.com/docs/en/discover-plugins)
 
 ## What Reaper Does
 
-Give Reaper a PDF and a question. It reads the paper, searches for related work, formalizes hypotheses, investigates them in parallel, critiques its own findings, and delivers a structured research report — all without manual prompting between steps.
+Give Reaper a research question — with or without a PDF. It reads the paper (if provided), searches for related work, formalizes hypotheses, investigates them in parallel, critiques its own findings, and delivers a structured research report — all without manual prompting between steps.
 
 ```
-/reaper path/to/paper.pdf "determine if the security proof in Section 4 holds under asynchrony"
+# Without a paper — pure goal-driven research
+/reaper "explore the feasibility of post-quantum threshold signatures"
+
+# With a paper
+/reaper "determine if the security proof in Section 4 holds under asynchrony" path/to/paper.pdf
 ```
 
 **Key capabilities:**
@@ -26,26 +30,27 @@ Give Reaper a PDF and a question. It reads the paper, searches for related work,
 Reaper executes a multi-stage pipeline where investigation runs in parallel batches and critique provides feedback from multiple sources:
 
 ```
-                      ┌─ /analyze-paper ─────────┐
-/clarify-goal ──────> │                          ├─> /formalize-problem
-                      └─ /review-literature ─────┘          │
-                            (parallel)                      v
-                                       ┌──────────────> /brainstorm
-                                       │                    │
-                                       │    ┌─ /investigate ─────────────────┐
-                                       │    │  plan batch                    │
-                                       │    │    ├──> agent H1 ─┐            │
-                                       │    │    ├──> agent H2 ─┼──> merge   │
-                                       │    │    └──> agent H3 ─┘     │      │
-                                       │    │          next batch or done     │
-                                       │    └────────────────────────────────┘
-                                       │                    │
-                                       │    ┌─ /critique ────────────────────┐
-                                       │    │  --self  --codex  "feedback"   │
-                                       │    └────┬───────────────────┬───────┘
-                                       │         │                   │
-                                       │   deepen/explore    rewrite/done ──> /synthesize ──> report.md
-                                       └─────────┘
+                      ┌── /analyze-paper (if paper) ──┐
+/clarify-goal ──────> │                               ├─> /formalize-problem
+                      └── /review-literature ─────────┘          │
+                            │ (parallel)                         v
+                            │                    ┌──────────> /brainstorm
+                            └── calls            │                │
+                                /analyze-paper   │                │
+                                per downloaded   │    ┌─ /investigate ─────────────────┐
+                                paper            │    │  plan batch                    │
+                                                 │    │    ├──> agent H1 ─┐            │
+                                                 │    │    ├──> agent H2 ─┼──> merge   │
+                                                 │    │    └──> agent H3 ─┘     │      │
+                                                 │    │          next batch or done    │
+                                                 │    └────────────────────────────────┘
+                                                 │                    │
+                                                 │    ┌─ /critique ────────────────────┐
+                                                 │    │  --self  --codex  "feedback"   │
+                                                 │    └────┬───────────────────┬───────┘
+                                                 │         │                   │
+                                                 │   deepen/explore    rewrite/done ──> /synthesize ──> report.md
+                                                 └─────────┘
 ```
 
 ## Skills

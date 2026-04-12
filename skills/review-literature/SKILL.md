@@ -118,7 +118,7 @@ Within each category (same-goal / same-approach), assess relevance:
 
 Keep high and medium relevance results. Discard low unless it's a seminal work or by a tier-1 venue / leading author in the area.
 
-### 7. Download and Read Key Papers
+### 7. Download and Analyze Key Papers
 
 For all **high-relevance** papers (and medium-relevance papers that seem particularly important), download the PDF to the local workspace:
 
@@ -130,27 +130,21 @@ python skills/search-arxiv/search_arxiv.py download <arxiv_id> --output-dir reap
 python skills/search-iacr/search_iacr.py download <eprint_id> --output-dir reaper-workspace/papers
 ```
 
-After downloading, **read each paper** using the Read tool (which can read PDFs). Apply [Keshav's three-pass method](http://ccr.sigcomm.org/online/files/p83-keshavA.pdf) combined with [Stiller-Reeve's review structure](https://www.nature.com/articles/d41586-018-06991-0):
+After downloading, **delegate paper reading to `analyze-paper`**. For each downloaded paper, invoke:
 
-1. **First pass** — title, abstract, intro, headings, conclusions. Get the category, context, and claimed contributions. Stop here for low-relevance papers.
-2. **Second pass** — grasp arguments, note key figures and theorems, skip proof details. Enough for medium-relevance papers.
-3. **Third pass** (high-relevance only) — challenge assumptions, verify proof sketches, re-derive key results.
+```
+/reaper:analyze-paper reaper-workspace/papers/<filename>.pdf --goal "<research-goal>" --output reaper-workspace/papers/<id>-notes.md
+```
 
-Write a per-paper summary to `reaper-workspace/papers/<id>-notes.md` (evolving — update inline if revisited during mid-investigation search):
+**Spawn parallel subagents** (using the Agent tool) to analyze multiple papers concurrently — each paper is independent.
 
-- **Link**: URL to the paper (arXiv, ePrint, or DOI link).
-- **Mirror**: Restate the paper's aims, results, and novelty in your own words (one paragraph).
-- **Contribution**: What this paper advances over prior work and how.
-- **Key results**: Main theorems, definitions, and techniques (stated precisely).
-- **Strengths** (label major/minor): novelty, methodology fit, proof rigor, evaluation quality, clarity.
-- **Weaknesses** (label major/minor/fatal): broken methodology, missing proofs, unjustified claims, unfair comparisons, unclear writing, overclaimed results.
-- **Relevance to our research** — tag one or more: *problem definition*, *formalization*, *solution technique*, *negative result*, *literature/context*, *writing model*. One sentence per tag explaining how.
+The `analyze-paper` skill handles the multi-pass reading (calibrating depth by relevance to the goal) and writes per-paper notes to `reaper-workspace/papers/<id>-notes.md`. Passing `--goal` ensures the output includes a relevance assessment.
 
-These notes serve as a durable reference for the investigate step.
+These notes serve as a durable reference for the investigate step. They are evolving files — update inline if revisited during mid-investigation search.
 
 ### 8. Cross-Reference Verification
 
-For each high-relevance downloaded paper, check whether the paper under analysis correctly cites and uses it:
+Using the per-paper notes produced by `analyze-paper` in the previous step, check whether the paper under analysis correctly cites and uses each high-relevance work:
 
 - **Accuracy**: Does the paper under analysis state the prior result accurately? Compare the claim in the paper against the actual theorem statement in the cited work.
 - **Model compatibility**: Are the assumptions of the cited result compatible with the current paper's model? A result proven under synchrony cannot be invoked in an asynchronous protocol without justification.
@@ -220,8 +214,8 @@ If PDF download fails for a paper, note it in the table (leave Local Path as "un
 - At least 10 relevant works found (unless the area is very narrow)
 - Results include papers from both arXiv and IACR ePrint (when the topic is crypto-related)
 - Papers are split into same-goal and same-approach categories — both categories should have entries
-- High-relevance papers are downloaded and read, with per-paper notes in `reaper-workspace/papers/`
-- Per-paper notes contain mirror, contribution, key results, strengths/weaknesses, and relevance tags — not just abstract-level summaries
+- High-relevance papers are downloaded and analyzed via `analyze-paper --goal`, with per-paper notes in `reaper-workspace/papers/`
+- Per-paper notes (produced by `analyze-paper`) contain structured analysis with key results, strengths/weaknesses, and relevance assessment — not just abstract-level summaries
 - Citation graph section shows forward and backward citations for key papers
 - Landscape summary gives a reader unfamiliar with the area a useful mental map
 - Each related work has a specific relevance statement (not just "related to our topic")

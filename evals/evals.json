@@ -83,15 +83,19 @@
   "skill_unit_tests": [
     {
       "skill": "reaper:analyze-paper",
-      "test": "Given any crypto/distributed systems paper, paper-summary.md must have all sections filled (Metadata, Problem Statement, System Model with all 5 sub-dimensions, Construction Overview, Claimed Security Properties with verbatim theorems, Proof Technique, Complexity Claims, Limitations, Key Definitions, Red Flags)"
+      "test": "Given any crypto/distributed systems paper, paper-summary.md must have all sections filled (Metadata, Problem Statement, System Model with all 5 sub-dimensions, Construction Overview, Key Results with verbatim theorems, Proof Technique, Complexity Claims, Strengths, Weaknesses, Key Definitions, Red Flags). Sections are proportional to what the paper warrants — omit what doesn't apply."
     },
     {
       "skill": "reaper:review-literature",
-      "test": "Given a research goal and paper-summary.md, literature.md must have a landscape summary, at least 10 related works table entries with non-empty Relevance column, key prior results, and at least 2 specific gaps"
+      "test": "Given a research goal (and optionally paper-summary.md), literature.md must have a landscape summary, at least 10 related works table entries with non-empty Relevance column, key prior results, and at least 2 specific gaps"
     },
     {
       "skill": "reaper:formalize-problem",
       "test": "Given paper-summary.md and literature.md, problem-statement.md must have complete trust assumptions (all 5 dimensions), at least 2 ideas each with statement/success/failure conditions, and priorities justified by consequence"
+    },
+    {
+      "skill": "reaper:formalize-problem (paper-less)",
+      "test": "Given clarified-goal.md and literature.md WITHOUT paper-summary.md, problem-statement.md must have complete trust assumptions (all 5 dimensions), at least 2 ideas each with statement/success/failure conditions, and priorities justified by consequence. literature.md serves as the primary technical context."
     },
     {
       "skill": "reaper:investigate",
@@ -120,7 +124,7 @@
   ],
   "evaluation_protocol": {
     "setup": "1. Place a test paper PDF in dev/test-papers/ with the filename matching the test case\n2. Open Claude Code in the repo root",
-    "run_full_pipeline": "/reaper dev/test-papers/<paper>.pdf \"<goal from test case>\"",
+    "run_full_pipeline": "/reaper \"<goal from test case>\" dev/test-papers/<paper>.pdf",
     "run_individual_skill": "/reaper:<skill-name> <args>",
     "evaluate": "After the pipeline completes, check each expected_output and quality_criteria. Score pass/fail per criterion.",
     "iterate": "For each failure, identify whether the issue is in the skill prompt, the orchestrator composition, or the model's capability. Fix skill prompts first."
