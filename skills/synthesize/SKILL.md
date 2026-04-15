@@ -68,6 +68,16 @@ NOT: "We analyze protocol X" or "We study the security of Y"
 ### 1.3 Related Work
 [How this relates to prior work. What was known before. What gap this fills.]
 
+Include a **Delta table** comparing state-of-the-art approaches with this paper's proposals. The table columns should cover the key techniques and evaluation metrics relevant to the problem. Example:
+
+| Approach | System Model / Trust Assumption | Technique | Metric 1 | Metric 2 | ... |
+|----------|-------------------------------|-----------|----------|----------|-----|
+| Prior work A | ... | ... | ... | ... | ... |
+| Prior work B | ... | ... | ... | ... | ... |
+| **This paper** | ... | ... | ... | ... | ... |
+
+Always include a column for the **system model or trust assumption** (e.g., synchrony model, corruption threshold, trusted setup, oracle model) — this is essential context for interpreting any technique or metric comparison. Choose remaining columns that highlight the concrete delta — what this paper improves, trades off, or makes possible for the first time. Avoid generic columns like "Security" — use the specific property (e.g., "Adaptive corruption tolerance", "Communication complexity").
+
 ### 1.4 Paper Organization
 [Brief roadmap of remaining sections.]
 
@@ -89,9 +99,8 @@ NOT: "We analyze protocol X" or "We study the security of Y"
 This is the core of the paper. Structure depends on the type of result:
 
 **For new constructions or protocols:**
-- Section 3: Construction (protocol description)
-- Section 4: Security Analysis (theorems + proofs)
-- Section 5: Performance Analysis (complexity claims + proofs)
+- Section 3: Construction (protocol description, security analysis, performance analysis — self-contained)
+- If multiple constructions, each gets its own section (Section 3, 4, ...)
 
 **For proof gaps or attacks:**
 - Section 3: The Claimed Result (what the original paper claimed)
@@ -143,7 +152,18 @@ For counterexamples and attacks, use a concrete execution trace:
 [Summary table from notes/results.md — the full cycle-by-cycle record for reproducibility.]
 ```
 
-### 4. Writing Principles
+### 4. Section-Level Rules
+
+**Opening paragraph:** Every section (except Abstract) must begin with a short paragraph (2–4 sentences) that states what this section contributes. Use one of these frames:
+- *Analysis:* "This section analyzes [X] and shows that [concrete finding]."
+- *New proposal:* "This section proposes [X], a [technique] that achieves [property]."
+- *Background:* "This section recalls the definitions and prior results needed for [Y]."
+
+The reader should know, after the first paragraph, whether this section analyzes existing work, proposes something new, or provides background.
+
+**One proposal per section:** If a section proposes a new construction, protocol, or technique, it must contain exactly one proposal. That section must be self-contained: it includes the construction/protocol description, its correctness/security analysis, and any performance claims — all within the same section (using subsections). If there are multiple proposals, each gets its own top-level section. Do not bundle multiple constructions into a single section.
+
+### 5. Writing Principles
 
 **Structure of a formal paper, not a report:**
 - Every claim is backed by a definition, theorem, lemma, or proof — not just prose assertions
