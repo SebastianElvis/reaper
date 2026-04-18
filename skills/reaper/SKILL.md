@@ -30,7 +30,7 @@ When `--codex` is set, propagate this context to all skill invocations. Each ski
 
 ## Peer Skills
 
-This orchestrator chains 8 sub-skills that must be installed alongside it: `/clarify-goal`, `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/brainstorm`, `/investigate`, `/critique`, `/synthesize`. Two more (`/search-arxiv`, `/search-iacr`) are called transitively by `/review-literature` and `/investigate`. The `/<skill>` form is the canonical display convention used in these docs; substitute the host-native invocation form (slash command, auto-discovery, manual `SKILL.md` pointer) when actually running them.
+This orchestrator chains 8 sub-skills that must be installed alongside it: `/clarify-goal`, `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/brainstorm`, `/investigate`, `/critique`, `/synthesize`. One more (`/search-paper`) is called transitively by `/review-literature` and `/investigate`. The `/<skill>` form is the canonical display convention used in these docs; substitute the host-native invocation form (slash command, auto-discovery, manual `SKILL.md` pointer) when actually running them.
 
 If any of these are missing from your agent's skills folder, ask the user to reinstall the full Reaper package (`npx skills add SebastianElvis/reaper`).
 
@@ -72,9 +72,9 @@ reaper-workspace/
 
 | Category | Files | Policy |
 |----------|-------|--------|
-| Evolving (inline edit) | `notes/current-understanding.md`, `notes/results.md`, `notes/ideas.md`, `notes/problem-statement.md`, `papers/*-notes.md`, `investigations/*/analysis.md`, `investigations/*/proof.md` | Edit in place. Single writer per file per batch. |
+| Evolving (inline edit) | `notes/current-understanding.md`, `notes/results.md`, `notes/ideas.md`, `notes/problem-statement.md`, `notes/literature.md`, `papers/*-notes.md`, `investigations/*/analysis.md`, `investigations/*/proof.md` | Edit in place. Single writer per file per batch. `notes/literature.md` is created by `/review-literature` and extended inline by `/investigate` during mid-cycle literature search. |
 | Append-only | `logs/cycle-*.md`, `feedbacks/round-*.md`, `feedbacks/codex-consultation-*.md` | Create once, never modify. |
-| Write-once | `notes/paper-summary.md`, `notes/literature.md`, `notes/clarified-goal.md`, `report.md` | Created by one skill. May be regenerated on re-run but not incrementally edited by other skills. |
+| Write-once | `notes/paper-summary.md`, `notes/clarified-goal.md`, `report.md` | Created by one skill. May be regenerated on re-run but not incrementally edited by other skills. |
 
 **File naming conventions:** Investigation dirs: `NNN-<slug>/` (zero-padded). Cycle logs: `cycle-NNN-<slug>.md`. Feedback: `round-N.md`, `codex-consultation-N.md`. Paper notes: `<id>-notes.md`.
 
@@ -215,8 +215,7 @@ Do **not** block waiting for a response — the pipeline is complete. The user c
 | `/investigate` | `problem-statement.md`, `ideas.md`, `current-understanding.md`, `results.md` | Updates `results.md`, `current-understanding.md`, `ideas.md`; creates `investigations/*`, `logs/*` |
 | `/critique` | `current-understanding.md`, `results.md`, `problem-statement.md`, `ideas.md` | `feedbacks/*`; may update `ideas.md` |
 | `/synthesize` | `current-understanding.md`, `results.md`, `problem-statement.md`, `ideas.md` | `report.md` |
-| `/search-arxiv` | (query) | stdout |
-| `/search-iacr` | (query) | stdout |
+| `/search-paper` | (query) | stdout — search results, citations, or resolved venue |
 
 ## Important Notes
 

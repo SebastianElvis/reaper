@@ -22,7 +22,7 @@ How you invoke a skill depends on the host agent. The `/<skill>` form above is t
 
 - **Autonomous multi-stage pipeline** — goal clarification, paper analysis, literature review, hypothesis formalization, parallel investigation, critique, and synthesis all chain automatically
 - **Parallel investigation with keep-or-discard discipline** — multiple hypotheses are investigated concurrently; only genuine progress advances the working state, while dead ends stay logged
-- **Built-in academic search** — arXiv and IACR ePrint search with PDF download and citation graph tracing
+- **Built-in academic search** — paper search, PDF download, citation graph tracing, and venue resolution across arXiv, IACR ePrint, Semantic Scholar, DBLP, and OpenAlex
 - **Domain-agnostic design** — ships with cryptography and distributed systems references, but swap the reference files to adapt to any research domain
 - **Multi-model AI consultation** — optionally consult Codex, Gemini, DeepSeek, or local models for a second opinion at every pipeline stage
 - **Composable skills** — each pipeline stage is an independent skill you can run standalone
@@ -71,8 +71,7 @@ Each skill can be used independently or composed by the orchestrator. Invoke by 
 | `/investigate` | Run investigation cycles with keep-or-discard discipline |
 | `/critique` | Provide critique via human feedback, Codex consultation, or self-review (can trigger more investigation) |
 | `/synthesize` | Generate a structured research report from investigation results |
-| `/search-arxiv` | Search arXiv papers, download PDFs, and trace citation graphs |
-| `/search-iacr` | Search IACR ePrint archive for cryptography papers |
+| `/search-paper` | Find papers, download PDFs, trace citation graphs, and resolve publication venues across arXiv, IACR ePrint, Semantic Scholar, DBLP, and OpenAlex |
 
 > The `/<skill>` form is the canonical display convention used throughout these docs. Slash-command hosts (Claude Code) invoke them directly that way (e.g. `/clarify-goal`). Auto-discovery hosts (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, …) invoke them by the bare skill name — drop the leading `/` when asking the agent to run a skill.
 
@@ -90,7 +89,7 @@ pip install arxiv requests beautifulsoup4
 
 ### Install via `npx skills` (recommended — works on 45+ agents)
 
-Reaper is distributed as standard `SKILL.md` folders. The cross-agent installer [`vercel-labs/skills`](https://github.com/vercel-labs/skills) shallow-clones this repository and copies all 11 skill directories — including Python scripts and reference files — into your agent's conventional skills folder.
+Reaper is distributed as standard `SKILL.md` folders. The cross-agent installer [`vercel-labs/skills`](https://github.com/vercel-labs/skills) shallow-clones this repository and copies all 10 skill directories — including Python scripts and reference files — into your agent's conventional skills folder.
 
 ```bash
 # Latest from the default branch
@@ -204,7 +203,7 @@ See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full methodology and development 
 See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full roadmap.
 
 - **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete; LaTeX report output planned*
-- **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph — *complete*
+- **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph + venue resolution (Semantic Scholar / DBLP / OpenAlex) — *complete*
 - **Horizon 3 (The Committee)**: Multi-model critique via the `/critique` skill's `--codex` mode — *Codex complete, Gemini/DeepSeek/local planned*
 - **Horizon 3.5 (The Polyglot)**: Cross-agent distribution via `npx skills` and host-agnostic skill prose — *complete; per-host orchestration polish ongoing*
 - **Horizon 4 (The Academy)**: Broader topic search (Scholar/DBLP), author-centric and venue-centric search — *planned*

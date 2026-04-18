@@ -21,8 +21,7 @@ EXPECTED_SKILLS = {
     "critique": "skills/critique/SKILL.md",
     "synthesize": "skills/synthesize/SKILL.md",
     # H2
-    "search-arxiv": "skills/search-arxiv/SKILL.md",
-    "search-iacr": "skills/search-iacr/SKILL.md",
+    "search-paper": "skills/search-paper/SKILL.md",
 }
 
 EXPECTED_REFERENCES = [
@@ -32,8 +31,11 @@ EXPECTED_REFERENCES = [
 ]
 
 EXPECTED_SCRIPTS = [
-    "skills/search-arxiv/search_arxiv.py",
-    "skills/search-iacr/search_iacr.py",
+    "skills/search-paper/arxiv.py",
+    "skills/search-paper/iacr.py",
+    "skills/search-paper/semantic_scholar.py",
+    "skills/search-paper/dblp.py",
+    "skills/search-paper/openalex.py",
 ]
 
 
@@ -101,18 +103,30 @@ def test_marketplace_json_lists_all_skills():
     assert not extra, f"marketplace.json lists unknown skills: {extra}"
 
 
-def test_review_literature_references_search_scripts():
-    """H2: review-literature should reference the search scripts."""
+def test_review_literature_delegates_to_search_paper():
+    """review-literature must delegate paper search, download, citation graph,
+    and venue resolution to the /search-paper skill rather than invoking its
+    scripts directly, and must stay fully path-agnostic."""
     content = Path("skills/review-literature/SKILL.md").read_text()
-    assert "search_arxiv.py" in content, "review-literature doesn't reference search_arxiv.py"
-    assert "search_iacr.py" in content, "review-literature doesn't reference search_iacr.py"
+    assert "/search-paper" in content, "review-literature doesn't reference the /search-paper skill"
+    # Must not reach into any platform driver by name — those are /search-paper's concern.
+    for script in ("arxiv.py", "iacr.py", "semantic_scholar.py", "dblp.py", "openalex.py"):
+        assert script not in content, (
+            f"review-literature references {script} directly; delegate to /search-paper instead"
+        )
+    # Must not carry any SKILL_DIR placeholders — delegation removed the need for them.
+    placeholder_pattern = re.compile(r"\{\{[A-Z_]*SKILL_DIR\}\}")
+    assert not placeholder_pattern.search(content), (
+        "review-literature still uses {{*_SKILL_DIR}} placeholders; after the /search-paper "
+        "delegation refactor it must be fully path-agnostic"
+    )
 
 
 def test_investigate_references_search_scripts():
     """H2: investigate should reference the search scripts for mid-cycle search."""
     content = Path("skills/investigate/SKILL.md").read_text()
-    assert "search_iacr.py" in content, "investigate doesn't reference search_iacr.py"
-    assert "search_arxiv.py" in content, "investigate doesn't reference search_arxiv.py"
+    assert "iacr.py" in content, "investigate doesn't reference iacr.py"
+    assert "arxiv.py" in content, "investigate doesn't reference arxiv.py"
 
 
 def test_review_literature_has_graceful_degradation():
@@ -135,12 +149,13 @@ def test_review_literature_has_recent_papers():
 
 
 def test_search_tools_reference_exists_and_complete():
-    """The search-tools reference doc should cover both scripts."""
+    """The search-tools reference doc should cover all five platform scripts."""
     content = Path("skills/reaper/references/search-tools.md").read_text()
-    assert "search_arxiv.py" in content
-    assert "search_iacr.py" in content
+    for script in ("arxiv.py", "iacr.py", "semantic_scholar.py", "dblp.py", "openalex.py"):
+        assert script in content, f"search-tools.md missing reference to {script}"
     assert "Decision Tree" in content or "decision tree" in content
     assert "Graceful" in content or "fallback" in content.lower()
+    assert "Venue Resolution Protocol" in content, "search-tools.md missing the layered venue protocol"
 
 
 def test_evals_json_valid():
@@ -163,10 +178,9 @@ def test_readme_mentions_prerequisites():
 
 
 def test_readme_lists_search_skills():
-    """README should list the new search skills."""
+    """README should list the unified search-paper skill."""
     content = Path("README.md").read_text()
-    assert "search-arxiv" in content
-    assert "search-iacr" in content
+    assert "search-paper" in content
 
 
 # ---------------------------------------------------------------------------
@@ -189,8 +203,7 @@ PATH_AWARE_SKILLS = [
     "skills/investigate/SKILL.md",
     "skills/critique/SKILL.md",
     "skills/synthesize/SKILL.md",
-    "skills/search-arxiv/SKILL.md",
-    "skills/search-iacr/SKILL.md",
+    "skills/search-paper/SKILL.md",
 ]
 
 
@@ -200,7 +213,7 @@ def test_no_relative_python_skills_invocations():
     Such relative paths only resolve if the user happens to be running the
     agent from the repo root. After `npx skills add`, the scripts live under
     a per-host install dir (e.g. ~/.agents/skills/, ~/.cursor/skills/), so
-    skills must use the {{SEARCH_*_SKILL_DIR}} placeholders that the agent
+    skills must use the {{*_SKILL_DIR}} placeholders that the agent
     substitutes at execution time.
     """
     pattern = re.compile(r"python\s+skills/")
@@ -217,9 +230,9 @@ def test_no_relative_python_skills_invocations():
     assert not offenders, (
         "Found relative `python skills/...` invocations — these break under "
         "npx skills install (scripts live in per-host install dirs, not "
-        "under skills/). Use the {{SEARCH_ARXIV_SKILL_DIR}} / "
-        "{{SEARCH_IACR_SKILL_DIR}} placeholders instead. Offenders: "
-        + ", ".join(offenders)
+        "under skills/). Use the {{REAPER_SKILL_DIR}} / "
+        "{{SEARCH_PAPER_SKILL_DIR}} / {{SKILL_DIR}} placeholders instead. "
+        "Offenders: " + ", ".join(offenders)
     )
 
 
@@ -233,9 +246,8 @@ def test_skill_dir_placeholders_are_defined():
     standardized preamble vocabulary).
 
     Matches both the multi-skill form ({{REAPER_SKILL_DIR}},
-    {{SEARCH_ARXIV_SKILL_DIR}}, {{SEARCH_IACR_SKILL_DIR}}) and the
-    own-directory form ({{SKILL_DIR}}) used by leaf skills like
-    search-arxiv and search-iacr.
+    {{SEARCH_PAPER_SKILL_DIR}}) and the own-directory form ({{SKILL_DIR}})
+    used by leaf skills like /search-paper.
     """
     placeholder_pattern = re.compile(r"\{\{([A-Z_]*SKILL_DIR)\}\}")
     # Words that appear in a definition paragraph (per the standardized

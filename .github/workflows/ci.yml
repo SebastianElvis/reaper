@@ -35,7 +35,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install pytest arxiv requests beautifulsoup4
       - name: Run integration tests (search scripts against live APIs)
-        run: pytest tests/test_search_arxiv.py tests/test_search_iacr.py -v
+        run: pytest tests/test_search_paper.py -v
 
   npx-skills-discovery:
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
             exit 1
           fi
           ls -la "$target"
-          expected="reaper clarify-goal analyze-paper review-literature formalize-problem brainstorm investigate critique synthesize search-arxiv search-iacr"
+          expected="reaper clarify-goal analyze-paper review-literature formalize-problem brainstorm investigate critique synthesize search-paper"
           missing=0
           for skill in $expected; do
             if [ ! -f "$target/$skill/SKILL.md" ]; then
@@ -69,7 +69,7 @@ jobs:
             fi
           done
           # Co-located Python scripts must travel with their skill dirs
-          for script in search-arxiv/search_arxiv.py search-iacr/search_iacr.py; do
+          for script in search-paper/arxiv.py search-paper/iacr.py search-paper/semantic_scholar.py search-paper/dblp.py search-paper/openalex.py; do
             if [ ! -f "$target/$script" ]; then
               echo "::error::Missing required asset: $target/$script"
               missing=$((missing + 1))

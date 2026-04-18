@@ -1,36 +1,37 @@
 # Search Tools Reference
 
-Reaper uses Python scripts to search academic paper archives. This document catalogs the available tools, when to use each, and common workflow patterns.
+Reaper uses the `/search-paper` skill for all academic paper search, citation graph traversal, and publication-venue resolution. The skill ships five Python scripts under one directory; this document catalogs them and shows the common workflows.
 
 ## Path Resolution Protocol
 
-The scripts referenced below live in sibling skills (`search-arxiv/` and `search-iacr/`). The placeholders **`{{SEARCH_ARXIV_SKILL_DIR}}`** and **`{{SEARCH_IACR_SKILL_DIR}}`** below are template tokens — **you MUST substitute each with the absolute install path of the corresponding sibling skill before invoking, or the exec will fail.** Common install locations (substitute the trailing skill name as needed):
+The scripts referenced below live in the sibling `/search-paper` skill. The placeholder **`{{SEARCH_PAPER_SKILL_DIR}}`** below is a template token — **you MUST substitute it with the absolute install path of the sibling skill before invoking, or the exec will fail.** Common install locations:
 
-- `~/.claude/skills/<skill>/` (Claude Code)
-- `~/.cursor/skills/<skill>/` (Cursor)
-- `~/.agents/skills/<skill>/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
-- `~/.continue/skills/<skill>/` (Continue)
-- `~/.windsurf/skills/<skill>/` (Windsurf)
-- `<repo-root>/skills/<skill>/` (during repo development)
+- `~/.claude/skills/search-paper/` (Claude Code)
+- `~/.cursor/skills/search-paper/` (Cursor)
+- `~/.agents/skills/search-paper/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
+- `~/.continue/skills/search-paper/` (Continue)
+- `~/.windsurf/skills/search-paper/` (Windsurf)
+- `<repo-root>/skills/search-paper/` (during repo development)
 
-**Sibling-skill dependency**: This reference assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`) so that `reaper/`, `search-arxiv/`, and `search-iacr/` are co-located in your agent's skills folder.
+**Sibling-skill dependency**: This reference assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`) so that `reaper/` and `search-paper/` are co-located in your agent's skills folder.
 
-## Tools
+## Scripts
 
-### search_arxiv.py
+### `arxiv.py` — arXiv preprint server
 
-**Location**: `{{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py`
-**Dependencies**: `pip install arxiv requests`
+**Location**: `{{SEARCH_PAPER_SKILL_DIR}}/arxiv.py`
+**Dependencies**: `pip install arxiv`
 
 | Command | Purpose | Key Parameters |
 |---------|---------|---------------|
-| `search "<query>"` | Find papers by topic | `--max-results N`, `--categories cs.CR,cs.DC` |
+| `search "<query>"` | Find papers by topic (sorted by relevance) | `--max-results N`, `--categories cs.CR,cs.DC` |
+| `recent ["<query>"]` | Get recently submitted papers (sorted by date) | `--max-results N`, `--categories cs.CR` |
 | `download <arxiv_id>` | Download paper PDF | `--output-dir DIR` |
-| `citations <arxiv_id>` | Forward + backward citations via Semantic Scholar | `--max-results N` |
+| `journal-ref <arxiv_id>` | Read author-supplied venue field | — |
 
-**When to use**: Broad CS topics (distributed systems, complexity theory, algorithms), papers that appear on arXiv. Also use `citations` for any paper with an arXiv ID regardless of primary venue.
+**When to use**: Broad CS topics (distributed systems, complexity theory, algorithms), papers that appear on arXiv.
 
-**Output**: JSON to stdout. Search returns array of `{arxiv_id, title, authors, year, abstract, categories, pdf_url, published}`. Citations returns `{references: [...], citations: [...]}`.
+**Output**: JSON to stdout. Search returns array of `{arxiv_id, title, authors, year, abstract, categories, pdf_url, published, journal_ref}`.
 
 **Categories for crypto/distributed systems**:
 - `cs.CR` — Cryptography and Security
@@ -38,9 +39,9 @@ The scripts referenced below live in sibling skills (`search-arxiv/` and `search
 - `cs.DS` — Data Structures and Algorithms
 - `cs.CC` — Computational Complexity
 
-### search_iacr.py
+### `iacr.py` — IACR ePrint archive
 
-**Location**: `{{SEARCH_IACR_SKILL_DIR}}/search_iacr.py`
+**Location**: `{{SEARCH_PAPER_SKILL_DIR}}/iacr.py`
 **Dependencies**: `pip install requests beautifulsoup4`
 
 | Command | Purpose | Key Parameters |
@@ -49,15 +50,53 @@ The scripts referenced below live in sibling skills (`search-arxiv/` and `search
 | `recent` | Get latest ePrint papers | `--max-results N` |
 | `download <eprint_id>` | Download paper PDF | `--output-dir DIR` |
 | `url <eprint_id>` | Get paper URL | — |
+| `pubinfo <eprint_id>` | Read "Publication info" line (venue) | — |
 
-**When to use**: Cryptography and security topics. IACR ePrint is the primary preprint server for cryptography — use this for all crypto-related searches. Top 5 search results are automatically enriched with metadata (title, authors, abstract) from the paper page.
+**When to use**: Cryptography and security topics. IACR ePrint is the primary preprint server for cryptography. Top 5 search results are automatically enriched with metadata (title, authors, abstract, publication_info) from the paper page.
 
-**Output**: JSON to stdout. Search returns array of `{eprint_id, title, authors, year, abstract, pdf_url, url}`. ePrint IDs are in `YYYY/NNNN` format.
+**Output**: JSON to stdout. Search returns array of `{eprint_id, title, authors, year, abstract, publication_info, venue, pdf_url, url}`. ePrint IDs are in `YYYY/NNNN` format.
+
+### `semantic_scholar.py` — Semantic Scholar metadata
+
+**Location**: `{{SEARCH_PAPER_SKILL_DIR}}/semantic_scholar.py`
+**Dependencies**: `pip install requests`
+
+| Command | Purpose | Key Parameters |
+|---------|---------|---------------|
+| `venue --arxiv <id>` | Look up venue by arXiv ID | — |
+| `venue --title "<title>"` | Look up venue by title | `--author "<surname>"` |
+| `citations <arxiv_id>` | Forward + backward citations | `--max-results N` |
+
+**When to use**: Citation graph traversal (any paper with an arXiv ID). Primary venue resolver — Semantic Scholar covers the most papers.
+
+**Output**: JSON to stdout. `venue` returns `{found, venue, venue_full, venue_type, year, title, authors}`. `citations` returns `{arxiv_id, references, citations}` with each entry including `venue` when known.
+
+### `dblp.py` — DBLP metadata
+
+**Location**: `{{SEARCH_PAPER_SKILL_DIR}}/dblp.py`
+**Dependencies**: `pip install requests`
+
+| Command | Purpose | Key Parameters |
+|---------|---------|---------------|
+| `venue "<title>"` | Look up venue by title | `--author "<surname>"` |
+
+**When to use**: Authoritative for CS conference and journal venues. Use as the title-based fallback when Semantic Scholar fails.
+
+### `openalex.py` — OpenAlex metadata
+
+**Location**: `{{SEARCH_PAPER_SKILL_DIR}}/openalex.py`
+**Dependencies**: `pip install requests`
+
+| Command | Purpose | Key Parameters |
+|---------|---------|---------------|
+| `venue "<title>"` | Look up venue by title | — |
+
+**When to use**: Broad coverage beyond CS (non-CS journals, niche workshops, books). Final fallback before labeling a paper as preprint-only.
 
 ### WebSearch (built-in)
 
 **When to use as fallback**:
-- Conference proceedings not on arXiv/ePrint (PODC, DISC, STOC, FOCS proceedings)
+- Conference proceedings not on arXiv/ePrint (some PODC/DISC/STOC/FOCS proceedings)
 - Blog posts, talks, informal write-ups
 - Author homepages with preprints
 - When Python scripts fail (missing deps, network issues)
@@ -76,51 +115,63 @@ Is the topic cryptography/security?
 Always supplement with WebSearch for non-academic sources.
 
 Need citation context?
-├── Have arXiv ID → use search_arxiv.py citations
+├── Have arXiv ID → use semantic_scholar.py citations
 └── No arXiv ID  → use WebSearch for "cited by" / "references"
 
 Need very recent papers?
-└── Use search_iacr.py recent + arXiv search sorted by date
+└── Use iacr.py recent + arxiv.py recent (both sort by submission date)
+
+Need to resolve a paper's publication venue?
+└── Follow the layered Venue Resolution Protocol below.
 ```
+
+## Venue Resolution Protocol
+
+Every paper that appears in `notes/literature.md` or the `## References` section of `report.md` must have a real publication venue (CRYPTO, S&P, PODC, …) — not just an archive ID.
+
+The authoritative layered protocol lives in the `/search-paper` skill's own `SKILL.md` ("Venue Resolution Protocol" section). At a glance, it walks Semantic Scholar → author-supplied field (arXiv `journal-ref` / ePrint `pubinfo`) → DBLP → OpenAlex, stopping at the first success, and labels the paper `(preprint)` if all layers fail. Callers should invoke `/search-paper` rather than orchestrating the layers themselves, and cache the resolved venue in their workspace notes to avoid re-resolving across cycles.
 
 ## Common Workflow Patterns
 
 ### Full Literature Review
 
 1. **Parallel search**: Spawn 3 subagents
-   - Subagent 1: `search_arxiv.py search` with 3-4 diverse queries
-   - Subagent 2: `search_iacr.py search` with 3-4 diverse queries
+   - Subagent 1: `arxiv.py search` with 3-4 diverse queries
+   - Subagent 2: `iacr.py search` with 3-4 diverse queries
    - Subagent 3: WebSearch for non-academic sources
 2. **Merge and deduplicate** results across all sources
-3. **Citation graph**: For seed paper + top 3 results, run `search_arxiv.py citations`
-4. **Recent check**: `search_iacr.py recent` to catch very new papers
+3. **Citation graph**: For seed paper + top 3 results, run `semantic_scholar.py citations`
+4. **Recent check**: `iacr.py recent` to catch very new papers
 5. **Filter and prioritize** by relevance
+6. **Resolve venue** for every kept paper using the layered protocol above
 
 ### Mid-Investigation Literature Search
 
 1. Run a focused query on the specific question that arose:
    ```bash
-   python {{SEARCH_IACR_SKILL_DIR}}/search_iacr.py search "exact technical question" --max-results 5
-   python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py search "exact technical question" --max-results 5
+   python {{SEARCH_PAPER_SKILL_DIR}}/iacr.py search "exact technical question" --max-results 5
+   python {{SEARCH_PAPER_SKILL_DIR}}/arxiv.py search "exact technical question" --max-results 5
    ```
 2. If a highly relevant paper is found, download and read it:
    ```bash
-   python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py download <id> --output-dir reaper-workspace/papers/
+   python {{SEARCH_PAPER_SKILL_DIR}}/arxiv.py download <id> --output-dir reaper-workspace/papers/
    ```
-3. Integrate findings into `literature.md` inline (add to appropriate existing sections)
+3. Resolve its venue via the layered protocol; integrate findings into `literature.md` inline (add to appropriate existing sections)
 
 ### Citation Chasing
 
 1. Start with a known paper's arXiv ID
 2. Get references (backward) and citations (forward):
    ```bash
-   python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py citations 2305.12345 --max-results 20
+   python {{SEARCH_PAPER_SKILL_DIR}}/semantic_scholar.py citations 2305.12345 --max-results 20
    ```
 3. For each highly relevant citation, recursively chase (1-2 hops max)
 
 ## Rate Limits and Reliability
 
 - **arXiv API**: No authentication needed. Recommended: ≤1 request/second. The `arxiv` Python package handles rate limiting.
-- **IACR ePrint**: No documented rate limits. Scrapes HTML search results, so may break if the site redesigns. Top 5 results fetch individual paper pages (5 additional requests).
-- **Semantic Scholar** (used by `citations`): Free tier allows 100 requests/5 minutes without API key. Sufficient for citation graph traversal.
+- **IACR ePrint**: No documented rate limits. Scrapes HTML, may break if the site redesigns. Top 5 search results fetch individual paper pages (5 additional requests per search).
+- **Semantic Scholar**: Free tier allows 100 requests / 5 minutes without API key. Sufficient for citation graph traversal and the bulk of venue lookups.
+- **DBLP**: No documented hard limits, but be polite — at most a few requests per second.
+- **OpenAlex**: Free, no auth needed. Consider passing `mailto=<your-email>` as a parameter to enter the polite pool with higher limits.
 - **Graceful degradation**: All skills that use these tools must fall back to WebSearch if scripts fail.

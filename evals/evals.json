@@ -106,12 +106,16 @@
       "test": "report.md has a one-sentence central finding, bulleted refutable contributions, each finding starts with a concrete example, no chronological narration, open questions are specific"
     },
     {
-      "skill": "search-arxiv",
-      "test": "search command returns valid JSON array with fields: arxiv_id, title, authors, year, abstract, pdf_url. citations command returns references and citations arrays. Tested via: python -m pytest tests/test_search_arxiv.py"
+      "skill": "search-paper (arxiv.py)",
+      "test": "search command returns valid JSON array with fields: arxiv_id, title, authors, year, abstract, pdf_url, journal_ref. journal-ref command returns the author-supplied venue field. Tested via: python -m pytest tests/test_search_paper.py"
     },
     {
-      "skill": "search-iacr",
-      "test": "search command returns valid JSON array with fields: eprint_id, title, pdf_url, url. url command returns correct ePrint URLs. Tested via: python -m pytest tests/test_search_iacr.py"
+      "skill": "search-paper (iacr.py)",
+      "test": "search command returns valid JSON array with fields: eprint_id, title, pdf_url, url. url and pubinfo commands return correct ePrint URLs and 'Publication info' text. Tested via: python -m pytest tests/test_search_paper.py"
+    },
+    {
+      "skill": "search-paper (venue resolver)",
+      "test": "semantic_scholar.py / dblp.py / openalex.py venue commands return JSON with `found`, `venue`, `venue_full`, `year` fields. Layered protocol in SKILL.md walks them in order and stops at first success. Tested via: python -m pytest tests/test_search_paper.py"
     },
     {
       "skill": "review-literature (H2)",

@@ -138,7 +138,11 @@ For counterexamples and attacks, use a concrete execution trace:
 
 ## References
 
-[Papers cited during the investigation, formatted consistently. For each paper, attach a link to its PDF (e.g., arXiv, IACR ePrint, or publisher PDF URL).]
+[Papers cited during the investigation, formatted consistently. For each paper, include the **publication venue** (e.g., CRYPTO 2023, S&P 2024, J. Cryptology Vol 36) — not just an arXiv or ePrint ID. The venue should already be resolved in `notes/literature.md`'s `Venue` column from the `/review-literature` step; copy it through. For papers without a known venue, label as `(preprint)` and include the archive URL. Also attach a link to the PDF (arXiv, IACR ePrint, DOI, or publisher URL).
+
+Example formats:
+- Author, A., Author, B. *Title.* CRYPTO 2023, pp. XXX–YYY. [arXiv:XXXX.XXXXX](https://arxiv.org/abs/XXXX.XXXXX)
+- Author, C. *Title.* (preprint) IACR ePrint 2024/1234. [ePrint](https://eprint.iacr.org/2024/1234)]
 
 ## Appendix A: Investigation Log
 
@@ -180,3 +184,4 @@ If `current-understanding.md` is empty or missing, reconstruct from `results.md`
 - The paper is self-contained — a reader unfamiliar with the investigation can follow the argument
 - No chronological narration ("first we tried X, then we tried Y") — present the clean logical chain
 - Open questions are stated as conjectures or precise problems, not vague future work
+- Every entry in the References section names a real publication venue or is explicitly labeled `(preprint)` — never just an arXiv/ePrint ID where a venue is expected

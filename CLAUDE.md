@@ -4,11 +4,11 @@ AI-native scientific research pipeline distributed as a host-agnostic skills pac
 
 ## Project structure
 
-- `skills/` — 11 composable skills (each has a `SKILL.md` defining its behavior; the `/<skill>` form is the canonical display convention used in all user-facing docs)
+- `skills/` — 10 composable skills (each has a `SKILL.md` defining its behavior; the `/<skill>` form is the canonical display convention used in all user-facing docs)
   - `/reaper` — Main orchestrator that chains all other skills
   - `/clarify-goal` — Interactive goal clarification (asks user targeted questions before pipeline runs)
   - `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/brainstorm`, `/investigate`, `/critique`, `/synthesize` — Pipeline stages
-  - `/search-arxiv`, `/search-iacr` — Academic search via Python scripts
+  - `/search-paper` — Academic search + citation graph + venue resolution. Bundles five Python drivers (`arxiv.py`, `iacr.py`, `semantic_scholar.py`, `dblp.py`, `openalex.py`); the `SKILL.md` itself orchestrates the layered venue lookup.
 - `tests/` — Python tests for skill structure and search scripts
 - `evals/` — Test cases with quality criteria (`evals.json`)
 - `dev/` — Development docs including `ROADMAP.md` (full methodology and design)
@@ -32,7 +32,7 @@ pip install arxiv requests beautifulsoup4
 - Runtime state goes in `reaper-workspace/` (gitignored). Never commit workspace artifacts.
 - The six methodology principles (separation of concerns, fixed evaluation signal, structured results log, keep-or-discard loop, never stop, clarity and simplicity) govern how skills behave.
 - Domain-specific content (impossibility results, trust model checklists, venue tiers, definitional standards) lives in `skills/reaper/references/`, not inline in skills. Skills reference these files but remain domain-agnostic — the reference files can be swapped for a different research domain.
-- Python scripts live alongside the skill that uses them (e.g., `skills/search-arxiv/search_arxiv.py`).
+- Python scripts live alongside the skill that uses them (e.g., `skills/search-paper/arxiv.py`).
 - No JavaScript/TypeScript in this project — it's `SKILL.md` files + Python only.
 - The license is Apache-2.0. Any plugin manifest that references a license field must say `"Apache-2.0"`.
 - When cutting a release tag, the tag message should summarize changes since the last tag (use `git log <last-tag>..HEAD`).

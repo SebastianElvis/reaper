@@ -272,7 +272,7 @@ Run all N cycles. The only valid early stop is **genuine convergence**: all hypo
 
 ## When Stuck
 
-If a cycle is going nowhere, follow the escalation protocol in `{{REAPER_SKILL_DIR}}/references/methodology.md` (section "When Stuck: 8-Step Escalation"). The steps progress from re-reading existing materials, through searching for new literature (see `{{REAPER_SKILL_DIR}}/references/search-tools.md` for search commands, which use `search_arxiv.py` and `search_iacr.py`), to trying radically different approaches.
+If a cycle is going nowhere, follow the escalation protocol in `{{REAPER_SKILL_DIR}}/references/methodology.md` (section "When Stuck: 8-Step Escalation"). The steps progress from re-reading existing materials, through searching for new literature (see `{{REAPER_SKILL_DIR}}/references/search-tools.md` for search commands, which use the `arxiv.py` and `iacr.py` scripts in the `/search-paper` skill), to trying radically different approaches.
 
 When searching for new literature mid-investigation, download relevant papers to `reaper-workspace/papers/`, write per-paper notes (`<id>-notes.md`), and **integrate findings into `reaper-workspace/notes/literature.md` inline** — add new entries to the appropriate existing sections rather than appending a separate "Mid-Investigation Additions" section. Log the search as a cycle with action-type `literature-search` in `notes/results.md`.
 

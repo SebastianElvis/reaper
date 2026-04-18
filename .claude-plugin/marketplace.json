@@ -23,8 +23,7 @@
         "./skills/investigate",
         "./skills/critique",
         "./skills/synthesize",
-        "./skills/search-arxiv",
-        "./skills/search-iacr"
+        "./skills/search-paper"
       ]
     }
   ]
