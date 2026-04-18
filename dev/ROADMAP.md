@@ -6,7 +6,7 @@
 
 ### Value Proposition
 
-Today, AI can answer questions about papers. Reaper goes further: it *does research*. Given a paper on a new consensus protocol and the goal "determine if this is secure under asynchrony," Reaper will read the paper, search arXiv and IACR ePrint for related work, formalize the problem, attempt a proof or construct a counterexample, seek feedback from other AI models, and produce a structured research report with full reasoning traces.
+Today, AI can answer questions about papers. Reaper goes further: it *does research*. Given a paper on a new consensus protocol and the goal "determine if this is secure under asynchrony," Reaper will read the paper, search academic sources (arXiv, IACR ePrint, Semantic Scholar, DBLP, OpenAlex) for related work, formalize the problem, attempt a proof or construct a counterexample, seek feedback from other AI models, and produce a structured research report with full reasoning traces.
 
 The key insight: research is a *pipeline* of distinct, composable activities (read, search, formalize, analyze, verify, synthesize), not a monolithic task. Reaper decomposes this pipeline into individual skills that can be invoked independently or orchestrated together, and leverages parallel subagents and multi-model feedback to approximate the quality of collaborative human research.
 
@@ -133,12 +133,13 @@ reaper/
 │   ├── investigate/SKILL.md                # Stage 3: investigate (proof/analysis cycles)
 │   ├── critique/SKILL.md                   # Stage 3 sub-step: human / external-model / self review
 │   ├── synthesize/SKILL.md                 # Stage 4: synthesize (report generation)
-│   ├── search-arxiv/                       # Crypto/CS topic search via arXiv
-│   │   ├── SKILL.md
-│   │   └── search_arxiv.py                 # arXiv API + Semantic Scholar citations
-│   └── search-iacr/                        # Crypto-specific IACR ePrint search
-│       ├── SKILL.md
-│       └── search_iacr.py                  # IACR ePrint scraper
+│   └── search-paper/                       # Unified academic search + venue resolution
+│       ├── SKILL.md                        # Orchestrates the layered venue lookup
+│       ├── arxiv.py                        # arXiv API
+│       ├── iacr.py                         # IACR ePrint scraper
+│       ├── semantic_scholar.py             # Citations + venue lookup (by arXiv ID or title)
+│       ├── dblp.py                         # CS-authoritative venue lookup (by title)
+│       └── openalex.py                     # Broad-coverage venue lookup (by title)
 ├── tests/                                  # Python tests
 ├── dev/
 │   ├── ROADMAP.md                          # This file
@@ -271,24 +272,29 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
 
 **Methodology stage:** Enriches Stage 1b (establish baseline from literature) with real academic paper servers.
 
-**Goal:** Upgrade `/review-literature` from generic web search to structured academic search — arXiv, IACR ePrint, citation graph traversal — using lightweight Python scripts (no MCP dependency). Also enable `/investigate` to pull in new references mid-loop when a cycle reveals a gap in context.
+**Goal:** Upgrade `/review-literature` from generic web search to structured academic search — a unified `/search-paper` skill that fans out over arXiv, IACR ePrint, Semantic Scholar, DBLP, and OpenAlex for paper search, citation graph traversal, and publication-venue resolution — using lightweight Python scripts (no MCP dependency). Also enable `/investigate` to pull in new references mid-loop when a cycle reveals a gap in context.
 
-**What success looks like:** invoking the `/review-literature` skill with `"post-quantum threshold signatures"` automatically searches arXiv and IACR ePrint, traces forward/backward citations via Semantic Scholar, and produces a structured literature survey with precise references.
+**What success looks like:** invoking the `/review-literature` skill with `"post-quantum threshold signatures"` delegates to `/search-paper` for paper search, citation graph traversal, and layered venue resolution, and produces a structured literature survey with real publication venues (e.g. CRYPTO 2023) in the references.
 
 #### Search Tools
 
 | Script | Location | Capabilities | Dependencies |
 |--------|----------|--------------|-------------|
-| `search_arxiv.py` | `skills/search-arxiv/` | `search`, `download`, `citations` (via Semantic Scholar) | `pip install arxiv requests` |
-| `search_iacr.py` | `skills/search-iacr/` | `search`, `recent`, `download`, `url` | `pip install requests beautifulsoup4` |
+| `arxiv.py` | `skills/search-paper/` | `search`, `recent`, `download`, `journal-ref` | `pip install arxiv` |
+| `iacr.py` | `skills/search-paper/` | `search`, `recent`, `download`, `url`, `pubinfo` | `pip install requests beautifulsoup4` |
+| `semantic_scholar.py` | `skills/search-paper/` | `venue` (by arXiv ID or title), `citations` | `pip install requests` |
+| `dblp.py` | `skills/search-paper/` | `venue` (by title + author) | `pip install requests` |
+| `openalex.py` | `skills/search-paper/` | `venue` (by title) | `pip install requests` |
+
+The `/search-paper` `SKILL.md` orchestrates a layered venue resolver: Semantic Scholar → archive's own field (arXiv `journal_ref` / ePrint `Publication info`) → DBLP → OpenAlex → `(preprint)` label.
 
 #### Tasks
 
-- [x] Build `/search-arxiv` skill with Python script (arXiv API + Semantic Scholar citations)
-- [x] Build `/search-iacr` skill with Python script (IACR ePrint scraper)
-- [x] Write `references/search-tools.md` — catalog of search tools with usage patterns and decision tree
-- [x] Update `/review-literature` skill: structured search as primary, WebSearch as fallback, citation graph, recent papers
+- [x] Build `/search-paper` skill bundling arXiv + IACR + Semantic Scholar + DBLP + OpenAlex drivers
+- [x] Write `references/search-tools.md` — catalog of search tools with usage patterns, decision tree, and venue-resolution protocol
+- [x] Update `/review-literature` skill: structured search as primary, WebSearch as fallback, citation graph, recent papers, layered venue resolution per kept paper
 - [x] Update `/investigate` skill: mid-cycle literature search via search scripts
+- [x] Update `/synthesize` skill: References section uses resolved venues, never raw archive IDs
 - [x] Handle graceful degradation when search scripts are unavailable
 - [x] Document Python prerequisites in README
 - [ ] Test: given a seed paper, can Reaper find and summarize the 10 most relevant related works?
@@ -415,7 +421,7 @@ Different models have different strengths. The critique skill should route consu
 | **Cross-agent installer** | `npx skills add SebastianElvis/reaper` | ✓ |
 | **Pin syntax** | `npx skills add SebastianElvis/reaper#v0.3.9` (git tags) | ✓ |
 | **Inter-skill calls** | Host-agnostic prose ("invoke the `<name>` skill") | ✓ |
-| **Python script bundling** | Whole-directory copy includes `search_arxiv.py`, `search_iacr.py`, `references/` | ✓ |
+| **Python script bundling** | Whole-directory copy includes `arxiv.py`, `iacr.py`, `semantic_scholar.py`, `dblp.py`, `openalex.py`, `references/` | ✓ |
 | **Frontmatter compatibility** | Claude-only keys (`user-invocable`, `argument-hint`, hooks) preserved as opaque YAML, no-op on other hosts | ✓ |
 | **CI validation** | Frontmatter regex check + strict `npx skills add` discovery test (verifies every expected skill, Python script, and reference file is present after install; fails the build if any asset is missing) | ✓ |
 | **Claude Code plugin path** | `.claude-plugin/marketplace.json` for slash-command routing | ✓ |

@@ -17,19 +17,6 @@ Invoke this skill by name with the research topic as a quoted string. On slash-c
 review-literature "post-quantum threshold signatures"
 ```
 
-## Path Resolution Protocol
-
-This skill references files and scripts in sibling skills. The placeholders **`{{REAPER_SKILL_DIR}}`**, **`{{SEARCH_ARXIV_SKILL_DIR}}`**, and **`{{SEARCH_IACR_SKILL_DIR}}`** below are template tokens — **you MUST substitute each with the absolute install path of the corresponding sibling skill before reading or invoking, or the read/exec will fail.** Common install locations (substitute the trailing skill name as needed — `reaper`, `search-arxiv`, `search-iacr`):
-
-- `~/.claude/skills/<skill>/` (Claude Code)
-- `~/.cursor/skills/<skill>/` (Cursor)
-- `~/.agents/skills/<skill>/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
-- `~/.continue/skills/<skill>/` (Continue)
-- `~/.windsurf/skills/<skill>/` (Windsurf)
-- `<repo-root>/skills/<skill>/` (during repo development)
-
-**Sibling-skill dependency**: This skill assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`) so that `reaper/`, `search-arxiv/`, and `search-iacr/` are co-located in your agent's skills folder. Single-skill installs will fail to resolve sibling references.
-
 ## Instructions
 
 ### 1. Gather Context
@@ -44,21 +31,9 @@ Combine with the research goal to formulate search queries.
 
 ### 2. Search — Structured Sources (Primary)
 
-Use the search scripts via Bash to query arXiv and IACR ePrint. Generate multiple diverse queries per source. (The placeholders `{{SEARCH_ARXIV_SKILL_DIR}}` and `{{SEARCH_IACR_SKILL_DIR}}` below are defined in the Path Resolution Protocol section above — substitute the absolute install paths before invoking. Alternatively, invoke the `/search-arxiv` and `/search-iacr` skills by name through your host's skill mechanism.)
+Delegate all paper search to the `/search-paper` skill. It decides which archives to hit (arXiv, IACR ePrint, …), which categories or filters apply for the topic, and returns structured results the caller can merge. The caller's job is to supply good queries, not pick archives.
 
-**arXiv** (broad CS/math — use for distributed systems, complexity, general crypto):
-
-```bash
-python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py search "<query>" --max-results 10 --categories cs.CR,cs.DC
-```
-
-**IACR ePrint** (cryptography-specific — use for all crypto topics):
-
-```bash
-python {{SEARCH_IACR_SKILL_DIR}}/search_iacr.py search "<query>" --max-results 10
-```
-
-**Query types** (generate at least one query per type, per source):
+**Query types** (generate at least one query per type):
 
 - **Direct**: the exact problem (e.g., "BFT consensus communication complexity lower bound")
 - **Author-based**: key authors in the area (e.g., "Yin Malkhi Abraham consensus")
@@ -67,10 +42,7 @@ python {{SEARCH_IACR_SKILL_DIR}}/search_iacr.py search "<query>" --max-results 1
 - **Attacks/impossibilities**: known negative results (e.g., "FLP impossibility", "DLS lower bound")
 - **Surveys**: SoK papers, systematization of knowledge (e.g., "SoK blockchain consensus")
 
-**Spawn parallel subagents** (using your host's parallel-spawn primitive — e.g. Claude Code's `Agent` tool — or run sequentially if unavailable) for concurrent search:
-- **Subagent 1**: arXiv searches (multiple queries with different categories)
-- **Subagent 2**: IACR ePrint searches (multiple queries)
-- **Subagent 3**: WebSearch fallback (see step 3)
+**Spawn parallel subagents** (using your host's parallel-spawn primitive — e.g. Claude Code's `Agent` tool — or run sequentially if unavailable) for concurrent search — one subagent per query type, each invoking `/search-paper`. Run the WebSearch fallback (step 3) as an additional parallel subagent.
 
 **Context efficiency**: Do NOT pass the full `paper-summary.md` to each search subagent. Instead, extract the key search terms (topic, author names, 3-5 key concepts) and pass those as a brief JSON object (~100 words). Each subagent only needs the terms to formulate queries, not the full paper analysis.
 
@@ -87,11 +59,7 @@ This runs as a parallel subagent alongside the structured searches.
 
 ### 4. Citation Graph Traversal
 
-For the **seed paper** (from `paper-summary.md`) and the **top 3 most relevant results**, trace citations:
-
-```bash
-python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py citations <arxiv_id> --max-results 20
-```
+For the **seed paper** (from `paper-summary.md`) and the **top 3 most relevant results**, invoke the `/search-paper` skill to traverse the citation graph (pass the arXiv ID and request up to 20 citations in each direction — forward and backward).
 
 This returns both:
 - **References** (backward): what this paper builds on — find foundational results
@@ -103,13 +71,7 @@ Deduplicate results across all search sources.
 
 ### 5. Recent Papers Check
 
-For fast-moving areas, check for very recent publications:
-
-```bash
-python {{SEARCH_IACR_SKILL_DIR}}/search_iacr.py recent --max-results 10
-```
-
-Scan titles/abstracts for relevance to the research goal. Include any relevant recent papers that the main search may have missed.
+For fast-moving areas, invoke the `/search-paper` skill to pull the most-recently-posted papers in the area (e.g. top 10). Scan titles/abstracts for relevance to the research goal and include any relevant recent papers that the main search may have missed.
 
 ### 6. Filter and Prioritize
 
@@ -120,7 +82,7 @@ For each result found, assess relevance to the research goal. Classify each pape
 
 #### Venue and Author Weighting
 
-Weight results heavily toward top venues. A peer-reviewed top-conference paper is far more trustworthy than an unreviewed preprint. Consult `{{REAPER_SKILL_DIR}}/references/venue-tiers.md` (placeholder defined in the Path Resolution Protocol section above) for the domain-appropriate venue tier table and author weighting criteria.
+Weight results heavily toward top venues. A peer-reviewed top-conference paper is far more trustworthy than an unreviewed preprint. Consult the `/reaper` skill's `references/venue-tiers.md` for the domain-appropriate venue tier table and author weighting criteria.
 
 When two papers make competing claims, prefer the one from the higher-tier venue by authors with more domain-specific expertise. When a preprint contradicts a published top-venue result, flag it but do not treat the preprint as authoritative without independent verification.
 
@@ -133,17 +95,17 @@ Within each category (same-goal / same-approach), assess relevance:
 
 Keep high and medium relevance results. Discard low unless it's a seminal work or by a tier-1 venue / leading author in the area.
 
-### 7. Download and Analyze Key Papers
+### 7. Resolve Publication Venues
 
-For all **high-relevance** papers (and medium-relevance papers that seem particularly important), download the PDF to the local workspace:
+For every kept paper, resolve the actual publication venue (CRYPTO, S&P, PODC, …) — an arXiv or ePrint ID is not a venue. **Invoke the `/search-paper` skill's Venue Resolution Protocol** with the best identifier available — arXiv ID preferred, else ePrint ID, else title plus first-author surname. `/search-paper` walks the layered Semantic Scholar → author-supplied field → DBLP → OpenAlex ladder and returns either a resolved venue or the explicit `(preprint)` label.
 
-```bash
-# arXiv papers
-python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py download <arxiv_id> --output-dir reaper-workspace/papers
+Record the resolved venue inline in your scratch notes so downstream steps and re-runs don't repeat the work. Never guess a venue from topic or affiliation — if `/search-paper` returns `(preprint)`, use that label verbatim.
 
-# IACR ePrint papers
-python {{SEARCH_IACR_SKILL_DIR}}/search_iacr.py download <eprint_id> --output-dir reaper-workspace/papers
-```
+**Spawn parallel subagents** (one per kept paper, using your host's parallel-spawn primitive) to resolve venues concurrently — each lookup is independent.
+
+### 8. Download and Analyze Key Papers
+
+For all **high-relevance** papers (and medium-relevance papers that seem particularly important), invoke the `/search-paper` skill to download each PDF into `reaper-workspace/papers/` (pass the arXiv ID or ePrint ID).
 
 After downloading, **delegate paper reading to `/analyze-paper`**. For each downloaded paper, invoke the `/analyze-paper` skill with:
 
@@ -159,7 +121,7 @@ The `/analyze-paper` skill handles the multi-pass reading (calibrating depth by 
 
 These notes serve as a durable reference for the investigate step. They are evolving files — update inline if revisited during mid-investigation search.
 
-### 8. Cross-Reference Verification
+### 9. Cross-Reference Verification
 
 Using the per-paper notes produced by `/analyze-paper` in the previous step, check whether the paper under analysis correctly cites and uses each high-relevance work:
 
@@ -170,7 +132,7 @@ Using the per-paper notes produced by `/analyze-paper` in the previous step, che
 
 Document any discrepancies in the per-paper notes (`<id>-notes.md`) under a `### Discrepancies with Paper Under Analysis` heading. Summarize all discrepancies in the `## Gaps Identified` section of the output file — these are high-priority inputs for the formalize-problem step.
 
-### 9. Write Output
+### 10. Write Output
 
 Write to `reaper-workspace/notes/literature.md`:
 
@@ -187,7 +149,9 @@ Papers that address the same or a closely related research goal.
 
 | # | Title | Authors | Year | Venue | Key Contribution | Relation to Our Goal | Link | Local Path |
 |---|-------|---------|------|-------|-----------------|---------------------|------|------------|
-| 1 | ... | ... | ... | ... | [1-sentence] | [how this relates to our specific goal] | [arXiv](https://arxiv.org/abs/XXXX.XXXXX) or [ePrint](https://eprint.iacr.org/YYYY/NNNN) | `papers/<filename>` |
+| 1 | ... | ... | ... | CRYPTO 2023 *or* `(preprint)` | [1-sentence] | [how this relates to our specific goal] | [arXiv](https://arxiv.org/abs/XXXX.XXXXX) or [ePrint](https://eprint.iacr.org/YYYY/NNNN) | `papers/<filename>` |
+
+The `Venue` column holds the resolved publication venue from Step 7 — never the archive ID. Use `(preprint)` only when `/search-paper` returned no venue.
 
 ## Same-Approach Works
 
@@ -195,7 +159,7 @@ Papers that apply similar techniques or approaches to different problems.
 
 | # | Title | Authors | Year | Venue | Key Contribution | Shared Technique | Link | Local Path |
 |---|-------|---------|------|-------|-----------------|-----------------|------|------------|
-| 1 | ... | ... | ... | ... | [1-sentence] | [what technique/approach we share and how they use it] | [arXiv](https://arxiv.org/abs/XXXX.XXXXX) or [ePrint](https://eprint.iacr.org/YYYY/NNNN) | `papers/<filename>` |
+| 1 | ... | ... | ... | CRYPTO 2023 *or* `(preprint)` | [1-sentence] | [what technique/approach we share and how they use it] | [arXiv](https://arxiv.org/abs/XXXX.XXXXX) or [ePrint](https://eprint.iacr.org/YYYY/NNNN) | `papers/<filename>` |
 
 ## Citation Graph
 
@@ -220,21 +184,28 @@ Summary of all downloaded papers and their local paths for quick reference durin
 
 ### Graceful Degradation
 
-If the Python search scripts fail (missing dependencies, network errors):
-1. Fall back to WebSearch for all queries.
-2. Note in `literature.md` that structured search was unavailable, with a timestamp and error message: `> **Note**: arXiv/ePrint API search was unavailable for this review (error: ...). Results are from web search only.`
+`/search-paper` can fail at any step independently (search, citation graph, venue resolution, download). Apply the right fallback per step:
 
-If PDF download fails for a paper, note it in the table (leave Local Path as "unavailable") and proceed with abstract-level understanding. The review must still meet quality criteria even in degraded mode.
+- **Search fails entirely** (all queries error out): fall back to WebSearch for all queries and add a top-of-file note to `literature.md`: `> **Note**: structured paper search via /search-paper was unavailable for this review (error: ...). Results are from web search only.`
+- **Citation graph fails** (step 4): skip the Citation Graph section or populate it from WebSearch; annotate each affected paper's row: "citation graph unavailable".
+- **Venue resolution fails** for a specific paper (step 7): label that paper `(preprint)` in the `Venue` column rather than blocking the review.
+- **Download fails** for a specific paper (step 8): leave `Local Path` as "unavailable" and proceed with abstract-level understanding for that paper.
+
+In every case, the review still proceeds. Only the quality criteria that depend on the failed step are relaxed (see Quality Criteria below).
 
 ### Quality Criteria
 
+**Content criteria (always required):**
 - At least 10 relevant works found (unless the area is very narrow)
-- Results include papers from both arXiv and IACR ePrint (when the topic is crypto-related)
 - Papers are split into same-goal and same-approach categories — both categories should have entries
-- High-relevance papers are downloaded and analyzed via `analyze-paper --goal`, with per-paper notes in `reaper-workspace/papers/`
+- High-relevance papers are downloaded (when `/search-paper` download succeeds) and analyzed via `analyze-paper --goal`, with per-paper notes in `reaper-workspace/papers/`
 - Per-paper notes (produced by `/analyze-paper`) contain structured analysis with key results, strengths/weaknesses, and relevance assessment — not just abstract-level summaries
-- Citation graph section shows forward and backward citations for key papers
+- **Every entry in the Venue column is a real publication venue (e.g., CRYPTO 2023, S&P 2024) or the explicit `(preprint)` label** — never just an arXiv/ePrint ID
 - Landscape summary gives a reader unfamiliar with the area a useful mental map
 - Each related work has a specific relevance statement (not just "related to our topic")
 - Gaps section identifies concrete unexplored directions, not vague "more work needed"
 - No hallucinated papers — every entry must come from a real search result
+
+**Normal-mode criteria (required unless explicitly degraded):**
+- Results draw from multiple structured sources via `/search-paper` (not WebSearch alone) — waived when the `/search-paper` availability note is present
+- Citation graph section shows forward and backward citations for key papers — waived when step 4 is marked unavailable

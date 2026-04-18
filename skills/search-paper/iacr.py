@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Search IACR ePrint archive for cryptography papers.
+"""IACR ePrint platform driver: search, recent, download, url, pubinfo.
 
 Usage:
-    python search_iacr.py search "query" [--max-results N]
-    python search_iacr.py recent [--max-results N]
-    python search_iacr.py download EPRINT_ID [--output-dir DIR]
-    python search_iacr.py url EPRINT_ID
+    python iacr.py search "<query>" [--max-results N]
+    python iacr.py recent [--max-results N]
+    python iacr.py download <eprint_id> [--output-dir DIR]
+    python iacr.py url <eprint_id>
+    python iacr.py pubinfo <eprint_id>
 
 Requires: pip install requests beautifulsoup4
 """
@@ -19,6 +20,15 @@ from pathlib import Path
 
 EPRINT_BASE = "https://eprint.iacr.org"
 
+# Acronyms recognized in ePrint "Publication info" lines.
+KNOWN_VENUES = (
+    "CRYPTO", "EUROCRYPT", "ASIACRYPT", "TCC", "PKC", "CHES", "FSE",
+    "CCS", "S&P", "USENIX Security", "USENIX", "NDSS", "Oakland",
+    "FC", "ESORICS", "ACNS", "SCN", "PETS", "AFT",
+    "ICALP", "STOC", "FOCS", "PODC", "DISC", "OPODIS", "DSN",
+    "JoC", "TIFS", "TDSC", "DCC",
+)
+
 
 def _parse_search_results(html, max_results):
     """Parse ePrint search results HTML into structured data."""
@@ -27,11 +37,6 @@ def _parse_search_results(html, max_results):
     soup = BeautifulSoup(html, "html.parser")
     results = []
 
-    # ePrint search results are in <dl> with <dt> containing the ID and <dd> containing details
-    # Try the newer format first: papers are in divs or list items
-    # The search page returns results as a list of papers
-
-    # Pattern: look for links to /YEAR/NNN
     paper_links = soup.find_all("a", href=re.compile(r"^/\d{4}/\d+$"))
     seen = set()
 
@@ -47,19 +52,15 @@ def _parse_search_results(html, max_results):
 
         title = link.get_text(strip=True)
         if not title or title == eprint_id:
-            # Try to find title in surrounding context
             parent = link.find_parent(["div", "li", "dd", "tr", "p"])
             if parent:
-                # Look for bold or strong text as title
                 bold = parent.find(["b", "strong"])
                 if bold:
                     title = bold.get_text(strip=True)
 
-        # Try to extract authors from surrounding context
         authors = []
         parent = link.find_parent(["div", "li", "dd", "tr", "p"])
         if parent:
-            # Authors often appear in <em> or <i> tags, or after "by"
             em = parent.find(["em", "i"])
             if em:
                 authors_text = em.get_text(strip=True)
@@ -79,6 +80,57 @@ def _parse_search_results(html, max_results):
     return results
 
 
+def _extract_publication_info(soup):
+    """Extract the 'Publication info' free-form line from a paper page, if any.
+
+    Format varies: 'A minor revision of an IACR publication in CRYPTO 2023',
+    'Published elsewhere. SCN 2022', 'Conference: ASIACRYPT 2024', etc.
+    Returns the raw line plus best-effort parsed venue/year.
+    """
+    raw = None
+
+    # Newer template uses <dt>Publication info</dt><dd>...</dd>
+    for dt in soup.find_all("dt"):
+        if "publication info" in dt.get_text(strip=True).lower():
+            dd = dt.find_next_sibling("dd")
+            if dd:
+                raw = dd.get_text(" ", strip=True)
+                break
+
+    # Older template: a <p> or <b> introducing the line
+    if not raw:
+        for tag in soup.find_all(["b", "strong"]):
+            if "publication info" in tag.get_text(strip=True).lower():
+                parent = tag.find_parent(["p", "div", "dd"])
+                if parent:
+                    text = parent.get_text(" ", strip=True)
+                    raw = re.sub(r"^.*?publication info[:\s]*", "", text, flags=re.IGNORECASE).strip()
+                    break
+
+    # Generic fallback: any element directly containing the literal string
+    if not raw:
+        match = re.search(r"Publication info[:\s]+([^\n<]+)", soup.get_text("\n"))
+        if match:
+            raw = match.group(1).strip()
+
+    if not raw:
+        return {"raw": None, "venue": None, "year": None}
+
+    venue = None
+    for v in KNOWN_VENUES:
+        if re.search(rf"\b{re.escape(v)}\b", raw, re.IGNORECASE):
+            venue = v
+            break
+
+    year = None
+    m = re.search(r"\b(19|20)\d{2}\b", raw)
+    if m:
+        year = int(m.group(0))
+
+    venue_with_year = f"{venue} {year}" if venue and year else venue
+    return {"raw": raw, "venue": venue_with_year, "year": year}
+
+
 def _fetch_paper_page(eprint_id):
     """Fetch and parse a single ePrint paper page for metadata."""
     import requests
@@ -92,35 +144,36 @@ def _fetch_paper_page(eprint_id):
     authors = []
     abstract = ""
 
-    # Title is typically in <h3> or page title
     title_el = soup.find("h3")
     if title_el:
         title = title_el.get_text(strip=True)
     elif soup.title:
         title = soup.title.get_text(strip=True).replace("ePrint Report – ", "")
 
-    # Look for metadata in <div class="paper-..."> or <p> tags
     for p in soup.find_all("p"):
         text = p.get_text(strip=True)
         if text.startswith("Abstract:") or text.startswith("Abstract."):
             abstract = text.split(":", 1)[-1].strip() if ":" in text else text.split(".", 1)[-1].strip()
 
-    # Authors from meta tags
     for meta in soup.find_all("meta", {"name": "citation_author"}):
         content = meta.get("content", "")
         if content:
             authors.append(content)
 
-    # Title from meta tag
     meta_title = soup.find("meta", {"name": "citation_title"})
     if meta_title and meta_title.get("content"):
         title = meta_title["content"]
+
+    pub = _extract_publication_info(soup)
 
     return {
         "eprint_id": eprint_id,
         "title": title,
         "authors": authors,
         "abstract": abstract,
+        "publication_info": pub["raw"],
+        "venue": pub["venue"],
+        "venue_year": pub["year"],
         "pdf_url": f"{EPRINT_BASE}/{eprint_id}.pdf",
         "url": f"{EPRINT_BASE}/{eprint_id}",
     }
@@ -138,7 +191,6 @@ def cmd_search(args):
     resp.raise_for_status()
     results = _parse_search_results(resp.text, args.max_results)
 
-    # Enrich top results with metadata from individual pages
     enriched = []
     for r in results[:min(5, len(results))]:
         try:
@@ -148,7 +200,6 @@ def cmd_search(args):
         except Exception:
             enriched.append(r)
 
-    # Add remaining without enrichment
     enriched.extend(results[5:])
     json.dump(enriched, sys.stdout, indent=2)
     print()
@@ -192,8 +243,26 @@ def cmd_url(args):
     }))
 
 
+def cmd_pubinfo(args):
+    """Fetch the 'Publication info' line from an ePrint paper page.
+
+    ePrint authors mark the venue here (e.g., 'A major revision of CRYPTO 2023').
+    Returns raw line + best-effort parsed venue/year.
+    """
+    detail = _fetch_paper_page(args.eprint_id)
+    json.dump({
+        "eprint_id": args.eprint_id,
+        "title": detail.get("title"),
+        "authors": detail.get("authors") or [],
+        "publication_info": detail.get("publication_info"),
+        "venue": detail.get("venue"),
+        "venue_year": detail.get("venue_year"),
+    }, sys.stdout, indent=2)
+    print()
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Search IACR ePrint archive")
+    parser = argparse.ArgumentParser(description="IACR ePrint platform driver")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_search = sub.add_parser("search", help="Search papers by query")
@@ -210,8 +279,17 @@ def main():
     p_url = sub.add_parser("url", help="Get paper URL")
     p_url.add_argument("eprint_id", help="ePrint ID")
 
+    p_pub = sub.add_parser("pubinfo", help="Read ePrint 'Publication info' field (author-supplied venue)")
+    p_pub.add_argument("eprint_id", help="ePrint ID")
+
     args = parser.parse_args()
-    {"search": cmd_search, "recent": cmd_recent, "download": cmd_download, "url": cmd_url}[args.command](args)
+    {
+        "search": cmd_search,
+        "recent": cmd_recent,
+        "download": cmd_download,
+        "url": cmd_url,
+        "pubinfo": cmd_pubinfo,
+    }[args.command](args)
 
 
 if __name__ == "__main__":
