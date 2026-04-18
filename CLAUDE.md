@@ -43,7 +43,7 @@ pip install arxiv requests beautifulsoup4
 
 Primary distribution: [`vercel-labs/skills`](https://github.com/vercel-labs/skills) — `npx skills add SebastianElvis/reaper` shallow-clones the repo and copies all skill directories into the host agent's conventional skills folder. Targets 45+ agents including Cursor, OpenAI Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, OpenCode, Warp, Goose, Replit, and Claude Code.
 
-- Pin syntax: `npx skills add SebastianElvis/reaper#v0.3.9`. Tagged releases are the pin contract.
+- Pin syntax: `npx skills add SebastianElvis/reaper#v0.4.0`. Tagged releases are the pin contract.
 - The installer copies the entire skill directory (including Python scripts and `references/`); only `metadata.json`, `.git`, `__pycache__`, `__pypackages__` are excluded.
 - All `SKILL.md` files must use host-agnostic phrasing ("invoke the `<name>` skill") for inter-skill calls. Sub-skill `Usage` blocks may show host-specific invocation forms (e.g. `/<sub>` on slash-command hosts like Claude Code) as examples, clearly labeled as such.
 
