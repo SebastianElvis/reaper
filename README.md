@@ -1,8 +1,8 @@
 # Reaper
 
-**Reaper (REAd PapER)** — an AI-native scientific research pipeline. A [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins) that takes a research goal — optionally with a research paper — and autonomously conducts rigorous, multi-step academic research.
+**Reaper (REAd PapER)** — an AI-native scientific research pipeline. A composable set of [AI agent skills](https://github.com/vercel-labs/skills) that takes a research goal — optionally with a research paper — and autonomously conducts rigorous, multi-step academic research. Runs on any agent that supports the `SKILL.md` convention (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, Claude Code, and 40+ more).
 
-[![Claude Code Plugin](https://img.shields.io/badge/Claude_Code-Plugin-blue)](https://code.claude.com/docs/en/discover-plugins)
+[![Skills](https://img.shields.io/badge/skills-SKILL.md-brightgreen)](https://github.com/vercel-labs/skills)
 
 ## What Reaper Does
 
@@ -16,6 +16,8 @@ Give Reaper a research question — with or without a PDF. It reads the paper (i
 /reaper "determine if the security proof in Section 4 holds under asynchrony" path/to/paper.pdf
 ```
 
+How you invoke a skill depends on the host agent. The `/<skill>` form above is the canonical display convention used throughout these docs — it works directly on slash-command hosts (e.g. Claude Code), and on auto-discovery hosts (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, …) you simply ask the agent to "run the `/reaper` skill on …" by its bare name.
+
 **Key capabilities:**
 
 - **Autonomous multi-stage pipeline** — goal clarification, paper analysis, literature review, hypothesis formalization, parallel investigation, critique, and synthesis all chain automatically
@@ -24,52 +26,55 @@ Give Reaper a research question — with or without a PDF. It reads the paper (i
 - **Domain-agnostic design** — ships with cryptography and distributed systems references, but swap the reference files to adapt to any research domain
 - **Multi-model AI consultation** — optionally consult Codex, Gemini, DeepSeek, or local models for a second opinion at every pipeline stage
 - **Composable skills** — each pipeline stage is an independent skill you can run standalone
+- **Host-agnostic** — distributed as plain `SKILL.md` folders that work across 45+ AI coding agents
 
 ## How It Works
 
 Reaper executes a multi-stage pipeline where investigation runs in parallel batches and critique provides feedback from multiple sources:
 
 ```
-                      ┌── /analyze-paper (if paper) ──┐
-/clarify-goal ──────> │                               ├─> /formalize-problem
-                      └── /review-literature ─────────┘          │
-                            │ (parallel)                         v
-                            │                    ┌──────────> /brainstorm
-                            └── calls            │                │
-                                /analyze-paper   │                │
-                                per downloaded   │    ┌─ /investigate ─────────────────┐
-                                paper            │    │  plan batch                    │
-                                                 │    │    ├──> agent H1 ─┐            │
-                                                 │    │    ├──> agent H2 ─┼──> merge   │
-                                                 │    │    └──> agent H3 ─┘     │      │
-                                                 │    │          next batch or done    │
-                                                 │    └────────────────────────────────┘
-                                                 │                    │
-                                                 │    ┌─ /critique ────────────────────┐
-                                                 │    │  --self  --codex  "feedback"   │
-                                                 │    └────┬───────────────────┬───────┘
-                                                 │         │                   │
-                                                 │   deepen/explore    rewrite/done ──> /synthesize ──> report.md
-                                                 └─────────┘
+                     ┌── /analyze-paper (if paper) ──┐
+/clarify-goal ─────> │                               ├─> /formalize-problem
+                     └── /review-literature ─────────┘          │
+                           │ (parallel)                         v
+                           │                    ┌──────────> /brainstorm
+                           └── calls            │                │
+                               /analyze-paper   │                │
+                               per downloaded   │    ┌─ /investigate ─────────────────┐
+                               paper            │    │  plan batch                    │
+                                                │    │    ├──> agent H1 ─┐            │
+                                                │    │    ├──> agent H2 ─┼──> merge   │
+                                                │    │    └──> agent H3 ─┘     │      │
+                                                │    │          next batch or done    │
+                                                │    └────────────────────────────────┘
+                                                │                    │
+                                                │    ┌─ /critique ────────────────────┐
+                                                │    │  --self  --codex  "feedback"   │
+                                                │    └────┬───────────────────┬───────┘
+                                                │         │                   │
+                                                │   deepen/explore    rewrite/done ──> /synthesize ──> report.md
+                                                └─────────┘
 ```
 
 ## Skills
 
-Each skill can be used independently or composed by the orchestrator:
+Each skill can be used independently or composed by the orchestrator. Invoke by skill `name` using your host's native skill-loading mechanism.
 
 | Skill | What it does |
 |-------|-------------|
 | `/reaper` | Full pipeline: clarify → analyze → literature → formalize → brainstorm → investigate ↔ critique → synthesize |
-| `/reaper:clarify-goal` | Ask targeted clarifying questions to sharpen a vague research goal |
-| `/reaper:analyze-paper` | Extract structured information from a research paper |
-| `/reaper:review-literature` | Search and summarize related academic work |
-| `/reaper:formalize-problem` | Produce precise, testable hypotheses from a research question |
-| `/reaper:brainstorm` | Generate, prioritize, and refine research ideas based on current state |
-| `/reaper:investigate` | Run investigation cycles with keep-or-discard discipline |
-| `/reaper:critique` | Provide critique via human feedback, Codex consultation, or self-review (can trigger more investigation) |
-| `/reaper:synthesize` | Generate a structured research report from investigation results |
-| `/reaper:search-arxiv` | Search arXiv papers, download PDFs, and trace citation graphs |
-| `/reaper:search-iacr` | Search IACR ePrint archive for cryptography papers |
+| `/clarify-goal` | Ask targeted clarifying questions to sharpen a vague research goal |
+| `/analyze-paper` | Extract structured information from a research paper |
+| `/review-literature` | Search and summarize related academic work |
+| `/formalize-problem` | Produce precise, testable hypotheses from a research question |
+| `/brainstorm` | Generate, prioritize, and refine research ideas based on current state |
+| `/investigate` | Run investigation cycles with keep-or-discard discipline |
+| `/critique` | Provide critique via human feedback, Codex consultation, or self-review (can trigger more investigation) |
+| `/synthesize` | Generate a structured research report from investigation results |
+| `/search-arxiv` | Search arXiv papers, download PDFs, and trace citation graphs |
+| `/search-iacr` | Search IACR ePrint archive for cryptography papers |
+
+> The `/<skill>` form is the canonical display convention used throughout these docs. Slash-command hosts (Claude Code) invoke them directly that way (with sub-skills as `/reaper:clarify-goal` etc.). Auto-discovery hosts (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, …) invoke them by the bare skill name — drop the leading `/` when asking the agent to run a skill.
 
 ## Installation
 
@@ -81,18 +86,37 @@ The search skills require Python packages:
 pip install arxiv requests beautifulsoup4
 ```
 
-### From the marketplace
+> **Note**: `npx skills` only copies `SKILL.md` files, Python scripts, and reference files into your agent's skills folder. It does **not** install Python dependencies, register MCP servers, or create the `reaper-workspace/` directory. Install Python deps yourself with the command above; register the Codex MCP server separately if you want `--codex` (see [Optional: Multi-model AI consultation](#optional-multi-model-ai-consultation) below); the workspace directory is created automatically the first time the pipeline runs.
 
-Add the marketplace and install the plugin:
+### Install via `npx skills` (recommended — works on 45+ agents)
+
+Reaper is distributed as standard `SKILL.md` folders. The cross-agent installer [`vercel-labs/skills`](https://github.com/vercel-labs/skills) shallow-clones this repository and copies all 11 skill directories — including Python scripts and reference files — into your agent's conventional skills folder.
+
+```bash
+# Latest from the default branch
+npx skills add SebastianElvis/reaper
+
+# Pinned to a specific release (recommended for reproducibility)
+npx skills add SebastianElvis/reaper#v0.3.8
+
+# Install into a specific agent (defaults to all detected)
+npx skills add SebastianElvis/reaper --agent cursor
+```
+
+Supported targets include Cursor, OpenAI Codex CLI, Cline, Continue, Gemini CLI, GitHub Copilot, Windsurf, OpenCode, Warp, Goose, Replit, Claude Code, and a `universal` target at `.agents/skills/`. See `npx skills list-agents` for the full list.
+
+> **Reminder**: `npx skills add` copies files only. Python deps and MCP server registration are separate steps — see Prerequisites above and [Optional: Multi-model AI consultation](#optional-multi-model-ai-consultation) below.
+
+### Install on Claude Code (as a plugin)
+
+Claude Code can also consume Reaper via its native plugin marketplace mechanism, which bundles the same skills with slash-command routing:
 
 ```
 /plugin marketplace add SebastianElvis/reaper
 /plugin install reaper@SebastianElvis-reaper
 ```
 
-### Manual installation via Git
-
-Clone the repository and add it as a local marketplace:
+Or clone and add as a local marketplace:
 
 ```bash
 git clone https://github.com/SebastianElvis/reaper.git
@@ -100,20 +124,18 @@ git clone https://github.com/SebastianElvis/reaper.git
 /plugin install reaper@reaper
 ```
 
-Or manually copy skills into your Claude configuration:
+See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugins) for more details.
 
-```bash
-# Clone the repository
-git clone https://github.com/SebastianElvis/reaper.git
+### Invocation across hosts
 
-# Global installation (available in all projects)
-cp -r reaper/skills/* ~/.claude/skills/
+- **Slash-command hosts** (Claude Code): `/reaper "<goal>"`, `/reaper:analyze-paper <path>`, etc. The `/<plugin>:<skill>` routing is built into the host.
+- **Auto-discovery hosts** (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, …): the agent loads `SKILL.md` files from its skills folder and invokes them by name when the task matches the skill's `description`. Ask the agent to run the skill, e.g. *"use the reaper skill to research X"*.
+- **Manual invocation**: any host can be pointed at a specific `SKILL.md` if its native discovery doesn't pick it up.
 
-# Or project-level installation (available in current project only)
-cp -r reaper/skills/* ./.claude/skills/
-```
+A few skill features are host-specific:
 
-See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugins) for more details on installing plugins.
+- The `--codex` flag enables external-model consultation via MCP. It currently requires a host with MCP support (Claude Code, OpenCode, etc.) and silently falls back to self-review elsewhere.
+- Frontmatter keys `user-invocable`, `argument-hint`, hooks, and `context: fork` are Claude-Code-specific. They are preserved in the SKILL.md files but no-op on other hosts.
 
 ### Optional: Multi-model AI consultation
 
@@ -123,18 +145,18 @@ Pass `--codex` to enable pipeline-wide AI consultation — every skill gains a c
 
 | Model | Setup | Strength |
 |-------|-------|----------|
-| OpenAI Codex/o3 | `claude mcp add codex-cli -- npx -y codex-mcp-server` | Adversarial review, stress-testing arguments |
+| OpenAI Codex/o3 | Register `codex-mcp-server` in your host's MCP config | Adversarial review, stress-testing arguments |
 | Google Gemini | *(coming soon)* | Long-context review across full paper corpora |
 | DeepSeek R1 | *(coming soon)* | Proof checking, formal reasoning |
 | Local models | *(coming soon — via ollama)* | Offline/private use, cost control |
 
-To start with Codex (the currently supported backend), register the [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server):
+Example registration on Claude Code:
 
 ```bash
 claude mcp add codex-cli -- npx -y codex-mcp-server
 ```
 
-If no model backends are configured, AI consultation is silently skipped and the pipeline continues with self-review only.
+Other MCP-capable hosts use their own equivalent registration. If no model backends are configured, AI consultation is silently skipped and the pipeline continues with self-review only.
 
 ## Workspace
 
@@ -162,6 +184,8 @@ reaper-workspace/
 └── report.md                       # Final synthesized output
 ```
 
+The workspace contract is host-agnostic — any agent that can read and write files in the working directory produces the same workspace structure.
+
 ## Methodology
 
 Reaper's research loop follows six principles:
@@ -181,8 +205,8 @@ See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full roadmap.
 
 - **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete; LaTeX report output planned*
 - **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph — *complete*
-- **Horizon 3 (The Committee)**: Multi-model critique via `/reaper:critique --codex` — *Codex complete, Gemini/DeepSeek/local planned*
-- **Horizon 3.5 (The Polyglot)**: Platform portability — run Reaper on Codex CLI, Gemini CLI, [OpenClaw](https://openclaw.ai/) — *planned*
+- **Horizon 3 (The Committee)**: Multi-model critique via the `/critique` skill's `--codex` mode — *Codex complete, Gemini/DeepSeek/local planned*
+- **Horizon 3.5 (The Polyglot)**: Cross-agent distribution via `npx skills` and host-agnostic skill prose — *complete; per-host orchestration polish ongoing*
 - **Horizon 4 (The Academy)**: Broader topic search (Scholar/DBLP), author-centric and venue-centric search — *planned*
 - **Horizon 5 (The Apprentice)**: Evidence quality taxonomy, evidence-aware critique — *planned*
 - **Horizon 6 (The Examiner)**: Proactive reformulation trigger, claim provenance, formal verification — *planned*
@@ -197,6 +221,7 @@ Reaper's methodology draws from the following sources:
 - **[Simon Peyton Jones, "How to Write a Great Research Paper"](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/How-to-write-a-great-research-paper.pdf)** — Writing as a primary mechanism for doing research, not just reporting it. Shapes the report structure: one clear "ping," explicit refutable contributions, examples before generality.
 - **[S. Keshav, "How to Read a Paper" (ACM SIGCOMM CCR, 2007)](http://ccr.sigcomm.org/online/files/p83-keshavA.pdf)** — The three-pass method for reading papers: first pass for the big picture, second pass to grasp content without details, third pass to virtually re-derive the work and challenge every assumption. Structures how the literature review skill reads downloaded papers at increasing depth.
 - **[Mathew Stiller-Reeve, "How to Write a Thorough Peer Review" (Nature, 2018)](https://www.nature.com/articles/d41586-018-06991-0)** — Three-reading review method (aims → scientific substance → presentation) and the mirror technique. Structures the per-paper notes in the literature review skill: mirror the paper's claims, classify issues as major/minor/fatal, evaluate whether conclusions answer the introduction's questions.
+- **[`vercel-labs/skills`](https://github.com/vercel-labs/skills)** — The cross-agent skills convention and CLI installer that makes Reaper portable across 45+ AI coding agents.
 
 ## License
 

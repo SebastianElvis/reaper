@@ -2,11 +2,24 @@
 
 Reaper uses Python scripts to search academic paper archives. This document catalogs the available tools, when to use each, and common workflow patterns.
 
+## Path Resolution Protocol
+
+The scripts referenced below live in sibling skills (`search-arxiv/` and `search-iacr/`). The placeholders **`{{SEARCH_ARXIV_SKILL_DIR}}`** and **`{{SEARCH_IACR_SKILL_DIR}}`** below are template tokens — **you MUST substitute each with the absolute install path of the corresponding sibling skill before invoking, or the exec will fail.** Common install locations (substitute the trailing skill name as needed):
+
+- `~/.claude/skills/<skill>/` (Claude Code)
+- `~/.cursor/skills/<skill>/` (Cursor)
+- `~/.agents/skills/<skill>/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
+- `~/.continue/skills/<skill>/` (Continue)
+- `~/.windsurf/skills/<skill>/` (Windsurf)
+- `<repo-root>/skills/<skill>/` (during repo development)
+
+**Sibling-skill dependency**: This reference assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`) so that `reaper/`, `search-arxiv/`, and `search-iacr/` are co-located in your agent's skills folder.
+
 ## Tools
 
 ### search_arxiv.py
 
-**Location**: `skills/search-arxiv/search_arxiv.py`
+**Location**: `{{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py`
 **Dependencies**: `pip install arxiv requests`
 
 | Command | Purpose | Key Parameters |
@@ -27,7 +40,7 @@ Reaper uses Python scripts to search academic paper archives. This document cata
 
 ### search_iacr.py
 
-**Location**: `skills/search-iacr/search_iacr.py`
+**Location**: `{{SEARCH_IACR_SKILL_DIR}}/search_iacr.py`
 **Dependencies**: `pip install requests beautifulsoup4`
 
 | Command | Purpose | Key Parameters |
@@ -87,12 +100,12 @@ Need very recent papers?
 
 1. Run a focused query on the specific question that arose:
    ```bash
-   python skills/search-iacr/search_iacr.py search "exact technical question" --max-results 5
-   python skills/search-arxiv/search_arxiv.py search "exact technical question" --max-results 5
+   python {{SEARCH_IACR_SKILL_DIR}}/search_iacr.py search "exact technical question" --max-results 5
+   python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py search "exact technical question" --max-results 5
    ```
 2. If a highly relevant paper is found, download and read it:
    ```bash
-   python skills/search-arxiv/search_arxiv.py download <id> --output-dir reaper-workspace/papers/
+   python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py download <id> --output-dir reaper-workspace/papers/
    ```
 3. Integrate findings into `literature.md` inline (add to appropriate existing sections)
 
@@ -101,7 +114,7 @@ Need very recent papers?
 1. Start with a known paper's arXiv ID
 2. Get references (backward) and citations (forward):
    ```bash
-   python skills/search-arxiv/search_arxiv.py citations 2305.12345 --max-results 20
+   python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py citations 2305.12345 --max-results 20
    ```
 3. For each highly relevant citation, recursively chase (1-2 hops max)
 

@@ -11,12 +11,14 @@ Ask the user targeted questions to sharpen a vague research goal into something 
 
 ## Usage
 
+Invoke this skill by name with the research goal (and optional paper path). On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:clarify-goal "<goal>"`).
+
 ```
 # Without a paper — goal-driven research
-/reaper:clarify-goal "explore the feasibility of post-quantum threshold signatures"
+clarify-goal "explore the feasibility of post-quantum threshold signatures"
 
 # With a paper
-/reaper:clarify-goal "is this protocol secure?" path/to/paper.pdf
+clarify-goal "is this protocol secure?" path/to/paper.pdf
 ```
 
 **Argument parsing:** The research goal (quoted string) is required. If a path to an existing file is also provided, treat it as the paper.
@@ -88,12 +90,12 @@ Tell the user the refined goal and confirm before the pipeline proceeds.
 
 - Questions are specific to the paper and goal, not generic
 - Each question offers concrete options or defaults
-- The refined goal in `clarified-goal.md` is precise enough for `formalize-problem` to act on without further clarification
+- The refined goal in `clarified-goal.md` is precise enough for `/formalize-problem` to act on without further clarification
 - If the paper PDF is unreadable, report the error — do not proceed with fabricated context
 
 ## Important Notes
 
 - This skill is interactive — it requires user input. Do not skip the question-asking step.
-- Keep the quick scan fast. Don't spend time on deep analysis — that's what `analyze-paper` is for.
+- Keep the quick scan fast. Don't spend time on deep analysis — that's what `/analyze-paper` is for.
 - If the research goal is already precise and unambiguous (e.g., "Does Theorem 4.2 hold when the adversary controls >1/3 of stake?"), you may skip questions and go straight to writing `clarified-goal.md`. Tell the user the goal is clear and proceed.
 - When no paper is provided, focus questions on scoping the research domain, defining key terms, and establishing what kind of output the user expects (survey, feasibility analysis, novel construction, etc.).

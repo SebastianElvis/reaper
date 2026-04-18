@@ -1,0 +1,89 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # Offline structure tests — required. Validates skill manifests, frontmatter,
+  # path placeholders, and inter-skill references. Must pass for any merge.
+  structure-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Python dependencies
+        run: pip install pytest
+      - name: Run structure tests
+        run: pytest tests/test_skills_structure.py -v
+
+  # Network-dependent integration tests against live arXiv / IACR ePrint APIs.
+  # Non-blocking: external services can rate-limit, return 5xx, or change
+  # their HTML — none of which means the package is broken. We still run
+  # them so regressions surface in PR logs, but they do not gate merges.
+  integration-tests:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Python dependencies
+        run: pip install pytest arxiv requests beautifulsoup4
+      - name: Run integration tests (search scripts against live APIs)
+        run: pytest tests/test_search_arxiv.py tests/test_search_iacr.py -v
+
+  npx-skills-discovery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install skills CLI from local path into universal target
+        env:
+          REAPER_REPO: ${{ github.workspace }}
+        run: |
+          mkdir -p /tmp/skills-test
+          cd /tmp/skills-test
+          npx -y skills@latest add "$REAPER_REPO" --agent universal --copy -y
+      - name: Verify every expected skill is present and complete
+        run: |
+          cd /tmp/skills-test
+          target=.agents/skills
+          if [ ! -d "$target" ]; then
+            echo "::error::Skills install target $target does not exist"
+            exit 1
+          fi
+          ls -la "$target"
+          expected="reaper clarify-goal analyze-paper review-literature formalize-problem brainstorm investigate critique synthesize search-arxiv search-iacr"
+          missing=0
+          for skill in $expected; do
+            if [ ! -f "$target/$skill/SKILL.md" ]; then
+              echo "::error::Missing skill: $skill (no SKILL.md at $target/$skill/)"
+              missing=$((missing + 1))
+            fi
+          done
+          # Co-located Python scripts must travel with their skill dirs
+          for script in search-arxiv/search_arxiv.py search-iacr/search_iacr.py; do
+            if [ ! -f "$target/$script" ]; then
+              echo "::error::Missing required asset: $target/$script"
+              missing=$((missing + 1))
+            fi
+          done
+          # Reference files used by other skills must travel with the reaper skill dir
+          for ref in model.md impossibility-results.md definitional-standards.md methodology.md paper-analysis.md venue-tiers.md search-tools.md codex-consultation.md; do
+            if [ ! -f "$target/reaper/references/$ref" ]; then
+              echo "::error::Missing reaper reference file: $target/reaper/references/$ref"
+              missing=$((missing + 1))
+            fi
+          done
+          if [ "$missing" -gt 0 ]; then
+            echo "::error::$missing required asset(s) missing after npx skills install"
+            exit 1
+          fi
+          echo "All expected skills, scripts, and reference files installed successfully."

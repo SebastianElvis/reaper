@@ -11,18 +11,33 @@ Search the IACR Cryptology ePrint Archive for cryptography and security papers.
 
 ## Usage
 
+Invoke this skill by name with the query as a quoted string. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:search-iacr "<query>"`).
+
 ```
-/search-iacr "threshold signatures" --max-results 15
+search-iacr "threshold signatures" --max-results 15
 ```
+
+## Path Resolution Protocol
+
+This skill wraps `search_iacr.py`, which lives in the **same directory as this `SKILL.md`**. **`{{SKILL_DIR}}`** below is a template placeholder — **you MUST substitute it with the absolute install path of this skill before invoking, or the exec will fail.** Common install locations:
+
+- `~/.claude/skills/search-iacr/` (Claude Code)
+- `~/.cursor/skills/search-iacr/` (Cursor)
+- `~/.agents/skills/search-iacr/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
+- `~/.continue/skills/search-iacr/` (Continue)
+- `~/.windsurf/skills/search-iacr/` (Windsurf)
+- `<repo-root>/skills/search-iacr/` (during repo development)
+
+This skill has no sibling-skill dependencies — it ships its own Python script.
 
 ## Commands
 
-This skill wraps `skills/search-iacr/search_iacr.py`. Run commands via Bash.
+Run commands via Bash.
 
 ### Search
 
 ```bash
-python skills/search-iacr/search_iacr.py search "post-quantum threshold signatures" --max-results 10
+python {{SKILL_DIR}}/search_iacr.py search "post-quantum threshold signatures" --max-results 10
 ```
 
 Returns JSON array of papers: `eprint_id`, `title`, `authors`, `year`, `abstract` (for top 5), `pdf_url`, `url`. Top 5 results are enriched with metadata from the paper page.
@@ -30,7 +45,7 @@ Returns JSON array of papers: `eprint_id`, `title`, `authors`, `year`, `abstract
 ### Recent Papers
 
 ```bash
-python skills/search-iacr/search_iacr.py recent --max-results 10
+python {{SKILL_DIR}}/search_iacr.py recent --max-results 10
 ```
 
 Returns the most recently published ePrint papers.
@@ -38,7 +53,7 @@ Returns the most recently published ePrint papers.
 ### Download
 
 ```bash
-python skills/search-iacr/search_iacr.py download 2024/1234 --output-dir reaper-workspace/papers/
+python {{SKILL_DIR}}/search_iacr.py download 2024/1234 --output-dir reaper-workspace/papers/
 ```
 
 Downloads the paper PDF. Returns JSON with `path` and `eprint_id`.
@@ -46,7 +61,7 @@ Downloads the paper PDF. Returns JSON with `path` and `eprint_id`.
 ### Get URL
 
 ```bash
-python skills/search-iacr/search_iacr.py url 2024/1234
+python {{SKILL_DIR}}/search_iacr.py url 2024/1234
 ```
 
 Returns JSON with `url` and `pdf_url` for the paper.
@@ -54,7 +69,7 @@ Returns JSON with `url` and `pdf_url` for the paper.
 ## Role
 
 - **Standalone**: Invoked directly by the user to search for papers.
-- **Building block**: Called by `review-literature` and `investigate` via the underlying Python script.
+- **Building block**: Called by `/review-literature` and `/investigate` via the underlying Python script.
 
 ## Instructions
 

@@ -11,20 +11,36 @@ You are the Reaper orchestrator. You take a research goal — optionally with a 
 
 ## Usage
 
+Invoke the `/reaper` skill with a research goal (quoted string), optionally followed by a paper path and/or `--codex`. Examples below use a generic name-based form; the slash-command form `/reaper "..."` works on hosts with slash-command routing (e.g. Claude Code).
+
 ```
 # Without a paper — pure goal-driven research
-/reaper "explore the feasibility of post-quantum threshold signatures"
+reaper "explore the feasibility of post-quantum threshold signatures"
 
 # With a paper
-/reaper "determine if the security proof in Section 4 holds under asynchrony" path/to/paper.pdf
+reaper "determine if the security proof in Section 4 holds under asynchrony" path/to/paper.pdf
 
-# With Codex consultation for automated AI feedback between investigation cycles
-/reaper "determine if the security proof in Section 4 holds under asynchrony" path/to/paper.pdf --codex
+# With external-model consultation for automated AI feedback between investigation cycles
+reaper "determine if the security proof in Section 4 holds under asynchrony" path/to/paper.pdf --codex
 ```
 
-**Argument parsing:** The research goal (quoted string) is required. If a path to an existing file (PDF or text) is also provided, treat it as the paper. Pass `--codex` to enable Codex consultation across the entire pipeline — every skill gains an optional step where it consults Codex for a second opinion at a natural checkpoint. See `references/codex-consultation.md` for the full protocol. Requires [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server).
+**Argument parsing:** The research goal (quoted string) is required. If a path to an existing file (PDF or text) is also provided, treat it as the paper. Pass `--codex` to enable external-model consultation across the entire pipeline — every skill gains an optional step where it consults an external model for a second opinion at a natural checkpoint. See `references/codex-consultation.md` for the full protocol. Requires a host with MCP support and a registered Codex MCP server (e.g. [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server)); silently no-op on hosts without MCP.
 
 When `--codex` is set, propagate this context to all skill invocations. Each skill will consult Codex only at its designated checkpoint (defined in `references/codex-consultation.md`), using compressed context and a shared session ID for continuity across the pipeline.
+
+## Peer Skills
+
+This orchestrator chains 8 sub-skills that must be installed alongside it: `/clarify-goal`, `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/brainstorm`, `/investigate`, `/critique`, `/synthesize`. Two more (`/search-arxiv`, `/search-iacr`) are called transitively by `/review-literature` and `/investigate`. The `/<skill>` form is the canonical display convention used in these docs; substitute the host-native invocation form (slash command, auto-discovery, manual `SKILL.md` pointer) when actually running them.
+
+If any of these are missing from your agent's skills folder, ask the user to reinstall the full Reaper package (`npx skills add SebastianElvis/reaper`).
+
+## Invocation Convention
+
+References below to running a sub-skill use the host-agnostic phrase "invoke the `<name>` skill" — invoke each sub-skill by its `name` using your host's native skill-loading mechanism. The loaded `SKILL.md` provides the full instructions for that stage. Concrete invocation form varies by host:
+
+- **Slash-command hosts** (e.g. Claude Code): `/reaper:<sub>` (e.g. `/reaper:clarify-goal`)
+- **Auto-discovery hosts** (e.g. Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, OpenCode): the agent loads peer `SKILL.md` files from the skills folder and routes by `name` + `description` match.
+- **Manual invocation hosts**: explicitly point the agent at the installed skill's `SKILL.md` (typical paths: `~/.claude/skills/<name>/SKILL.md`, `~/.cursor/skills/<name>/SKILL.md`, `~/.agents/skills/<name>/SKILL.md`, `~/.continue/skills/<name>/SKILL.md`, `~/.windsurf/skills/<name>/SKILL.md`, or `<repo-root>/skills/<name>/SKILL.md` during development — substitute `<name>` with the sub-skill directory name like `clarify-goal`).
 
 ## Design Principles
 
@@ -62,7 +78,7 @@ reaper-workspace/
 
 **File naming conventions:** Investigation dirs: `NNN-<slug>/` (zero-padded). Cycle logs: `cycle-NNN-<slug>.md`. Feedback: `round-N.md`, `codex-consultation-N.md`. Paper notes: `<id>-notes.md`.
 
-**Lazy-load protocol:** Early-pipeline skills (`formalize-problem`, `analyze-paper`) read source files eagerly. Loop skills (`brainstorm`, `investigate`, `critique`, `synthesize`) use `current-understanding.md` as primary source and lazy-load `paper-summary.md` and `literature.md` only when stuck or when a specific hypothesis requires it.
+**Lazy-load protocol:** Early-pipeline skills (`/formalize-problem`, `/analyze-paper`) read source files eagerly. Loop skills (`/brainstorm`, `/investigate`, `/critique`, `/synthesize`) use `current-understanding.md` as primary source and lazy-load `paper-summary.md` and `literature.md` only when stuck or when a specific hypothesis requires it.
 
 Initialize `reaper-workspace/notes/results.md` with:
 ```markdown
@@ -82,10 +98,10 @@ Initialize `reaper-workspace/notes/current-understanding.md` with:
 ### Step 2: Clarify the Research Goal
 
 **If a paper was provided:**
-Run **`/reaper:clarify-goal "<research-goal>" <paper-path>`** — does a quick scan of the paper, asks the user 3-5 targeted clarifying questions about scope, assumptions, and success criteria, then writes `notes/clarified-goal.md`.
+Invoke the **`/clarify-goal`** skill with arguments `"<research-goal>" <paper-path>` — it does a quick scan of the paper, asks the user 3-5 targeted clarifying questions about scope, assumptions, and success criteria, then writes `notes/clarified-goal.md`.
 
 **If no paper was provided:**
-Run **`/reaper:clarify-goal "<research-goal>"`** — asks the user 3-5 targeted clarifying questions based on the goal alone (no paper scan), then writes `notes/clarified-goal.md`.
+Invoke the **`/clarify-goal`** skill with argument `"<research-goal>"` — it asks the user 3-5 targeted clarifying questions based on the goal alone (no paper scan), then writes `notes/clarified-goal.md`.
 
 If the goal is already precise and unambiguous, this step writes the file without asking questions.
 
@@ -93,22 +109,22 @@ All downstream skills should read `clarified-goal.md` for the refined goal and c
 
 ### Step 3: Establish Baseline (parallel)
 
-**If a paper was provided**, run these two skills as **parallel subagents** using the Agent tool — they write to non-overlapping files:
+**If a paper was provided**, run these two skills as **parallel subagents** using your host's parallel-spawn primitive (e.g. Claude Code's `Agent` tool, or the equivalent on your host; if the host has no parallel primitive, run them sequentially) — they write to non-overlapping files:
 
-1. **`/reaper:analyze-paper <paper-path>`** — produces `notes/paper-summary.md`
-2. **`/reaper:review-literature "<research-goal>"`** — produces `notes/literature.md`
+1. Invoke **`/analyze-paper`** with `<paper-path>` — produces `notes/paper-summary.md`
+2. Invoke **`/review-literature`** with `"<research-goal>"` — produces `notes/literature.md`
 
 Use the refined goal from `clarified-goal.md` for the literature review argument. Both must complete before proceeding.
 
 **If no paper was provided**, run only:
 
-1. **`/reaper:review-literature "<research-goal>"`** — produces `notes/literature.md`
+1. Invoke **`/review-literature`** with `"<research-goal>"` — produces `notes/literature.md`
 
-Skip `analyze-paper` entirely — there is no paper to analyze. The pipeline proceeds without `notes/paper-summary.md`.
+Skip `/analyze-paper` entirely — there is no paper to analyze. The pipeline proceeds without `notes/paper-summary.md`.
 
 ### Step 4: Formalize the Problem
 
-Run **`/reaper:formalize-problem "<research-goal>"`** — reads the baseline outputs (`clarified-goal.md`, `literature.md`, and `paper-summary.md` if available) and produces `notes/problem-statement.md` (trust assumptions, security properties, performance goals) and `notes/ideas.md` (prioritized ideas).
+Invoke **`/formalize-problem`** with `"<research-goal>"` — it reads the baseline outputs (`clarified-goal.md`, `literature.md`, and `paper-summary.md` if available) and produces `notes/problem-statement.md` (trust assumptions, security properties, performance goals) and `notes/ideas.md` (prioritized ideas).
 
 ### Step 5: Brainstorm → Investigate → Critique Loop
 
@@ -126,12 +142,12 @@ The loop adapts to problem complexity. Assess complexity after formalization, be
 
 **Default (no `--codex`):**
 ```
-/reaper:brainstorm  →  /reaper:investigate N  →  /reaper:critique --self  →  /reaper:brainstorm  →  /reaper:investigate N
+brainstorm  →  investigate N  →  critique --self  →  brainstorm  →  investigate N
 ```
 
 **With `--codex`:**
 ```
-/reaper:brainstorm  →  /reaper:investigate N  →  /reaper:critique --codex  →  /reaper:brainstorm  →  /reaper:investigate N  →  /reaper:critique --codex
+brainstorm  →  investigate N  →  critique --codex  →  brainstorm  →  investigate N  →  critique --codex
 ```
 
 Where N is determined by the complexity assessment above.
@@ -145,23 +161,23 @@ Where N is determined by the complexity assessment above.
 
 #### Re-Formalization Handling
 
-If `investigate` returns with a re-formalization signal (any cycle logged with outcome `reformulate`):
+If `/investigate` returns with a re-formalization signal (any cycle logged with outcome `reformulate`):
 
 1. **Preserve state**: Do NOT clear `notes/results.md`, `notes/current-understanding.md`, or existing investigation directories.
 2. **Archive old formulation**: Rename `notes/problem-statement.md` to `notes/problem-statement-v<N>.md` before re-running.
-3. **Re-run `formalize-problem`**: It reads the reformulation signal from the triggering cycle's `analysis.md`.
+3. **Re-run `/formalize-problem`**: It reads the reformulation signal from the triggering cycle's `analysis.md`.
 4. **Reset ideas selectively**: In `ideas.md`, mark hypotheses that depended on the old formulation as `[superseded by v<N>]`. Add new hypotheses below.
 5. **Restart loop**: Fresh cycle budget for the new formulation.
 
 #### Loop Mechanics
 
-The `brainstorm` step reads the current state and updates `ideas.md` (adding new ideas, editing existing ones inline) (tagged `[Brainstorm-N]`). The `critique` step may also add hypotheses (tagged `[Codex-N]` or `[Self-N]`). The next `investigate` batch picks up all unresolved ideas automatically.
+The `/brainstorm` step reads the current state and updates `ideas.md` (adding new ideas, editing existing ones inline) (tagged `[Brainstorm-N]`). The `/critique` step may also add hypotheses (tagged `[Codex-N]` or `[Self-N]`). The next `/investigate` batch picks up all unresolved ideas automatically.
 
 This loop runs autonomously — do not interrupt or ask if it should continue.
 
 ### Step 6: Synthesize
 
-Run **`/reaper:synthesize`** — reads all workspace files and produces `report.md`.
+Invoke the **`/synthesize`** skill — it reads all workspace files and produces `report.md`.
 
 ### Step 7: Present Results
 
@@ -175,36 +191,36 @@ After synthesis completes:
 
 After presenting results, let the user know they can iterate:
 
-> If you'd like to refine, deepen, or challenge any aspect of this research, use `/reaper:critique "your feedback here"`.
+> If you'd like to refine, deepen, or challenge any aspect of this research, invoke the `/critique` skill with your feedback as a quoted string. (Slash-command hosts: `/reaper:critique "your feedback here"`.)
 
-Do **not** block waiting for a response — the pipeline is complete. The user can invoke `/reaper:critique` with quoted feedback at any time to start a feedback round. The critique skill classifies the feedback, may run targeted investigation cycles, and then you should re-run `/reaper:synthesize` to produce an updated report.
+Do **not** block waiting for a response — the pipeline is complete. The user can invoke `/critique` with quoted feedback at any time to start a feedback round. The critique skill classifies the feedback, may run targeted investigation cycles, and then you should re-invoke `/synthesize` to produce an updated report.
 
 ## Skill Dependency Graph
 
 ```
-clarify-goal ──► analyze-paper ──┐
-            (if paper provided)  ├──► formalize-problem ──► brainstorm ◄──► investigate ◄──► critique
-               review-literature ┘                                                           │
-                 (calls analyze-paper                                      synthesize ◄───────┘
-                  for each paper)
+/clarify-goal ──► /analyze-paper ──┐
+             (if paper provided)   ├──► /formalize-problem ──► /brainstorm ◄──► /investigate ◄──► /critique
+                /review-literature ┘                                                              │
+                  (calls /analyze-paper                                     /synthesize ◄──────────┘
+                   for each paper)
 ```
 
 | Skill | Requires | Produces |
 |-------|----------|----------|
-| clarify-goal | (paper path, optional) | `notes/clarified-goal.md` |
-| analyze-paper | (paper path) — **skipped at top level if no paper**; also called by `review-literature` for each downloaded paper | `notes/paper-summary.md` or `papers/<id>-notes.md` (when `--output` is specified) |
-| review-literature | (research goal); calls `analyze-paper --goal` per downloaded paper | `notes/literature.md`, `papers/*` |
-| formalize-problem | `clarified-goal.md`, `literature.md`, `paper-summary.md` (optional) | `problem-statement.md`, `ideas.md` |
-| brainstorm | `problem-statement.md`, `ideas.md`, `current-understanding.md`, `results.md` | Updates `ideas.md` |
-| investigate | `problem-statement.md`, `ideas.md`, `current-understanding.md`, `results.md` | Updates `results.md`, `current-understanding.md`, `ideas.md`; creates `investigations/*`, `logs/*` |
-| critique | `current-understanding.md`, `results.md`, `problem-statement.md`, `ideas.md` | `feedbacks/*`; may update `ideas.md` |
-| synthesize | `current-understanding.md`, `results.md`, `problem-statement.md`, `ideas.md` | `report.md` |
-| search-arxiv | (query) | stdout |
-| search-iacr | (query) | stdout |
+| `/clarify-goal` | (paper path, optional) | `notes/clarified-goal.md` |
+| `/analyze-paper` | (paper path) — **skipped at top level if no paper**; also called by `/review-literature` for each downloaded paper | `notes/paper-summary.md` or `papers/<id>-notes.md` (when `--output` is specified) |
+| `/review-literature` | (research goal); calls `/analyze-paper --goal` per downloaded paper | `notes/literature.md`, `papers/*` |
+| `/formalize-problem` | `clarified-goal.md`, `literature.md`, `paper-summary.md` (optional) | `problem-statement.md`, `ideas.md` |
+| `/brainstorm` | `problem-statement.md`, `ideas.md`, `current-understanding.md`, `results.md` | Updates `ideas.md` |
+| `/investigate` | `problem-statement.md`, `ideas.md`, `current-understanding.md`, `results.md` | Updates `results.md`, `current-understanding.md`, `ideas.md`; creates `investigations/*`, `logs/*` |
+| `/critique` | `current-understanding.md`, `results.md`, `problem-statement.md`, `ideas.md` | `feedbacks/*`; may update `ideas.md` |
+| `/synthesize` | `current-understanding.md`, `results.md`, `problem-statement.md`, `ideas.md` | `report.md` |
+| `/search-arxiv` | (query) | stdout |
+| `/search-iacr` | (query) | stdout |
 
 ## Important Notes
 
-- Each skill is invoked via the Skill tool (e.g., `skill: "reaper:analyze-paper", args: "paper.pdf"`)
+- Sub-skills are invoked using the host agent's native skill mechanism — by `name` plus arguments. The exact API differs per host (e.g. Claude Code's `Skill` tool with `skill: "reaper:analyze-paper", args: "paper.pdf"`; Cursor/Codex/Cline auto-route based on the loaded `SKILL.md`). Refer to the host's skill documentation for the exact form.
 - Skills communicate exclusively through workspace files — no in-memory state passing
 - If a skill fails, read its output file to diagnose, then retry
 - The workspace is the source of truth — if context is compressed, re-read workspace files

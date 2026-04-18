@@ -11,18 +11,33 @@ Search arXiv for academic papers using the `arxiv` Python package, with citation
 
 ## Usage
 
+Invoke this skill by name with the query as a quoted string. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:search-arxiv "<query>"`).
+
 ```
-/search-arxiv "post-quantum threshold signatures" --max-results 15 --categories cs.CR
+search-arxiv "post-quantum threshold signatures" --max-results 15 --categories cs.CR
 ```
+
+## Path Resolution Protocol
+
+This skill wraps `search_arxiv.py`, which lives in the **same directory as this `SKILL.md`**. **`{{SKILL_DIR}}`** below is a template placeholder — **you MUST substitute it with the absolute install path of this skill before invoking, or the exec will fail.** Common install locations:
+
+- `~/.claude/skills/search-arxiv/` (Claude Code)
+- `~/.cursor/skills/search-arxiv/` (Cursor)
+- `~/.agents/skills/search-arxiv/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
+- `~/.continue/skills/search-arxiv/` (Continue)
+- `~/.windsurf/skills/search-arxiv/` (Windsurf)
+- `<repo-root>/skills/search-arxiv/` (during repo development)
+
+This skill has no sibling-skill dependencies — it ships its own Python script.
 
 ## Commands
 
-This skill wraps `skills/search-arxiv/search_arxiv.py`. Run commands via Bash.
+Run commands via Bash.
 
 ### Search
 
 ```bash
-python skills/search-arxiv/search_arxiv.py search "BFT consensus communication complexity" --max-results 10 --categories cs.CR,cs.DC
+python {{SKILL_DIR}}/search_arxiv.py search "BFT consensus communication complexity" --max-results 10 --categories cs.CR,cs.DC
 ```
 
 Returns JSON array of papers: `arxiv_id`, `title`, `authors`, `year`, `abstract`, `categories`, `pdf_url`, `published`.
@@ -30,7 +45,7 @@ Returns JSON array of papers: `arxiv_id`, `title`, `authors`, `year`, `abstract`
 ### Download
 
 ```bash
-python skills/search-arxiv/search_arxiv.py download 2305.12345 --output-dir reaper-workspace/papers/
+python {{SKILL_DIR}}/search_arxiv.py download 2305.12345 --output-dir reaper-workspace/papers/
 ```
 
 Downloads the paper PDF. Returns JSON with `path` and `title`.
@@ -38,7 +53,7 @@ Downloads the paper PDF. Returns JSON with `path` and `title`.
 ### Citations
 
 ```bash
-python skills/search-arxiv/search_arxiv.py citations 2305.12345 --max-results 20
+python {{SKILL_DIR}}/search_arxiv.py citations 2305.12345 --max-results 20
 ```
 
 Returns JSON with `references` (backward citations — what this paper builds on) and `citations` (forward citations — who cites this paper). Each entry has `title`, `authors`, `year`, `arxiv_id`, `url`.
@@ -46,7 +61,7 @@ Returns JSON with `references` (backward citations — what this paper builds on
 ## Role
 
 - **Standalone**: Invoked directly by the user to search for papers.
-- **Building block**: Called by `review-literature` and `investigate` via the underlying Python script.
+- **Building block**: Called by `/review-literature` and `/investigate` via the underlying Python script.
 
 ## Instructions
 

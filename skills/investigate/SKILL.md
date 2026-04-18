@@ -11,12 +11,14 @@ The core research loop. Run N investigation cycles, each testing a hypothesis an
 
 ## Usage
 
+Invoke this skill by name with an optional cycle count. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:investigate 10`).
+
 ```
 # Run 10 investigation cycles
-/reaper:investigate 10
+investigate 10
 
 # Default: 5 cycles
-/reaper:investigate
+investigate
 ```
 
 Default: 5 cycles if no argument given.
@@ -33,7 +35,20 @@ Default: 5 cycles if no argument given.
 - `reaper-workspace/notes/paper-summary.md` — the source paper (if provided)
 - `reaper-workspace/notes/literature.md` — known prior work (organized by same-goal and same-approach)
 - `reaper-workspace/papers/` — downloaded PDFs and per-paper notes (`<id>-notes.md`) from the literature review
-- `references/methodology.md` — proof/analysis patterns
+- `{{REAPER_SKILL_DIR}}/references/methodology.md` — proof/analysis patterns
+
+## Path Resolution Protocol
+
+This skill references files in sibling skills. **`{{REAPER_SKILL_DIR}}`** above and below is a template placeholder — **you MUST substitute it with the absolute install path of the `/reaper` skill before reading, or the read will fail.** Common install locations:
+
+- `~/.claude/skills/reaper/` (Claude Code)
+- `~/.cursor/skills/reaper/` (Cursor)
+- `~/.agents/skills/reaper/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
+- `~/.continue/skills/reaper/` (Continue)
+- `~/.windsurf/skills/reaper/` (Windsurf)
+- `<repo-root>/skills/reaper/` (during repo development)
+
+**Sibling-skill dependency**: This skill assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`). Single-skill installs will fail to resolve sibling references.
 
 ## The Batch Loop
 
@@ -56,11 +71,11 @@ while cycles_remaining > 0 and not converged:
 4. Select the largest set of **independent** hypotheses that can run concurrently. Cap the batch size at `cycles_remaining`.
 5. Allocate cycle numbers: pre-assign a contiguous range per subagent (e.g., batch 1 gets 001-003, batch 2 gets 004-006). Each subagent gets one or more consecutive numbers from its range.
 6. If all remaining hypotheses form a dependency chain, the batch size is 1 — this is the **sequential fallback** (see below).
-7. If all hypotheses are resolved, **stop and return control** to the orchestrator. The orchestrator will call `brainstorm` to generate new ideas if needed.
+7. If all hypotheses are resolved, **stop and return control** to the orchestrator. The orchestrator will call `/brainstorm` to generate new ideas if needed.
 
 ### Dispatch Batch
 
-Spawn one subagent per hypothesis in the batch using the Agent tool. **Launch all subagents in a single message** for true parallelism. Each subagent receives:
+Spawn one subagent per hypothesis in the batch using your host's parallel-subagent mechanism (e.g. Claude Code's `Agent` tool, or the equivalent task/spawn primitive on other hosts; if the host has no parallel primitive, fall back to sequential execution). **Launch all subagents in a single message** for true parallelism. Each subagent receives:
 
 - Its assigned cycle number(s)
 - The hypothesis to investigate
@@ -84,7 +99,7 @@ For a new hypothesis, create `reaper-workspace/investigations/NNN-<slug>/` where
 
 Do the actual research. This is the core intellectual work. Depending on the hypothesis:
 
-- **Proof verification**: Check each step of an existing proof. Look for gaps, implicit assumptions, boundary cases. Consult `references/methodology.md` for patterns.
+- **Proof verification**: Check each step of an existing proof. Look for gaps, implicit assumptions, boundary cases. Consult `{{REAPER_SKILL_DIR}}/references/methodology.md` for patterns.
 - **Proof attempt**: Try to prove the claim. Start with the simplest approach. If it works, check if a simpler proof exists. All proofs must follow the formal proof structure below.
 - **Counterexample search**: Try to disprove the claim. Start small (2 parties, 1 round). Construct a specific adversary strategy and execution trace.
 - **Security analysis**: Enumerate threat models, check if reductions go through, verify simulator constructions. Security proofs must follow the formal proof structure below.
@@ -126,7 +141,7 @@ For theoretical research (proving properties, security guarantees, or performanc
 **Proof technique:** <e.g., reduction, induction, simulation, hybrid argument, game hopping>
 ```
 
-Consult `references/methodology.md` for the proof techniques catalog, reduction quality gate, and performance sanity checks. State the chosen proof technique in the proof header. If it doesn't work after a genuine attempt, log which technique failed and why, then try an alternative in the next cycle.
+Consult `{{REAPER_SKILL_DIR}}/references/methodology.md` for the proof techniques catalog, reduction quality gate, and performance sanity checks. State the chosen proof technique in the proof header. If it doesn't work after a genuine attempt, log which technique failed and why, then try an alternative in the next cycle.
 
 Requirements for formal proofs:
 
@@ -169,7 +184,7 @@ When a proof issue is found, do not just say "found a gap." Classify it:
 
 ##### Composition Awareness
 
-When a core property is confirmed, note the composition implications. Consult `references/definitional-standards.md` for domain-specific composition considerations (e.g., rewinding, shared setup, standalone vs compositional security).
+When a core property is confirmed, note the composition implications. Consult `{{REAPER_SKILL_DIR}}/references/definitional-standards.md` for domain-specific composition considerations (e.g., rewinding, shared setup, standalone vs compositional security).
 
 Log composition limitations in the investigation's `analysis.md` even if the original hypothesis didn't ask about composition — this is critical context for the final report.
 
@@ -240,7 +255,7 @@ After all subagents in a batch complete:
    Discard patterns:
    - [1 sentence summarizing why cycles were discarded, if any pattern emerges]
    ```
-   These summaries serve two purposes: (a) `brainstorm` can read summaries instead of full investigation directories, and (b) `synthesize` can read summaries instead of loading all `analysis.md` files.
+   These summaries serve two purposes: (a) `/brainstorm` can read summaries instead of full investigation directories, and (b) `/synthesize` can read summaries instead of loading all `analysis.md` files.
 5. **Re-read updated state** and plan the next batch.
 
 ### Sequential Fallback
@@ -257,11 +272,11 @@ Run all N cycles. The only valid early stop is **genuine convergence**: all hypo
 
 ## When Stuck
 
-If a cycle is going nowhere, follow the escalation protocol in `references/methodology.md` (section "When Stuck: 8-Step Escalation"). The steps progress from re-reading existing materials, through searching for new literature (see `references/search-tools.md` for search commands, which use `search_arxiv.py` and `search_iacr.py`), to trying radically different approaches.
+If a cycle is going nowhere, follow the escalation protocol in `{{REAPER_SKILL_DIR}}/references/methodology.md` (section "When Stuck: 8-Step Escalation"). The steps progress from re-reading existing materials, through searching for new literature (see `{{REAPER_SKILL_DIR}}/references/search-tools.md` for search commands, which use `search_arxiv.py` and `search_iacr.py`), to trying radically different approaches.
 
 When searching for new literature mid-investigation, download relevant papers to `reaper-workspace/papers/`, write per-paper notes (`<id>-notes.md`), and **integrate findings into `reaper-workspace/notes/literature.md` inline** — add new entries to the appropriate existing sections rather than appending a separate "Mid-Investigation Additions" section. Log the search as a cycle with action-type `literature-search` in `notes/results.md`.
 
-If all escalation tactics are exhausted and the hypothesis remains stuck, log the cycle as `inconclusive` and continue to the next hypothesis. The orchestrator will call `brainstorm` after the batch to generate new ideas based on the pattern of failures.
+If all escalation tactics are exhausted and the hypothesis remains stuck, log the cycle as `inconclusive` and continue to the next hypothesis. The orchestrator will call `/brainstorm` after the batch to generate new ideas based on the pattern of failures.
 
 ## Negative Result Protocol
 
@@ -270,7 +285,7 @@ If after 3 cycles a hypothesis trends toward refutation (counterexample attempts
 1. **Pivot explicitly** to proving the negative. Construct the strongest possible negative result — a concrete attack, execution trace, or reduction to a known impossibility. A clean impossibility result is more valuable than a vague "we couldn't prove it."
 2. **Identify the minimal fix.** What is the weakest additional assumption that would make the positive result hold? (e.g., "Safety holds if we additionally assume synchronous message delivery in the view-change sub-protocol.")
 3. **A clean negative result is a KEEP, not a failure.** It resolves the hypothesis (by refutation) and advances understanding. Log it with outcome `refuted` and status `keep`.
-4. **Signal for new ideas.** Note in the cycle's result description that the hypothesis was refuted and what was learned. The orchestrator will call `brainstorm` to generate follow-up hypotheses (e.g., proving the impossibility formally, exploring the minimal fix).
+4. **Signal for new ideas.** Note in the cycle's result description that the hypothesis was refuted and what was learned. The orchestrator will call `/brainstorm` to generate follow-up hypotheses (e.g., proving the impossibility formally, exploring the minimal fix).
 
 Do not spend 10 cycles attempting minor variations of the same failed proof strategy. Three failures at the same point is a signal to change direction.
 
@@ -286,7 +301,7 @@ If an investigation cycle reveals that the problem formulation itself is wrong (
 3. Write `REFORMULATE` as the first line of the cycle description in `notes/results.md`, followed by a one-sentence summary.
 4. **Stop the current investigation batch** and return control to the orchestrator. Do not continue investigating hypotheses based on a known-incorrect formulation.
 
-The orchestrator will re-run `/reaper:formalize-problem` incorporating the re-formalization signal before resuming investigation.
+The orchestrator will re-invoke the `/formalize-problem` skill incorporating the re-formalization signal before resuming investigation.
 
 If any cycle in a batch returns outcome `reformulate`, stop dispatching further batches and return control to the orchestrator with a re-formulation signal.
 
