@@ -82,50 +82,50 @@
   ],
   "skill_unit_tests": [
     {
-      "skill": "reaper:analyze-paper",
+      "skill": "analyze-paper",
       "test": "Given any crypto/distributed systems paper, paper-summary.md must have all sections filled (Metadata, Problem Statement, System Model with all 5 sub-dimensions, Construction Overview, Key Results with verbatim theorems, Proof Technique, Complexity Claims, Strengths, Weaknesses, Key Definitions, Red Flags). Sections are proportional to what the paper warrants — omit what doesn't apply."
     },
     {
-      "skill": "reaper:review-literature",
+      "skill": "review-literature",
       "test": "Given a research goal (and optionally paper-summary.md), literature.md must have a landscape summary, at least 10 related works table entries with non-empty Relevance column, key prior results, and at least 2 specific gaps"
     },
     {
-      "skill": "reaper:formalize-problem",
+      "skill": "formalize-problem",
       "test": "Given paper-summary.md and literature.md, problem-statement.md must have complete trust assumptions (all 5 dimensions), at least 2 ideas each with statement/success/failure conditions, and priorities justified by consequence"
     },
     {
-      "skill": "reaper:formalize-problem (paper-less)",
+      "skill": "formalize-problem (paper-less)",
       "test": "Given clarified-goal.md and literature.md WITHOUT paper-summary.md, problem-statement.md must have complete trust assumptions (all 5 dimensions), at least 2 ideas each with statement/success/failure conditions, and priorities justified by consequence. literature.md serves as the primary technical context."
     },
     {
-      "skill": "reaper:investigate",
+      "skill": "investigate",
       "test": "After N cycles: notes/results.md has one row per hypothesis (updated inline on revisit, not duplicated), investigation directories 001 through NNN exist with analysis.md files, current-understanding.md changed only on keep cycles, every cycle outcome is statable in one sentence"
     },
     {
-      "skill": "reaper:synthesize",
+      "skill": "synthesize",
       "test": "report.md has a one-sentence central finding, bulleted refutable contributions, each finding starts with a concrete example, no chronological narration, open questions are specific"
     },
     {
-      "skill": "reaper:search-arxiv",
+      "skill": "search-arxiv",
       "test": "search command returns valid JSON array with fields: arxiv_id, title, authors, year, abstract, pdf_url. citations command returns references and citations arrays. Tested via: python -m pytest tests/test_search_arxiv.py"
     },
     {
-      "skill": "reaper:search-iacr",
+      "skill": "search-iacr",
       "test": "search command returns valid JSON array with fields: eprint_id, title, pdf_url, url. url command returns correct ePrint URLs. Tested via: python -m pytest tests/test_search_iacr.py"
     },
     {
-      "skill": "reaper:review-literature (H2)",
+      "skill": "review-literature (H2)",
       "test": "literature.md includes papers found via arXiv and ePrint search scripts (not just WebSearch). Citation Graph section present with forward/backward citations. Graceful degradation: pipeline completes with WebSearch fallback when scripts unavailable."
     },
     {
-      "skill": "reaper:investigate (H2)",
+      "skill": "investigate (H2)",
       "test": "When stuck at step 4, mid-cycle literature search uses search scripts. New papers integrated into literature.md inline (added to appropriate existing sections). literature-search action-type logged in notes/results.md."
     }
   ],
   "evaluation_protocol": {
-    "setup": "1. Place a test paper PDF in dev/test-papers/ with the filename matching the test case\n2. Open Claude Code in the repo root",
-    "run_full_pipeline": "/reaper \"<goal from test case>\" dev/test-papers/<paper>.pdf",
-    "run_individual_skill": "/reaper:<skill-name> <args>",
+    "setup": "1. Place a test paper PDF in dev/test-papers/ with the filename matching the test case\n2. Open any skills-supporting AI agent (Claude Code, Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, OpenCode, Warp, Goose, Replit, etc.) in the repo root with the reaper skills installed (`npx skills add SebastianElvis/reaper`)",
+    "run_full_pipeline": "Invoke the `reaper` skill with arguments: `\"<goal from test case>\" dev/test-papers/<paper>.pdf`. On slash-command hosts: `/reaper \"<goal>\" dev/test-papers/<paper>.pdf`. On auto-discovery hosts: ask the agent to run reaper with the goal and paper path.",
+    "run_individual_skill": "Invoke the named sub-skill (e.g. `analyze-paper`, `review-literature`) by name with its arguments. On slash-command hosts: `/reaper:<skill-name> <args>`. On auto-discovery hosts: ask the agent to run the skill by name.",
     "evaluate": "After the pipeline completes, check each expected_output and quality_criteria. Score pass/fail per criterion.",
     "iterate": "For each failure, identify whether the issue is in the skill prompt, the orchestrator composition, or the model's capability. Fix skill prompts first."
   }

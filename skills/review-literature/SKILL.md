@@ -11,9 +11,24 @@ Search for related academic work, download and deeply read the most important pa
 
 ## Usage
 
+Invoke this skill by name with the research topic as a quoted string. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:review-literature "<topic>"`).
+
 ```
-/reaper:review-literature "post-quantum threshold signatures"
+review-literature "post-quantum threshold signatures"
 ```
+
+## Path Resolution Protocol
+
+This skill references files and scripts in sibling skills. The placeholders **`{{REAPER_SKILL_DIR}}`**, **`{{SEARCH_ARXIV_SKILL_DIR}}`**, and **`{{SEARCH_IACR_SKILL_DIR}}`** below are template tokens — **you MUST substitute each with the absolute install path of the corresponding sibling skill before reading or invoking, or the read/exec will fail.** Common install locations (substitute the trailing skill name as needed — `reaper`, `search-arxiv`, `search-iacr`):
+
+- `~/.claude/skills/<skill>/` (Claude Code)
+- `~/.cursor/skills/<skill>/` (Cursor)
+- `~/.agents/skills/<skill>/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
+- `~/.continue/skills/<skill>/` (Continue)
+- `~/.windsurf/skills/<skill>/` (Windsurf)
+- `<repo-root>/skills/<skill>/` (during repo development)
+
+**Sibling-skill dependency**: This skill assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`) so that `reaper/`, `search-arxiv/`, and `search-iacr/` are co-located in your agent's skills folder. Single-skill installs will fail to resolve sibling references.
 
 ## Instructions
 
@@ -29,18 +44,18 @@ Combine with the research goal to formulate search queries.
 
 ### 2. Search — Structured Sources (Primary)
 
-Use the search scripts via Bash to query arXiv and IACR ePrint. Generate multiple diverse queries per source.
+Use the search scripts via Bash to query arXiv and IACR ePrint. Generate multiple diverse queries per source. (The placeholders `{{SEARCH_ARXIV_SKILL_DIR}}` and `{{SEARCH_IACR_SKILL_DIR}}` below are defined in the Path Resolution Protocol section above — substitute the absolute install paths before invoking. Alternatively, invoke the `/search-arxiv` and `/search-iacr` skills by name through your host's skill mechanism.)
 
 **arXiv** (broad CS/math — use for distributed systems, complexity, general crypto):
 
 ```bash
-python skills/search-arxiv/search_arxiv.py search "<query>" --max-results 10 --categories cs.CR,cs.DC
+python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py search "<query>" --max-results 10 --categories cs.CR,cs.DC
 ```
 
 **IACR ePrint** (cryptography-specific — use for all crypto topics):
 
 ```bash
-python skills/search-iacr/search_iacr.py search "<query>" --max-results 10
+python {{SEARCH_IACR_SKILL_DIR}}/search_iacr.py search "<query>" --max-results 10
 ```
 
 **Query types** (generate at least one query per type, per source):
@@ -52,7 +67,7 @@ python skills/search-iacr/search_iacr.py search "<query>" --max-results 10
 - **Attacks/impossibilities**: known negative results (e.g., "FLP impossibility", "DLS lower bound")
 - **Surveys**: SoK papers, systematization of knowledge (e.g., "SoK blockchain consensus")
 
-**Spawn parallel subagents** (using the Agent tool) for concurrent search:
+**Spawn parallel subagents** (using your host's parallel-spawn primitive — e.g. Claude Code's `Agent` tool — or run sequentially if unavailable) for concurrent search:
 - **Subagent 1**: arXiv searches (multiple queries with different categories)
 - **Subagent 2**: IACR ePrint searches (multiple queries)
 - **Subagent 3**: WebSearch fallback (see step 3)
@@ -75,7 +90,7 @@ This runs as a parallel subagent alongside the structured searches.
 For the **seed paper** (from `paper-summary.md`) and the **top 3 most relevant results**, trace citations:
 
 ```bash
-python skills/search-arxiv/search_arxiv.py citations <arxiv_id> --max-results 20
+python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py citations <arxiv_id> --max-results 20
 ```
 
 This returns both:
@@ -91,7 +106,7 @@ Deduplicate results across all search sources.
 For fast-moving areas, check for very recent publications:
 
 ```bash
-python skills/search-iacr/search_iacr.py recent --max-results 10
+python {{SEARCH_IACR_SKILL_DIR}}/search_iacr.py recent --max-results 10
 ```
 
 Scan titles/abstracts for relevance to the research goal. Include any relevant recent papers that the main search may have missed.
@@ -105,7 +120,7 @@ For each result found, assess relevance to the research goal. Classify each pape
 
 #### Venue and Author Weighting
 
-Weight results heavily toward top venues. A peer-reviewed top-conference paper is far more trustworthy than an unreviewed preprint. Consult `references/venue-tiers.md` for the domain-appropriate venue tier table and author weighting criteria.
+Weight results heavily toward top venues. A peer-reviewed top-conference paper is far more trustworthy than an unreviewed preprint. Consult `{{REAPER_SKILL_DIR}}/references/venue-tiers.md` (placeholder defined in the Path Resolution Protocol section above) for the domain-appropriate venue tier table and author weighting criteria.
 
 When two papers make competing claims, prefer the one from the higher-tier venue by authors with more domain-specific expertise. When a preprint contradicts a published top-venue result, flag it but do not treat the preprint as authoritative without independent verification.
 
@@ -124,27 +139,29 @@ For all **high-relevance** papers (and medium-relevance papers that seem particu
 
 ```bash
 # arXiv papers
-python skills/search-arxiv/search_arxiv.py download <arxiv_id> --output-dir reaper-workspace/papers
+python {{SEARCH_ARXIV_SKILL_DIR}}/search_arxiv.py download <arxiv_id> --output-dir reaper-workspace/papers
 
 # IACR ePrint papers
-python skills/search-iacr/search_iacr.py download <eprint_id> --output-dir reaper-workspace/papers
+python {{SEARCH_IACR_SKILL_DIR}}/search_iacr.py download <eprint_id> --output-dir reaper-workspace/papers
 ```
 
-After downloading, **delegate paper reading to `analyze-paper`**. For each downloaded paper, invoke:
+After downloading, **delegate paper reading to `/analyze-paper`**. For each downloaded paper, invoke the `/analyze-paper` skill with:
 
 ```
-/reaper:analyze-paper reaper-workspace/papers/<filename>.pdf --goal "<research-goal>" --output reaper-workspace/papers/<id>-notes.md
+reaper-workspace/papers/<filename>.pdf --goal "<research-goal>" --output reaper-workspace/papers/<id>-notes.md
 ```
 
-**Spawn parallel subagents** (using the Agent tool) to analyze multiple papers concurrently — each paper is independent.
+(On Claude Code: `/reaper:analyze-paper <args>`. On other agents: invoke by skill name with the same arguments.)
 
-The `analyze-paper` skill handles the multi-pass reading (calibrating depth by relevance to the goal) and writes per-paper notes to `reaper-workspace/papers/<id>-notes.md`. Passing `--goal` ensures the output includes a relevance assessment.
+**Spawn parallel subagents** (using your host's parallel-spawn primitive — e.g. Claude Code's `Agent` tool — or run sequentially if unavailable) to analyze multiple papers concurrently — each paper is independent.
+
+The `/analyze-paper` skill handles the multi-pass reading (calibrating depth by relevance to the goal) and writes per-paper notes to `reaper-workspace/papers/<id>-notes.md`. Passing `--goal` ensures the output includes a relevance assessment.
 
 These notes serve as a durable reference for the investigate step. They are evolving files — update inline if revisited during mid-investigation search.
 
 ### 8. Cross-Reference Verification
 
-Using the per-paper notes produced by `analyze-paper` in the previous step, check whether the paper under analysis correctly cites and uses each high-relevance work:
+Using the per-paper notes produced by `/analyze-paper` in the previous step, check whether the paper under analysis correctly cites and uses each high-relevance work:
 
 - **Accuracy**: Does the paper under analysis state the prior result accurately? Compare the claim in the paper against the actual theorem statement in the cited work.
 - **Model compatibility**: Are the assumptions of the cited result compatible with the current paper's model? A result proven under synchrony cannot be invoked in an asynchronous protocol without justification.
@@ -215,7 +232,7 @@ If PDF download fails for a paper, note it in the table (leave Local Path as "un
 - Results include papers from both arXiv and IACR ePrint (when the topic is crypto-related)
 - Papers are split into same-goal and same-approach categories — both categories should have entries
 - High-relevance papers are downloaded and analyzed via `analyze-paper --goal`, with per-paper notes in `reaper-workspace/papers/`
-- Per-paper notes (produced by `analyze-paper`) contain structured analysis with key results, strengths/weaknesses, and relevance assessment — not just abstract-level summaries
+- Per-paper notes (produced by `/analyze-paper`) contain structured analysis with key results, strengths/weaknesses, and relevance assessment — not just abstract-level summaries
 - Citation graph section shows forward and backward citations for key papers
 - Landscape summary gives a reader unfamiliar with the area a useful mental map
 - Each related work has a specific relevance statement (not just "related to our topic")

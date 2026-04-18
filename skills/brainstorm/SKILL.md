@@ -11,19 +11,21 @@ The recurring ideation step. Reads the current research state and proposes new o
 
 ## Usage
 
+Invoke this skill by name; pass an optional context hint as a quoted string. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:brainstorm "<hint>"`).
+
 ```
 # Generate ideas based on current state
-/reaper:brainstorm
+brainstorm
 
 # With a hint about what direction to explore
-/reaper:brainstorm "explore liveness under partial synchrony"
+brainstorm "explore liveness under partial synchrony"
 ```
 
 ## Relationship to Other Skills
 
-- **`formalize-problem`** handles *initial* formalization: pinning down trust assumptions, the core question, definitional hygiene, and the first set of hypotheses. It runs once.
-- **`brainstorm`** handles *recurring* ideation: generating additional ideas as the investigation progresses. It runs many times.
-- **`investigate`** handles *execution*: deep-diving into specific ideas. It does not generate new hypotheses.
+- **`/formalize-problem`** handles *initial* formalization: pinning down trust assumptions, the core question, definitional hygiene, and the first set of hypotheses. It runs once.
+- **`/brainstorm`** handles *recurring* ideation: generating additional ideas as the investigation progresses. It runs many times.
+- **`/investigate`** handles *execution*: deep-diving into specific ideas. It does not generate new hypotheses.
 
 ## Inputs
 
@@ -39,6 +41,19 @@ The recurring ideation step. Reads the current research state and proposes new o
 - `reaper-workspace/notes/clarified-goal.md` — refined research goal and scope
 - `reaper-workspace/papers/` — downloaded PDFs and per-paper notes
 - The optional context hint from the argument
+
+## Path Resolution Protocol
+
+This skill references files in sibling skills. **`{{REAPER_SKILL_DIR}}`** below is a template placeholder — **you MUST substitute it with the absolute install path of the `/reaper` skill before reading, or the read will fail.** Common install locations:
+
+- `~/.claude/skills/reaper/` (Claude Code)
+- `~/.cursor/skills/reaper/` (Cursor)
+- `~/.agents/skills/reaper/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
+- `~/.continue/skills/reaper/` (Continue)
+- `~/.windsurf/skills/reaper/` (Windsurf)
+- `<repo-root>/skills/reaper/` (during repo development)
+
+**Sibling-skill dependency**: This skill assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`). Single-skill installs will fail to resolve sibling references.
 
 ## Process
 
@@ -56,7 +71,7 @@ Apply these techniques systematically. Not all will produce ideas every time —
 
 #### Gap-Finding (Qian: Fill in the Blank)
 
-Map the dimensions of existing work and find unexplored combinations. Consult `references/model.md` for the domain-appropriate gap-finding matrix dimensions. Which cells in this matrix are empty? Those are candidate hypotheses.
+Map the dimensions of existing work and find unexplored combinations. Consult `{{REAPER_SKILL_DIR}}/references/model.md` for the domain-appropriate gap-finding matrix dimensions. Which cells in this matrix are empty? Those are candidate hypotheses.
 
 #### Problem Inversion (Hamming)
 
@@ -85,7 +100,7 @@ If a hypothesis has trended toward refutation over 3+ cycles (counterexample att
 
 ### 3. Screen Against Known Impossibilities
 
-For each candidate idea, check whether it contradicts a known impossibility or lower bound. Consult `references/impossibility-results.md` for the domain-relevant impossibility results and lower bounds.
+For each candidate idea, check whether it contradicts a known impossibility or lower bound. Consult `{{REAPER_SKILL_DIR}}/references/impossibility-results.md` for the domain-relevant impossibility results and lower bounds.
 
 If a candidate contradicts a known impossibility:
 1. Flag it explicitly with a warning
@@ -94,7 +109,7 @@ If a candidate contradicts a known impossibility:
 
 ### 4. Prioritize (Hamming: Importance Filter)
 
-Not all ideas are equally worth investigating. Rank by consequence — ask: "If we resolved this idea, who would care and why?" Consult `references/model.md` for domain-specific examples of how to rank by importance.
+Not all ideas are equally worth investigating. Rank by consequence — ask: "If we resolved this idea, who would care and why?" Consult `{{REAPER_SKILL_DIR}}/references/model.md` for domain-specific examples of how to rank by importance.
 
 ### 5. Write Output
 

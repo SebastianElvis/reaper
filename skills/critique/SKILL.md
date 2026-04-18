@@ -11,16 +11,31 @@ Provide external perspective on investigation results. Three modes: human feedba
 
 ## Usage
 
+Invoke this skill by name; pass either feedback as a quoted string, `--codex`, or `--self`. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:critique "<feedback>"`).
+
 ```
 # Human feedback — iterate on existing results
-/reaper:critique "dig deeper into the liveness proof gap under partial synchrony"
+critique "dig deeper into the liveness proof gap under partial synchrony"
 
-# Codex consultation — get AI devil's advocate or inspiration
-/reaper:critique --codex
+# External-model consultation — get AI devil's advocate or inspiration (requires MCP host)
+critique --codex
 
 # Self-review — agent reviews its own findings for gaps
-/reaper:critique --self
+critique --self
 ```
+
+## Path Resolution Protocol
+
+This skill references files in sibling skills. **`{{REAPER_SKILL_DIR}}`** below is a template placeholder — **you MUST substitute it with the absolute install path of the `/reaper` skill before reading, or the read will fail.** Common install locations:
+
+- `~/.claude/skills/reaper/` (Claude Code)
+- `~/.cursor/skills/reaper/` (Cursor)
+- `~/.agents/skills/reaper/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
+- `~/.continue/skills/reaper/` (Continue)
+- `~/.windsurf/skills/reaper/` (Windsurf)
+- `<repo-root>/skills/reaper/` (during repo development)
+
+**Sibling-skill dependency**: This skill assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`). Single-skill installs will fail to resolve sibling references.
 
 ## Inputs
 
@@ -69,21 +84,21 @@ Categories:
 
 ### 3. Execute
 
-**scope**: Return control to the orchestrator — this requires re-running `formalize-problem` before investigation. Do not run cycles yourself; instead, write the feedback file and indicate that re-formalization is needed.
+**scope**: Return control to the orchestrator — this requires re-running `/formalize-problem` before investigation. Do not run cycles yourself; instead, write the feedback file and indicate that re-formalization is needed.
 
-**deepen**: Run `/reaper:brainstorm "context from the user's feedback"` to generate targeted hypotheses based on the feedback, then run `/reaper:investigate 5`.
+**deepen**: Invoke the `/brainstorm` skill with `"context from the user's feedback"` to generate targeted hypotheses based on the feedback, then invoke the `/investigate` skill with argument `5`.
 
-**explore**: If the area may need additional literature, use the search scripts first and update `literature.md`. Then run `/reaper:brainstorm "context from the user's feedback"` to generate hypotheses for the new area, followed by `/reaper:investigate 5`.
+**explore**: If the area may need additional literature, use the search scripts first and update `literature.md`. Then invoke the `/brainstorm` skill with `"context from the user's feedback"` to generate hypotheses for the new area, followed by the `/investigate` skill with argument `5`.
 
-**rewrite**: No investigation cycles needed. Return control to the orchestrator to re-run `synthesize` only.
+**rewrite**: No investigation cycles needed. Return control to the orchestrator to re-run `/synthesize` only.
 
-For **deepen** and **explore**, after completing the cycles, the orchestrator should re-run `synthesize` to produce an updated report.
+For **deepen** and **explore**, after completing the cycles, the orchestrator should re-run `/synthesize` to produce an updated report.
 
 ## Mode: Codex Consultation (`--codex`)
 
 Consult an external AI (OpenAI Codex via MCP) for an independent second opinion on the current investigation state. This establishes an automated feedback loop where Codex plays **devil's advocate** or provides **alternative inspiration**.
 
-See `references/codex-consultation.md` for MCP setup, fallback behavior, session continuity, and context compression rules. The critique skill's Codex mode is the most thorough consultation — other skills have lighter-weight checkpoint consultations.
+See `{{REAPER_SKILL_DIR}}/references/codex-consultation.md` (placeholder defined in the Path Resolution Protocol section above) for MCP setup, fallback behavior, session continuity, and context compression rules. The critique skill's Codex mode is the most thorough consultation — other skills have lighter-weight checkpoint consultations.
 
 ### Determining the Role
 
@@ -130,7 +145,7 @@ The agent reviews its own investigation results for gaps, inconsistencies, or mi
    - **Missing angles**: Obvious questions raised by the current findings that haven't been investigated.
    - **Inconsistencies**: Claims in `current-understanding.md` that conflict with each other or with `notes/results.md`.
 3. For each actionable finding, add a hypothesis to `ideas.md` with the next available H-number, tagged `[Self-N]` in the Source field (where N is one more than the count of existing self-review rounds).
-4. If actionable hypotheses were added, run `/reaper:investigate 3` to address them. The self-review findings are recorded as part of the cycle logs in `reaper-workspace/logs/` — no separate self-review file is needed.
+4. If actionable hypotheses were added, invoke the `/investigate` skill with argument `3` to address them. The self-review findings are recorded as part of the cycle logs in `reaper-workspace/logs/` — no separate self-review file is needed.
 
 ## Quality Criteria
 

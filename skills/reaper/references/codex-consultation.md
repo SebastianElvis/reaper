@@ -4,10 +4,13 @@ Shared protocol for consulting an external AI model (OpenAI Codex via MCP) from 
 
 ## Setup
 
-**Requires**: The `codex-cli` MCP server registered with Claude Code (see [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server)):
-```
-claude mcp add codex-cli -- npx -y codex-mcp-server
-```
+**Requires**: A host with MCP support (Claude Code, Cursor, Cline, Continue, Windsurf, OpenCode, Goose, etc.) and the `codex-cli` MCP server registered with that host (see [codex-mcp-server](https://github.com/tuannvm/codex-mcp-server)). MCP registration syntax varies by host — consult your host's MCP documentation. Example forms:
+
+- **Claude Code**: `claude mcp add codex-cli -- npx -y codex-mcp-server`
+- **Cursor / Continue / Cline / Windsurf**: edit the host's MCP config (typically `~/.<host>/mcp.json` or the host's settings UI) to add an entry with `command: "npx"`, `args: ["-y", "codex-mcp-server"]`
+- **Other MCP hosts**: register a new MCP server pointing at `npx -y codex-mcp-server`
+
+Hosts without MCP support cannot use Codex consultation — every `--codex` checkpoint silently no-ops on those hosts (see Fallback below).
 
 ## Fallback
 
