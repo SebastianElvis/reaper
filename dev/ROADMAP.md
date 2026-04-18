@@ -413,7 +413,7 @@ Different models have different strengths. The critique skill should route consu
 |-----------|-----------|--------|
 | **Skill format** | `SKILL.md` with `name` + `description` frontmatter (vercel-labs/skills spec) | ✓ |
 | **Cross-agent installer** | `npx skills add SebastianElvis/reaper` | ✓ |
-| **Pin syntax** | `npx skills add SebastianElvis/reaper#v0.3.8` (git tags) | ✓ |
+| **Pin syntax** | `npx skills add SebastianElvis/reaper#v0.3.9` (git tags) | ✓ |
 | **Inter-skill calls** | Host-agnostic prose ("invoke the `<name>` skill") | ✓ |
 | **Python script bundling** | Whole-directory copy includes `search_arxiv.py`, `search_iacr.py`, `references/` | ✓ |
 | **Frontmatter compatibility** | Claude-only keys (`user-invocable`, `argument-hint`, hooks) preserved as opaque YAML, no-op on other hosts | ✓ |

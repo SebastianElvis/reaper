@@ -97,7 +97,7 @@ Reaper is distributed as standard `SKILL.md` folders. The cross-agent installer 
 npx skills add SebastianElvis/reaper
 
 # Pinned to a specific release (recommended for reproducibility)
-npx skills add SebastianElvis/reaper#v0.3.8
+npx skills add SebastianElvis/reaper#v0.3.9
 
 # Install into a specific agent (defaults to all detected)
 npx skills add SebastianElvis/reaper --agent cursor
