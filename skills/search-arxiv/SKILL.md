@@ -11,7 +11,7 @@ Search arXiv for academic papers using the `arxiv` Python package, with citation
 
 ## Usage
 
-Invoke this skill by name with the query as a quoted string. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:search-arxiv "<query>"`).
+Invoke this skill by name with the query as a quoted string. On slash-command hosts, prefix with `/` (e.g. `/search-arxiv "<query>"`).
 
 ```
 search-arxiv "post-quantum threshold signatures" --max-results 15 --categories cs.CR

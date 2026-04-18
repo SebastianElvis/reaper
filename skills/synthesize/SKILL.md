@@ -11,7 +11,7 @@ Generate a formal research paper from all investigation results. The output shou
 
 ## Usage
 
-Invoke this skill by name; no arguments required. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:synthesize`).
+Invoke this skill by name; no arguments required. On slash-command hosts, prefix with `/` (e.g. `/synthesize`).
 
 ```
 synthesize

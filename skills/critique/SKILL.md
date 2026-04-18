@@ -11,7 +11,7 @@ Provide external perspective on investigation results. Three modes: human feedba
 
 ## Usage
 
-Invoke this skill by name; pass either feedback as a quoted string, `--codex`, or `--self`. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:critique "<feedback>"`).
+Invoke this skill by name; pass either feedback as a quoted string, `--codex`, or `--self`. On slash-command hosts, prefix with `/` (e.g. `/critique "<feedback>"`).
 
 ```
 # Human feedback — iterate on existing results

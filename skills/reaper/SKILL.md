@@ -38,7 +38,7 @@ If any of these are missing from your agent's skills folder, ask the user to rei
 
 References below to running a sub-skill use the host-agnostic phrase "invoke the `<name>` skill" — invoke each sub-skill by its `name` using your host's native skill-loading mechanism. The loaded `SKILL.md` provides the full instructions for that stage. Concrete invocation form varies by host:
 
-- **Slash-command hosts** (e.g. Claude Code): `/reaper:<sub>` (e.g. `/reaper:clarify-goal`)
+- **Slash-command hosts** (e.g. Claude Code): `/<sub>` (e.g. `/clarify-goal`)
 - **Auto-discovery hosts** (e.g. Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, OpenCode): the agent loads peer `SKILL.md` files from the skills folder and routes by `name` + `description` match.
 - **Manual invocation hosts**: explicitly point the agent at the installed skill's `SKILL.md` (typical paths: `~/.claude/skills/<name>/SKILL.md`, `~/.cursor/skills/<name>/SKILL.md`, `~/.agents/skills/<name>/SKILL.md`, `~/.continue/skills/<name>/SKILL.md`, `~/.windsurf/skills/<name>/SKILL.md`, or `<repo-root>/skills/<name>/SKILL.md` during development — substitute `<name>` with the sub-skill directory name like `clarify-goal`).
 
@@ -191,7 +191,7 @@ After synthesis completes:
 
 After presenting results, let the user know they can iterate:
 
-> If you'd like to refine, deepen, or challenge any aspect of this research, invoke the `/critique` skill with your feedback as a quoted string. (Slash-command hosts: `/reaper:critique "your feedback here"`.)
+> If you'd like to refine, deepen, or challenge any aspect of this research, invoke the `/critique` skill with your feedback as a quoted string. (Slash-command hosts: `/critique "your feedback here"`.)
 
 Do **not** block waiting for a response — the pipeline is complete. The user can invoke `/critique` with quoted feedback at any time to start a feedback round. The critique skill classifies the feedback, may run targeted investigation cycles, and then you should re-invoke `/synthesize` to produce an updated report.
 
@@ -220,7 +220,7 @@ Do **not** block waiting for a response — the pipeline is complete. The user c
 
 ## Important Notes
 
-- Sub-skills are invoked using the host agent's native skill mechanism — by `name` plus arguments. The exact API differs per host (e.g. Claude Code's `Skill` tool with `skill: "reaper:analyze-paper", args: "paper.pdf"`; Cursor/Codex/Cline auto-route based on the loaded `SKILL.md`). Refer to the host's skill documentation for the exact form.
+- Sub-skills are invoked using the host agent's native skill mechanism — by `name` plus arguments. The exact API differs per host (e.g. Claude Code's `Skill` tool with `skill: "analyze-paper", args: "paper.pdf"`; Cursor/Codex/Cline auto-route based on the loaded `SKILL.md`). Refer to the host's skill documentation for the exact form.
 - Skills communicate exclusively through workspace files — no in-memory state passing
 - If a skill fails, read its output file to diagnose, then retry
 - The workspace is the source of truth — if context is compressed, re-read workspace files

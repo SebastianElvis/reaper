@@ -11,7 +11,7 @@ The core research loop. Run N investigation cycles, each testing a hypothesis an
 
 ## Usage
 
-Invoke this skill by name with an optional cycle count. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:investigate 10`).
+Invoke this skill by name with an optional cycle count. On slash-command hosts, prefix with `/` (e.g. `/investigate 10`).
 
 ```
 # Run 10 investigation cycles

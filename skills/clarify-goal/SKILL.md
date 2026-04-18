@@ -11,7 +11,7 @@ Ask the user targeted questions to sharpen a vague research goal into something 
 
 ## Usage
 
-Invoke this skill by name with the research goal (and optional paper path). On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:clarify-goal "<goal>"`).
+Invoke this skill by name with the research goal (and optional paper path). On slash-command hosts, prefix with `/` (e.g. `/clarify-goal "<goal>"`).
 
 ```
 # Without a paper — goal-driven research

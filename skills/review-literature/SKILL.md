@@ -11,7 +11,7 @@ Search for related academic work, download and deeply read the most important pa
 
 ## Usage
 
-Invoke this skill by name with the research topic as a quoted string. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:review-literature "<topic>"`).
+Invoke this skill by name with the research topic as a quoted string. On slash-command hosts, prefix with `/` (e.g. `/review-literature "<topic>"`).
 
 ```
 review-literature "post-quantum threshold signatures"
@@ -151,7 +151,7 @@ After downloading, **delegate paper reading to `/analyze-paper`**. For each down
 reaper-workspace/papers/<filename>.pdf --goal "<research-goal>" --output reaper-workspace/papers/<id>-notes.md
 ```
 
-(On Claude Code: `/reaper:analyze-paper <args>`. On other agents: invoke by skill name with the same arguments.)
+(On Claude Code: `/analyze-paper <args>`. On other agents: invoke by skill name with the same arguments.)
 
 **Spawn parallel subagents** (using your host's parallel-spawn primitive — e.g. Claude Code's `Agent` tool — or run sequentially if unavailable) to analyze multiple papers concurrently — each paper is independent.
 
