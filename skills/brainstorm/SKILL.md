@@ -11,7 +11,7 @@ The recurring ideation step. Reads the current research state and proposes new o
 
 ## Usage
 
-Invoke this skill by name; pass an optional context hint as a quoted string. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:brainstorm "<hint>"`).
+Invoke this skill by name; pass an optional context hint as a quoted string. On slash-command hosts, prefix with `/` (e.g. `/brainstorm "<hint>"`).
 
 ```
 # Generate ideas based on current state

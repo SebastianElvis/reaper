@@ -74,7 +74,7 @@ Each skill can be used independently or composed by the orchestrator. Invoke by 
 | `/search-arxiv` | Search arXiv papers, download PDFs, and trace citation graphs |
 | `/search-iacr` | Search IACR ePrint archive for cryptography papers |
 
-> The `/<skill>` form is the canonical display convention used throughout these docs. Slash-command hosts (Claude Code) invoke them directly that way (with sub-skills as `/reaper:clarify-goal` etc.). Auto-discovery hosts (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, …) invoke them by the bare skill name — drop the leading `/` when asking the agent to run a skill.
+> The `/<skill>` form is the canonical display convention used throughout these docs. Slash-command hosts (Claude Code) invoke them directly that way (e.g. `/clarify-goal`). Auto-discovery hosts (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, …) invoke them by the bare skill name — drop the leading `/` when asking the agent to run a skill.
 
 ## Installation
 
@@ -128,7 +128,7 @@ See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugi
 
 ### Invocation across hosts
 
-- **Slash-command hosts** (Claude Code): `/reaper "<goal>"`, `/reaper:analyze-paper <path>`, etc. The `/<plugin>:<skill>` routing is built into the host.
+- **Slash-command hosts** (Claude Code): `/reaper "<goal>"`, `/analyze-paper <path>`, etc. Each skill is available as a top-level slash command.
 - **Auto-discovery hosts** (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, …): the agent loads `SKILL.md` files from its skills folder and invokes them by name when the task matches the skill's `description`. Ask the agent to run the skill, e.g. *"use the reaper skill to research X"*.
 - **Manual invocation**: any host can be pointed at a specific `SKILL.md` if its native discovery doesn't pick it up.
 

@@ -424,7 +424,7 @@ Different models have different strengths. The critique skill should route consu
 
 | Host | Skills folder | Discovery model | Notes |
 |------|--------------|-----------------|-------|
-| Claude Code | `.claude/skills/` | Slash commands (`/reaper:<sub>`) + Skill tool | Native plugin path also available via `.claude-plugin/marketplace.json` |
+| Claude Code | `.claude/skills/` | Slash commands (`/<sub>`) + Skill tool | Native plugin path also available via `.claude-plugin/marketplace.json` |
 | Cursor | `.agents/skills/` (universal) | Auto-route by `description` match | |
 | OpenAI Codex CLI | `.agents/skills/` (universal) | Auto-route by `description` match | |
 | Cline | `.agents/skills/` (universal) | Auto-route by `description` match | |
@@ -443,14 +443,14 @@ Different models have different strengths. The critique skill should route consu
 - The `--codex` flag depends on a host with MCP support and a registered Codex MCP server. Non-MCP hosts silently fall back to self-review.
 - Auto-discovery quality varies by host. Reliable routing depends on the skill's `description` matching the user's request — Reaper's descriptions are tuned for action-verb match (e.g. "Run the full Reaper research pipeline…") to improve auto-routing.
 - Python dependencies (`arxiv`, `requests`, `beautifulsoup4`) are not installed by `npx skills` — users must `pip install` separately. The skill prose tells the agent to do this if missing.
-- Sub-skill `Usage` blocks now lead with the bare-name form and show `/reaper:<sub>` as a slash-command-host example only.
+- Sub-skill `Usage` blocks now lead with the bare-name form and show `/<sub>` as a slash-command-host example only.
 
 #### Tasks
 
 - [x] Adopt `vercel-labs/skills` `SKILL.md` convention as the canonical distribution format
 - [x] Audit all skill frontmatter for `npx skills` parser compliance (`name` regex, `name` matches directory)
 - [x] Rewrite orchestrator + critique inter-skill triggers to host-agnostic phrasing
-- [x] Update sub-skill `Usage` blocks to lead with skill-name invocation, mark `/reaper:` as slash-command-host example
+- [x] Update sub-skill `Usage` blocks to lead with skill-name invocation, mark `/<skill>` as slash-command-host example
 - [x] Document multi-host install in README (`npx skills add` as primary, Claude Code plugin as secondary)
 - [x] Add CI: frontmatter validation + `npx skills add` discovery check
 - [ ] Per-host smoke test: same research goal on Cursor, Codex CLI, Gemini CLI — compare workspace output quality and routing reliability

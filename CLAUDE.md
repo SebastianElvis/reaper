@@ -45,7 +45,7 @@ Primary distribution: [`vercel-labs/skills`](https://github.com/vercel-labs/skil
 
 - Pin syntax: `npx skills add SebastianElvis/reaper#v0.3.9`. Tagged releases are the pin contract.
 - The installer copies the entire skill directory (including Python scripts and `references/`); only `metadata.json`, `.git`, `__pycache__`, `__pypackages__` are excluded.
-- All `SKILL.md` files must use host-agnostic phrasing ("invoke the `<name>` skill") for inter-skill calls. Sub-skill `Usage` blocks may show host-specific invocation forms (e.g. `/reaper:<sub>` for Claude Code) as examples, clearly labeled as such.
+- All `SKILL.md` files must use host-agnostic phrasing ("invoke the `<name>` skill") for inter-skill calls. Sub-skill `Usage` blocks may show host-specific invocation forms (e.g. `/<sub>` on slash-command hosts like Claude Code) as examples, clearly labeled as such.
 
 Secondary distribution: Claude Code plugin via `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`. When adding, removing, or renaming a skill, keep the `skills` array in `marketplace.json` in sync. Keep `version` in both `plugin.json` and `marketplace.json` consistent with the current release tag — note that `marketplace.json.version` is ignored by `npx skills` (which uses git tags), so it serves only the Claude Code plugin path.
 

@@ -11,7 +11,7 @@ Extract structured information from an academic paper, producing a comprehensive
 
 ## Usage
 
-Invoke this skill by name with the paper path (and optional flags). On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:analyze-paper <args>`).
+Invoke this skill by name with the paper path (and optional flags). On slash-command hosts, prefix with `/` (e.g. `/analyze-paper <args>`).
 
 ```
 # Analyze the primary paper under study

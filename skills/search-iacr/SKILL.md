@@ -11,7 +11,7 @@ Search the IACR Cryptology ePrint Archive for cryptography and security papers.
 
 ## Usage
 
-Invoke this skill by name with the query as a quoted string. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:search-iacr "<query>"`).
+Invoke this skill by name with the query as a quoted string. On slash-command hosts, prefix with `/` (e.g. `/search-iacr "<query>"`).
 
 ```
 search-iacr "threshold signatures" --max-results 15

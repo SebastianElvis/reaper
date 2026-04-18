@@ -125,7 +125,7 @@
   "evaluation_protocol": {
     "setup": "1. Place a test paper PDF in dev/test-papers/ with the filename matching the test case\n2. Open any skills-supporting AI agent (Claude Code, Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, OpenCode, Warp, Goose, Replit, etc.) in the repo root with the reaper skills installed (`npx skills add SebastianElvis/reaper`)",
     "run_full_pipeline": "Invoke the `reaper` skill with arguments: `\"<goal from test case>\" dev/test-papers/<paper>.pdf`. On slash-command hosts: `/reaper \"<goal>\" dev/test-papers/<paper>.pdf`. On auto-discovery hosts: ask the agent to run reaper with the goal and paper path.",
-    "run_individual_skill": "Invoke the named sub-skill (e.g. `analyze-paper`, `review-literature`) by name with its arguments. On slash-command hosts: `/reaper:<skill-name> <args>`. On auto-discovery hosts: ask the agent to run the skill by name.",
+    "run_individual_skill": "Invoke the named sub-skill (e.g. `analyze-paper`, `review-literature`) by name with its arguments. On slash-command hosts: `/<skill-name> <args>`. On auto-discovery hosts: ask the agent to run the skill by name.",
     "evaluate": "After the pipeline completes, check each expected_output and quality_criteria. Score pass/fail per criterion.",
     "iterate": "For each failure, identify whether the issue is in the skill prompt, the orchestrator composition, or the model's capability. Fix skill prompts first."
   }

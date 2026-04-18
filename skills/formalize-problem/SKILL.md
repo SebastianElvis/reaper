@@ -11,7 +11,7 @@ Transform a research goal into precise, testable hypotheses with explicit succes
 
 ## Usage
 
-Invoke this skill by name with the research goal as a quoted string. On slash-command hosts, prefix with `/reaper:` (e.g. `/reaper:formalize-problem "<goal>"`).
+Invoke this skill by name with the research goal as a quoted string. On slash-command hosts, prefix with `/` (e.g. `/formalize-problem "<goal>"`).
 
 ```
 formalize-problem "determine if the security proof in Section 4 holds under asynchrony"
