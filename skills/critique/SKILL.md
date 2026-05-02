@@ -3,6 +3,8 @@ name: critique
 description: "Provide critique on investigation results via human feedback, Codex consultation, or self-review. Can trigger additional investigation cycles for deepen/explore feedback. Use when iterating on research, requesting AI review, or providing human feedback."
 user-invocable: true
 argument-hint: "\"<feedback>\" | --codex | --self"
+license: Apache-2.0
+compatibility: "--codex mode requires an MCP-capable host with the codex-cli MCP server configured; --self and human-feedback modes have no extra requirements."
 ---
 
 # Critique
@@ -24,18 +26,6 @@ critique --codex
 critique --self
 ```
 
-## Path Resolution Protocol
-
-This skill references files in sibling skills. **`{{REAPER_SKILL_DIR}}`** below is a template placeholder — **you MUST substitute it with the absolute install path of the `/reaper` skill before reading, or the read will fail.** Common install locations:
-
-- `~/.claude/skills/reaper/` (Claude Code)
-- `~/.cursor/skills/reaper/` (Cursor)
-- `~/.agents/skills/reaper/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
-- `~/.continue/skills/reaper/` (Continue)
-- `~/.windsurf/skills/reaper/` (Windsurf)
-- `<repo-root>/skills/reaper/` (during repo development)
-
-**Sibling-skill dependency**: This skill assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`). Single-skill installs will fail to resolve sibling references.
 
 ## Inputs
 
@@ -98,7 +88,7 @@ For **deepen** and **explore**, after completing the cycles, the orchestrator sh
 
 Consult an external AI (OpenAI Codex via MCP) for an independent second opinion on the current investigation state. This establishes an automated feedback loop where Codex plays **devil's advocate** or provides **alternative inspiration**.
 
-See `{{REAPER_SKILL_DIR}}/references/codex-consultation.md` (placeholder defined in the Path Resolution Protocol section above) for MCP setup, fallback behavior, session continuity, and context compression rules. The critique skill's Codex mode is the most thorough consultation — other skills have lighter-weight checkpoint consultations.
+See `../reaper/references/codex-consultation.md` for MCP setup, fallback behavior, session continuity, and context compression rules. The critique skill's Codex mode is the most thorough consultation — other skills have lighter-weight checkpoint consultations.
 
 ### Determining the Role
 

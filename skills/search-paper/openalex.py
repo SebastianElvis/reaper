@@ -2,7 +2,7 @@
 """OpenAlex driver: title-based venue lookup. Broad coverage beyond CS.
 
 Usage:
-    python openalex.py venue "<title>"
+    python3 openalex.py venue "<title>"
 
 Requires: pip install requests
 """

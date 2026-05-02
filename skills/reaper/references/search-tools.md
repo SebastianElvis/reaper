@@ -2,24 +2,12 @@
 
 Reaper uses the `/search-paper` skill for all academic paper search, citation graph traversal, and publication-venue resolution. The skill ships five Python scripts under one directory; this document catalogs them and shows the common workflows.
 
-## Path Resolution Protocol
-
-The scripts referenced below live in the sibling `/search-paper` skill. The placeholder **`{{SEARCH_PAPER_SKILL_DIR}}`** below is a template token — **you MUST substitute it with the absolute install path of the sibling skill before invoking, or the exec will fail.** Common install locations:
-
-- `~/.claude/skills/search-paper/` (Claude Code)
-- `~/.cursor/skills/search-paper/` (Cursor)
-- `~/.agents/skills/search-paper/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
-- `~/.continue/skills/search-paper/` (Continue)
-- `~/.windsurf/skills/search-paper/` (Windsurf)
-- `<repo-root>/skills/search-paper/` (during repo development)
-
-**Sibling-skill dependency**: This reference assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`) so that `reaper/` and `search-paper/` are co-located in your agent's skills folder.
 
 ## Scripts
 
 ### `arxiv.py` — arXiv preprint server
 
-**Location**: `{{SEARCH_PAPER_SKILL_DIR}}/arxiv.py`
+**Location**: `../../search-paper/arxiv.py`
 **Dependencies**: `pip install arxiv`
 
 | Command | Purpose | Key Parameters |
@@ -41,7 +29,7 @@ The scripts referenced below live in the sibling `/search-paper` skill. The plac
 
 ### `iacr.py` — IACR ePrint archive
 
-**Location**: `{{SEARCH_PAPER_SKILL_DIR}}/iacr.py`
+**Location**: `../../search-paper/iacr.py`
 **Dependencies**: `pip install requests beautifulsoup4`
 
 | Command | Purpose | Key Parameters |
@@ -58,7 +46,7 @@ The scripts referenced below live in the sibling `/search-paper` skill. The plac
 
 ### `semantic_scholar.py` — Semantic Scholar metadata
 
-**Location**: `{{SEARCH_PAPER_SKILL_DIR}}/semantic_scholar.py`
+**Location**: `../../search-paper/semantic_scholar.py`
 **Dependencies**: `pip install requests`
 
 | Command | Purpose | Key Parameters |
@@ -73,7 +61,7 @@ The scripts referenced below live in the sibling `/search-paper` skill. The plac
 
 ### `dblp.py` — DBLP metadata
 
-**Location**: `{{SEARCH_PAPER_SKILL_DIR}}/dblp.py`
+**Location**: `../../search-paper/dblp.py`
 **Dependencies**: `pip install requests`
 
 | Command | Purpose | Key Parameters |
@@ -84,7 +72,7 @@ The scripts referenced below live in the sibling `/search-paper` skill. The plac
 
 ### `openalex.py` — OpenAlex metadata
 
-**Location**: `{{SEARCH_PAPER_SKILL_DIR}}/openalex.py`
+**Location**: `../../search-paper/openalex.py`
 **Dependencies**: `pip install requests`
 
 | Command | Purpose | Key Parameters |
@@ -149,12 +137,12 @@ The authoritative layered protocol lives in the `/search-paper` skill's own `SKI
 
 1. Run a focused query on the specific question that arose:
    ```bash
-   python {{SEARCH_PAPER_SKILL_DIR}}/iacr.py search "exact technical question" --max-results 5
-   python {{SEARCH_PAPER_SKILL_DIR}}/arxiv.py search "exact technical question" --max-results 5
+   python3 ../../search-paper/iacr.py search "exact technical question" --max-results 5
+   python3 ../../search-paper/arxiv.py search "exact technical question" --max-results 5
    ```
 2. If a highly relevant paper is found, download and read it:
    ```bash
-   python {{SEARCH_PAPER_SKILL_DIR}}/arxiv.py download <id> --output-dir reaper-workspace/papers/
+   python3 ../../search-paper/arxiv.py download <id> --output-dir reaper-workspace/papers/
    ```
 3. Resolve its venue via the layered protocol; integrate findings into `literature.md` inline (add to appropriate existing sections)
 
@@ -163,7 +151,7 @@ The authoritative layered protocol lives in the `/search-paper` skill's own `SKI
 1. Start with a known paper's arXiv ID
 2. Get references (backward) and citations (forward):
    ```bash
-   python {{SEARCH_PAPER_SKILL_DIR}}/semantic_scholar.py citations 2305.12345 --max-results 20
+   python3 ../../search-paper/semantic_scholar.py citations 2305.12345 --max-results 20
    ```
 3. For each highly relevant citation, recursively chase (1-2 hops max)
 

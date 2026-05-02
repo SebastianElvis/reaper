@@ -2,10 +2,10 @@
 """arXiv platform driver: search papers, list recent submissions, download PDFs, read journal_ref field.
 
 Usage:
-    python arxiv.py search "<query>" [--max-results N] [--categories cat1,cat2]
-    python arxiv.py recent ["<query>"] [--max-results N] [--categories cat1,cat2]
-    python arxiv.py download <arxiv_id> [--output-dir DIR]
-    python arxiv.py journal-ref <arxiv_id>
+    python3 arxiv.py search "<query>" [--max-results N] [--categories cat1,cat2]
+    python3 arxiv.py recent ["<query>"] [--max-results N] [--categories cat1,cat2]
+    python3 arxiv.py download <arxiv_id> [--output-dir DIR]
+    python3 arxiv.py journal-ref <arxiv_id>
 
 Requires: pip install arxiv
 """

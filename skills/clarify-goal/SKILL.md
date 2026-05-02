@@ -3,6 +3,7 @@ name: clarify-goal
 description: "Ask the user targeted clarifying questions about their research goal before the pipeline runs. Use when the research goal is vague, ambiguous, or missing key context (e.g., which sections to focus on, threat model assumptions, what 'broken' means). Works with or without a paper."
 user-invocable: true
 argument-hint: "\"<research-goal>\" [paper-path]"
+license: Apache-2.0
 ---
 
 # Clarify Goal

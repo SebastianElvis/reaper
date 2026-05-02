@@ -3,6 +3,8 @@ name: investigate
 description: "Run investigation cycles that test hypotheses through proof verification, counterexample search, or security analysis, with keep-or-discard discipline. Use when asked to investigate, verify, prove, or disprove claims."
 user-invocable: true
 argument-hint: "[number-of-cycles]"
+license: Apache-2.0
+compatibility: "Best on hosts with parallel-subagent primitives (e.g. Claude Code's Agent tool); falls back to sequential execution otherwise."
 ---
 
 # Investigate
@@ -35,20 +37,8 @@ Default: 5 cycles if no argument given.
 - `reaper-workspace/notes/paper-summary.md` — the source paper (if provided)
 - `reaper-workspace/notes/literature.md` — known prior work (organized by same-goal and same-approach)
 - `reaper-workspace/papers/` — downloaded PDFs and per-paper notes (`<id>-notes.md`) from the literature review
-- `{{REAPER_SKILL_DIR}}/references/methodology.md` — proof/analysis patterns
+- `../reaper/references/methodology.md` — proof/analysis patterns
 
-## Path Resolution Protocol
-
-This skill references files in sibling skills. **`{{REAPER_SKILL_DIR}}`** above and below is a template placeholder — **you MUST substitute it with the absolute install path of the `/reaper` skill before reading, or the read will fail.** Common install locations:
-
-- `~/.claude/skills/reaper/` (Claude Code)
-- `~/.cursor/skills/reaper/` (Cursor)
-- `~/.agents/skills/reaper/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
-- `~/.continue/skills/reaper/` (Continue)
-- `~/.windsurf/skills/reaper/` (Windsurf)
-- `<repo-root>/skills/reaper/` (during repo development)
-
-**Sibling-skill dependency**: This skill assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`). Single-skill installs will fail to resolve sibling references.
 
 ## The Batch Loop
 
@@ -99,7 +89,7 @@ For a new hypothesis, create `reaper-workspace/investigations/NNN-<slug>/` where
 
 Do the actual research. This is the core intellectual work. Depending on the hypothesis:
 
-- **Proof verification**: Check each step of an existing proof. Look for gaps, implicit assumptions, boundary cases. Consult `{{REAPER_SKILL_DIR}}/references/methodology.md` for patterns.
+- **Proof verification**: Check each step of an existing proof. Look for gaps, implicit assumptions, boundary cases. Consult `../reaper/references/methodology.md` for patterns.
 - **Proof attempt**: Try to prove the claim. Start with the simplest approach. If it works, check if a simpler proof exists. All proofs must follow the formal proof structure below.
 - **Counterexample search**: Try to disprove the claim. Start small (2 parties, 1 round). Construct a specific adversary strategy and execution trace.
 - **Security analysis**: Enumerate threat models, check if reductions go through, verify simulator constructions. Security proofs must follow the formal proof structure below.
@@ -141,7 +131,7 @@ For theoretical research (proving properties, security guarantees, or performanc
 **Proof technique:** <e.g., reduction, induction, simulation, hybrid argument, game hopping>
 ```
 
-Consult `{{REAPER_SKILL_DIR}}/references/methodology.md` for the proof techniques catalog, reduction quality gate, and performance sanity checks. State the chosen proof technique in the proof header. If it doesn't work after a genuine attempt, log which technique failed and why, then try an alternative in the next cycle.
+Consult `../reaper/references/methodology.md` for the proof techniques catalog, reduction quality gate, and performance sanity checks. State the chosen proof technique in the proof header. If it doesn't work after a genuine attempt, log which technique failed and why, then try an alternative in the next cycle.
 
 Requirements for formal proofs:
 
@@ -184,7 +174,7 @@ When a proof issue is found, do not just say "found a gap." Classify it:
 
 ##### Composition Awareness
 
-When a core property is confirmed, note the composition implications. Consult `{{REAPER_SKILL_DIR}}/references/definitional-standards.md` for domain-specific composition considerations (e.g., rewinding, shared setup, standalone vs compositional security).
+When a core property is confirmed, note the composition implications. Consult `../reaper/references/definitional-standards.md` for domain-specific composition considerations (e.g., rewinding, shared setup, standalone vs compositional security).
 
 Log composition limitations in the investigation's `analysis.md` even if the original hypothesis didn't ask about composition — this is critical context for the final report.
 
@@ -272,7 +262,7 @@ Run all N cycles. The only valid early stop is **genuine convergence**: all hypo
 
 ## When Stuck
 
-If a cycle is going nowhere, follow the escalation protocol in `{{REAPER_SKILL_DIR}}/references/methodology.md` (section "When Stuck: 8-Step Escalation"). The steps progress from re-reading existing materials, through searching for new literature (see `{{REAPER_SKILL_DIR}}/references/search-tools.md` for search commands, which use the `arxiv.py` and `iacr.py` scripts in the `/search-paper` skill), to trying radically different approaches.
+If a cycle is going nowhere, follow the escalation protocol in `../reaper/references/methodology.md` (section "When Stuck: 8-Step Escalation"). The steps progress from re-reading existing materials, through searching for new literature (see `../reaper/references/search-tools.md` for search commands, which use the `arxiv.py` and `iacr.py` scripts in the `/search-paper` skill), to trying radically different approaches.
 
 When searching for new literature mid-investigation, download relevant papers to `reaper-workspace/papers/`, write per-paper notes (`<id>-notes.md`), and **integrate findings into `reaper-workspace/notes/literature.md` inline** — add new entries to the appropriate existing sections rather than appending a separate "Mid-Investigation Additions" section. Log the search as a cycle with action-type `literature-search` in `notes/results.md`.
 

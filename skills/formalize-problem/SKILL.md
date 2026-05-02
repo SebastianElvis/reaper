@@ -3,6 +3,7 @@ name: formalize-problem
 description: "Formalize a research question into precise, testable hypotheses with model assumptions, core properties, and explicit success/failure conditions. Use when asked to formalize, define, or scope a research problem after paper analysis."
 user-invocable: true
 argument-hint: "<research-goal>"
+license: Apache-2.0
 ---
 
 # Formalize Problem
@@ -17,18 +18,6 @@ Invoke this skill by name with the research goal as a quoted string. On slash-co
 formalize-problem "determine if the security proof in Section 4 holds under asynchrony"
 ```
 
-## Path Resolution Protocol
-
-This skill references files in sibling skills. **`{{REAPER_SKILL_DIR}}`** below is a template placeholder — **you MUST substitute it with the absolute install path of the `/reaper` skill before reading, or the read will fail.** Common install locations:
-
-- `~/.claude/skills/reaper/` (Claude Code)
-- `~/.cursor/skills/reaper/` (Cursor)
-- `~/.agents/skills/reaper/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
-- `~/.continue/skills/reaper/` (Continue)
-- `~/.windsurf/skills/reaper/` (Windsurf)
-- `<repo-root>/skills/reaper/` (during repo development)
-
-**Sibling-skill dependency**: This skill assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`). Single-skill installs will fail to resolve sibling references.
 
 ## Instructions
 
@@ -48,21 +37,21 @@ What exactly needs to be resolved? Be specific. "Is this protocol secure?" is to
 
 ### 3. Pin Down Model Assumptions (must be unambiguous before hypotheses)
 
-Pin down every dimension of the system/trust model. If any dimension is left vague, the investigation will produce ambiguous results. Consult `{{REAPER_SKILL_DIR}}/references/model.md` for the domain-appropriate checklist of dimensions that must be specified. Every field must have a concrete answer, not "TBD".
+Pin down every dimension of the system/trust model. If any dimension is left vague, the investigation will produce ambiguous results. Consult `../reaper/references/model.md` for the domain-appropriate checklist of dimensions that must be specified. Every field must have a concrete answer, not "TBD".
 
 Every hypothesis must reference these model assumptions by specifying which parameters it holds under. A hypothesis that states a claim without pinning every relevant dimension is rejected.
 
 ### 4. Apply Importance Filter (Hamming)
 
-Not all questions are equally worth investigating. Prioritize by consequence — ask: "If we resolved this question, who would care and why?" Consult `{{REAPER_SKILL_DIR}}/references/model.md` for domain-specific examples of how to rank by importance.
+Not all questions are equally worth investigating. Prioritize by consequence — ask: "If we resolved this question, who would care and why?" Consult `../reaper/references/model.md` for domain-specific examples of how to rank by importance.
 
 ### 5. Apply Gap-Finding (Qian)
 
-Map the dimensions of existing work and find unexplored combinations. Consult `{{REAPER_SKILL_DIR}}/references/model.md` for the domain-appropriate gap-finding matrix dimensions. Which cells in this matrix are empty? Those are candidate hypotheses.
+Map the dimensions of existing work and find unexplored combinations. Consult `../reaper/references/model.md` for the domain-appropriate gap-finding matrix dimensions. Which cells in this matrix are empty? Those are candidate hypotheses.
 
 ### 6. Screen Against Known Impossibilities
 
-For each hypothesis, check whether it contradicts a known impossibility or lower bound. Consult `{{REAPER_SKILL_DIR}}/references/impossibility-results.md` for the domain-relevant impossibility results and lower bounds.
+For each hypothesis, check whether it contradicts a known impossibility or lower bound. Consult `../reaper/references/impossibility-results.md` for the domain-relevant impossibility results and lower bounds.
 
 If a hypothesis asks to prove something that an impossibility result rules out:
 1. **Flag it explicitly** in the hypothesis with a warning
@@ -71,7 +60,7 @@ If a hypothesis asks to prove something that an impossibility result rules out:
 
 ### 7. Enforce Definitional Hygiene
 
-Each core property listed in the output must be stated precisely. Consult `{{REAPER_SKILL_DIR}}/references/definitional-standards.md` for the domain-appropriate acceptable definition forms. Informal or ambiguous terms without formal definitions are NOT acceptable — different papers define the same terms differently, so pin it down. If the paper under analysis uses informal definitions, formalize them explicitly and note that you are doing so.
+Each core property listed in the output must be stated precisely. Consult `../reaper/references/definitional-standards.md` for the domain-appropriate acceptable definition forms. Informal or ambiguous terms without formal definitions are NOT acceptable — different papers define the same terms differently, so pin it down. If the paper under analysis uses informal definitions, formalize them explicitly and note that you are doing so.
 
 ### 8. Write Output
 
@@ -84,7 +73,7 @@ Write to `reaper-workspace/notes/problem-statement.md`:
 [Restate the goal precisely]
 
 ## Model Assumptions
-[One field per dimension from `{{REAPER_SKILL_DIR}}/references/model.md`. Every dimension must have a concrete answer.]
+[One field per dimension from `../reaper/references/model.md`. Every dimension must have a concrete answer.]
 
 ## Security Properties Under Investigation
 [What must hold? List each property with its formal definition or reference.]
