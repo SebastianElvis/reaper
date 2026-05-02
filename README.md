@@ -185,6 +185,26 @@ reaper-workspace/
 
 The workspace contract is host-agnostic — any agent that can read and write files in the working directory produces the same workspace structure.
 
+## Evaluation
+
+Skills ship with a layered evaluation system following Anthropic's [*Demystifying Evals for AI Agents*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) methodology. The judge is the local `claude` CLI — no API key, just your existing subscription.
+
+| Layer | Grader | Cadence | Scope |
+|---|---|---|---|
+| L1 Structural | Code (`evals/graders/`) | Every PR (CI) | Required sections, lengths, broken refs, keep-or-discard cycle invariant |
+| L2 Skill rubric | `claude -p` with structured-output JSON schema (`evals/judge/`) | Locally / nightly | Per-skill quality dimensions: groundedness, specificity, completeness |
+| L3 End-to-end | Both | Pre-release | Full `/reaper` pipeline against canonical cases |
+
+```bash
+# L1 only (no LLM) — same thing CI runs
+python3 -m evals.run_evals --layer structural
+
+# L1 + L2 (uses your local claude CLI)
+python3 -m evals.run_evals --layer all --skill analyze-paper
+```
+
+Each fixture pairs a gold-standard reference with planted negatives — one targeting L1 (drops a required section) and one targeting L2 (fabricated theorem statements, generic content) — so a permissive grader fails CI as visibly as a missed regression. See [`evals/README.md`](evals/README.md) for the full design and how to add a fixture.
+
 ## Methodology
 
 Reaper's research loop follows six principles:
@@ -202,7 +222,7 @@ See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full methodology and development 
 
 See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full roadmap.
 
-- **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and eval framework — *complete; LaTeX report output planned*
+- **Horizon 1 (The Pipeline)**: Core skills, orchestrator, and layered eval system (L1 structural graders + L2 Claude-CLI judges with rubrics, calibrated against planted negatives) — *complete; LaTeX report output and broader rubric coverage across all skills planned*
 - **Horizon 2 (The Library)**: arXiv/ePrint search via Python scripts + citation graph + venue resolution (Semantic Scholar / DBLP / OpenAlex) — *complete*
 - **Horizon 3 (The Committee)**: Multi-model critique via the `/critique` skill's `--codex` mode — *Codex complete, Gemini/DeepSeek/local planned*
 - **Horizon 3.5 (The Polyglot)**: Cross-agent distribution via `npx skills` and host-agnostic skill prose — *complete; per-host orchestration polish ongoing*

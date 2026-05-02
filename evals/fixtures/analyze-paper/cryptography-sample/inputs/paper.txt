@@ -1,0 +1,59 @@
+A Simplified Threshold Signature Scheme for Asynchronous Networks
+==================================================================
+
+Authors: A. Reviewer, B. Tester
+Venue: Eval Fixture Press, 2026
+arXiv: 2026.99999
+
+Abstract.
+We present a (t, n)-threshold signature scheme that operates correctly in
+the asynchronous network model with up to t < n/3 Byzantine corruptions.
+The scheme uses pairing-based cryptography and assumes the co-CDH problem
+is hard.
+
+1. Introduction.
+Threshold signatures let any subset of t+1 out of n parties jointly sign
+a message such that no coalition of t parties can forge a signature. Our
+contribution is a single-round signing protocol that does not require any
+trusted dealer beyond setup.
+
+2. System Model.
+- Network: asynchronous; messages may be arbitrarily delayed but eventually
+  delivered.
+- Adversary: static, computationally bounded, may corrupt up to t < n/3
+  parties.
+- Trust: a one-time trusted setup distributes verification keys; no further
+  trust assumptions.
+- Communication: authenticated point-to-point channels between every pair.
+- Cryptographic assumption: co-CDH is hard in the bilinear group.
+
+3. Construction.
+Setup: a trusted dealer runs Shamir secret sharing over Z_q to distribute
+shares of the master secret key sk to the n parties.
+
+Signing: each party P_i computes a partial signature sigma_i = H(m)^{sk_i}
+and broadcasts it. Any party that collects t+1 valid partial signatures
+combines them via Lagrange interpolation in the exponent to produce the
+full signature sigma = H(m)^{sk}.
+
+4. Security.
+
+Theorem 4.1 (Unforgeability). If the co-CDH problem is hard in the
+bilinear group, then no PPT adversary corrupting up to t < n/3 parties
+can produce a valid signature on a message it did not request to be
+signed, except with negligible probability.
+
+Proof sketch. We reduce co-CDH to forgery. Given a co-CDH challenge
+(g, g^a, h), the simulator embeds g^a as the public key of an honest
+party and answers signing queries using the standard Boneh-Lynn-Shacham
+trick. Any forgery yields a co-CDH solution.
+
+5. Complexity.
+- Communication: O(n) messages per signature.
+- Rounds: 1 (signing) + 0 (combining is local).
+- Computation: O(t) pairings per verification.
+
+6. Discussion.
+The scheme is round-optimal among non-interactive threshold signatures.
+A potential weakness is that the trusted setup is a single point of
+failure; replacing it with a DKG protocol is left as future work.

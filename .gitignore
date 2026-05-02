@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 .context/
 reaper-workspace/
+evals/runs/
+evals/reports/
