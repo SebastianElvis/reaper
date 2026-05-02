@@ -13,6 +13,16 @@
       "description": "AI-native scientific research pipeline. Takes a research goal — optionally with a research paper — and autonomously conducts rigorous, multi-step academic research.",
       "source": "./",
       "strict": true,
+      "version": "0.4.0",
+      "author": {
+        "name": "Runchao Han"
+      },
+      "homepage": "https://github.com/SebastianElvis/reaper",
+      "repository": "https://github.com/SebastianElvis/reaper",
+      "license": "Apache-2.0",
+      "category": "research",
+      "tags": ["research", "cryptography", "distributed-systems", "paper-analysis", "literature-review", "academic", "science", "ai-agent"],
+      "keywords": ["research", "cryptography", "distributed-systems", "paper-analysis", "literature-review", "academic", "science", "ai-agent"],
       "skills": [
         "./skills/reaper",
         "./skills/clarify-goal",

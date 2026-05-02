@@ -5,6 +5,8 @@
   "author": {
     "name": "Runchao Han"
   },
+  "homepage": "https://github.com/SebastianElvis/reaper",
+  "repository": "https://github.com/SebastianElvis/reaper",
   "license": "Apache-2.0",
-  "keywords": ["research", "cryptography", "distributed-systems", "paper-analysis", "literature-review"]
+  "keywords": ["research", "cryptography", "distributed-systems", "paper-analysis", "literature-review", "academic", "science", "ai-agent"]
 }
