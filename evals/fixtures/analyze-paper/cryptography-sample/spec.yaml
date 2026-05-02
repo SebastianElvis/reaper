@@ -1,0 +1,42 @@
+# Fixture spec — read by run_evals.py.
+#
+# `inputs/` is what the skill consumes (paper text, optional goal).
+# `reference/` holds the gold-standard output an expert would accept (used
+#   for calibration: judge-vs-human agreement).
+# `negatives` holds deliberately bad outputs we expect the graders to fail.
+#   Each negative declares which layer it targets — per the eval guide,
+#   one-sided evals create one-sided optimization, so we test both
+#   directions for both grader layers.
+
+skill: analyze-paper
+case_id: cryptography-sample
+goal: "Verify the security proof of the simplified threshold signature scheme."
+
+inputs:
+  paper: inputs/paper.txt
+
+reference:
+  artifact: reference/paper-summary.md
+  expected_passes: [groundedness, specificity, completeness]
+
+negatives:
+  - id: structural
+    target_layer: structural
+    artifact: negative-structural/paper-summary.md
+    expected_failures:
+      structural: [has_sections]
+    notes: |
+      Drops the System Model and Strengths sections — must trip the L1
+      `has_sections` grader. Demonstrates that L1 catches missing required
+      sections; if this ever passes L1, the rules are too permissive.
+
+  - id: quality
+    target_layer: judge
+    artifact: negative-quality/paper-summary.md
+    expected_failures:
+      judge: [groundedness, specificity, completeness]
+    notes: |
+      Has all required sections (so it passes L1) but contains fabricated
+      theorem numbers (Theorem 4.2 doesn't exist in the source), generic
+      strengths/weaknesses ("the writing is good"), and stub System Model
+      content. Must be caught by L2 judges.

@@ -106,7 +106,7 @@ Sections should be **proportional to what the paper warrants**. If a paper has n
 ### Quality Criteria
 
 - Every theorem statement is copied verbatim, not paraphrased
-- The system model section is complete — no missing dimensions (network, adversary, trust, communication, crypto)
+- When a System Model section is present, it covers every dimension that applies to the paper (network, adversary, trust, communication, crypto). Omit the section only if the paper does not warrant it (e.g. pure information-theoretic results); never partially fill it
 - Strengths and weaknesses are labeled with severity (major/minor/fatal) and are honest — if the paper looks solid, say so; if there are concerns, list them specifically
 - Red flags section is honest — no concerns is a valid answer
 - The summary is useful standalone — a reader who hasn't seen the paper should understand the key claims and approach

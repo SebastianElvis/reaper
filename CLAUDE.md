@@ -9,8 +9,8 @@ AI-native scientific research pipeline distributed as a host-agnostic skills pac
   - `/clarify-goal` — Interactive goal clarification (asks user targeted questions before pipeline runs)
   - `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/brainstorm`, `/investigate`, `/critique`, `/synthesize` — Pipeline stages
   - `/search-paper` — Academic search + citation graph + venue resolution. Bundles five Python drivers (`arxiv.py`, `iacr.py`, `semantic_scholar.py`, `dblp.py`, `openalex.py`); the `SKILL.md` itself orchestrates the layered venue lookup.
-- `tests/` — Python tests for skill structure and search scripts
-- `evals/` — Test cases with quality criteria (`evals.json`)
+- `tests/` — Python tests for skill structure, search scripts, and L1 eval graders
+- `evals/` — Layered evaluation system. L1 code-based graders (`graders/`), L2 Claude-CLI LLM judges (`judge/`), per-skill rubrics (`rubrics/`), and fixtures with reference + planted-negative variants. Orchestrator: `python3 -m evals.run_evals`. See `evals/README.md`.
 - `dev/` — Development docs including `ROADMAP.md` (full methodology and design)
 - `.claude-plugin/` — Claude-Code-specific plugin manifest (`plugin.json`, `marketplace.json`); other hosts ignore this directory
 - `.github/workflows/` — CI (pytest + strict `npx skills` discovery check that asserts every expected skill, script, and reference file is present after installation)
@@ -18,11 +18,15 @@ AI-native scientific research pipeline distributed as a host-agnostic skills pac
 ## Commands
 
 ```bash
-# Run tests
+# Run tests (includes L1 structural eval graders)
 pytest tests/
 
-# Python dependencies for search skills
-pip install arxiv requests beautifulsoup4
+# Run the layered evals
+python3 -m evals.run_evals --layer structural                  # L1 only — no LLM, what CI runs
+python3 -m evals.run_evals --layer all --skill analyze-paper   # L1 + L2 (uses local `claude` CLI)
+
+# Python dependencies for search skills + evals
+pip install arxiv requests beautifulsoup4 pyyaml
 ```
 
 ## Key conventions
@@ -43,6 +47,7 @@ pip install arxiv requests beautifulsoup4
 - When cutting a release tag, the tag message should summarize changes since the last tag (use `git log <last-tag>..HEAD`).
 - Always use squash merge for PRs.
 - Before finishing a task, check if important docs (README.md, CLAUDE.md, dev/ROADMAP.md) need to be updated to reflect your changes.
+- Eval discipline: skill changes that affect a graded artifact (sections, output shape, quality criteria) must keep the corresponding rule in `evals/run_evals.py::SKILL_STRUCTURAL_RULES` and the rubric under `evals/rubrics/<skill>.yaml` in sync. Add fixtures (one reference + at least one planted negative per layer) before claiming coverage for a new skill. Calibrate new judge dimensions against `evals/golden/` before relying on them. Eval design and authoring follow Anthropic's [*Demystifying Evals for AI Agents*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) — code-based vs model-based vs human grader split, per-dimension scoring with an "unknown" escape hatch, isolated trials, two-sided cases (both planted negatives and references), and `pass^k` for consistency. Read it before adding a new layer or rubric.
 
 ## Distribution
 

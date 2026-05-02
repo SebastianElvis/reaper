@@ -1,0 +1,45 @@
+# Rubric for the analyze-paper skill.
+#
+# Each dimension is graded by a separate judge call (per Anthropic's eval
+# guide: "grade dimensions separately rather than holistically to reduce
+# hallucinations"). Dimensions sum to a skill scorecard but are *not*
+# averaged into a single number — non-passes are visible per-dimension.
+#
+# `applies_to` = artifacts the judge needs in --add-dir for this dimension.
+# `prompt` = path to the per-dimension system prompt.
+# `passing_score` = minimum score to count as a "pass" for this dimension.
+
+skill: analyze-paper
+artifact: paper-summary.md
+
+dimensions:
+  - name: groundedness
+    prompt: prompts/groundedness.md
+    applies_to:
+      - paper-summary.md
+      - paper.txt          # extracted paper text, if available in fixture
+    passing_score: 2
+    description: >
+      Theorem statements and quoted claims appear verbatim in the source
+      paper. No fabricated citations, theorem numbers, or quoted text.
+
+  - name: specificity
+    prompt: prompts/specificity.md
+    applies_to:
+      - paper-summary.md
+    passing_score: 1
+    description: >
+      Strengths/weaknesses/red-flags are concrete (cite section/lemma/page),
+      not generic ("the paper has some weaknesses"). Severity labels
+      (major/minor/fatal) are present where required by the SKILL.md.
+
+  - name: completeness
+    prompt: prompts/completeness.md
+    applies_to:
+      - paper-summary.md
+    passing_score: 1
+    description: >
+      Required sections present and proportional to what the paper warrants.
+      System Model covers the dimensions named in the skill prompt.
+      Sections that don't apply to this paper may be omitted (this is not a
+      penalty), but no required dimension is silently dropped.

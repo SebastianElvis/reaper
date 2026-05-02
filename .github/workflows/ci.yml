@@ -20,6 +20,22 @@ jobs:
       - name: Run structure tests
         run: pytest tests/test_skills_structure.py -v
 
+  # L1 structural eval tests — required. Drive the code-based graders in
+  # evals/graders/ against committed fixtures. Cheap, deterministic, no
+  # network or LLM calls. The matching L2 LLM-judge runs are invoked
+  # locally / on demand (see evals/README.md), not in CI.
+  evals-fast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Python dependencies
+        run: pip install pytest pyyaml
+      - name: Run L1 eval tests
+        run: pytest tests/test_skill_outputs.py -v
+
   # Network-dependent integration tests against live arXiv / IACR ePrint APIs.
   # Non-blocking: external services can rate-limit, return 5xx, or change
   # their HTML — none of which means the package is broken. We still run

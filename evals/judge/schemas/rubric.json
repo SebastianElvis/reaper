@@ -1,0 +1,25 @@
+{
+  "$comment": "Score is a string enum, not int|string. The Claude CLI's structured-output enforcement repeatedly retried (and failed) with `oneOf [int, string]`; string enums are reliably honored. Do not 'fix' this back to int — see evals/README.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["score", "evidence", "rationale"],
+  "properties": {
+    "score": {
+      "type": "string",
+      "enum": ["0", "1", "2", "unknown"],
+      "description": "0 = fails the dimension, 1 = partial, 2 = strong. Use 'unknown' only if the artifact lacks the information needed to judge this dimension."
+    },
+    "evidence": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "Verbatim quote (or a tight paraphrase with file:line) from the artifact that supports the score. Required even when score is 0 or 'unknown'."
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 800,
+      "description": "Short explanation tying the evidence to the rubric criteria for this dimension."
+    }
+  }
+}
