@@ -2,7 +2,7 @@
 """DBLP driver: title+author venue lookup. Authoritative for CS venues.
 
 Usage:
-    python dblp.py venue "<title>" [--author "<surname>"]
+    python3 dblp.py venue "<title>" [--author "<surname>"]
 
 Requires: pip install requests
 """

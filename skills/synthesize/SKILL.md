@@ -3,6 +3,7 @@ name: synthesize
 description: "Generate a research paper from investigation results, structured as a formal academic paper with definitions, theorems, lemmas, and proofs. Use when asked to synthesize, summarize, or write up research findings after investigation cycles."
 user-invocable: true
 argument-hint: ""
+license: Apache-2.0
 ---
 
 # Synthesize

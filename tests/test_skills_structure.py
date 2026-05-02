@@ -114,11 +114,11 @@ def test_review_literature_delegates_to_search_paper():
         assert script not in content, (
             f"review-literature references {script} directly; delegate to /search-paper instead"
         )
-    # Must not carry any SKILL_DIR placeholders — delegation removed the need for them.
-    placeholder_pattern = re.compile(r"\{\{[A-Z_]*SKILL_DIR\}\}")
-    assert not placeholder_pattern.search(content), (
-        "review-literature still uses {{*_SKILL_DIR}} placeholders; after the /search-paper "
-        "delegation refactor it must be fully path-agnostic"
+    # Must remain fully path-agnostic — the review-literature skill never
+    # reaches into another skill's filesystem directly.
+    assert "../search-paper" not in content and "../reaper" not in content, (
+        "review-literature should not include sibling-skill paths; it "
+        "delegates by skill name only."
     )
 
 
@@ -186,11 +186,12 @@ def test_readme_lists_search_skills():
 # ---------------------------------------------------------------------------
 # Path-portability regression tests (host-agnostic skills package)
 # ---------------------------------------------------------------------------
+#
+# Per the Agent Skills specification (https://agentskills.io/specification),
+# file references inside a skill must use **relative paths from the skill
+# root**. Cross-skill references rely on `npx skills add` co-installing all
+# skills as siblings under the host's skills directory.
 
-# Skill files that ship inter-skill or intra-skill path references. Each is
-# checked for both: (a) no relative `python skills/...` invocations have crept
-# back in, and (b) every {{*_SKILL_DIR}} placeholder used in the file is also
-# defined somewhere in the file.
 PATH_AWARE_SKILLS = [
     "skills/reaper/SKILL.md",
     "skills/reaper/references/search-tools.md",
@@ -207,16 +208,31 @@ PATH_AWARE_SKILLS = [
 ]
 
 
-def test_no_relative_python_skills_invocations():
-    """Regression: skills must never invoke `python skills/<name>/...` directly.
-
-    Such relative paths only resolve if the user happens to be running the
-    agent from the repo root. After `npx skills add`, the scripts live under
-    a per-host install dir (e.g. ~/.agents/skills/, ~/.cursor/skills/), so
-    skills must use the {{*_SKILL_DIR}} placeholders that the agent
-    substitutes at execution time.
+def test_no_skill_dir_placeholders():
+    """The `{{*SKILL_DIR}}` placeholder convention has been replaced by
+    spec-compliant relative paths. Regression: no placeholders should
+    reappear in any skill or reference file.
     """
-    pattern = re.compile(r"python\s+skills/")
+    placeholder_pattern = re.compile(r"\{\{[A-Z_]*SKILL_DIR\}\}")
+    offenders = []
+    for path in PATH_AWARE_SKILLS:
+        p = Path(path)
+        if not p.exists():
+            continue
+        if placeholder_pattern.search(p.read_text()):
+            offenders.append(path)
+    assert not offenders, (
+        "Found {{*SKILL_DIR}} placeholders. Use relative paths instead "
+        "(e.g. `../reaper/references/methodology.md` for sibling-skill "
+        "references, bare filename for same-directory scripts). "
+        "Offenders: " + ", ".join(offenders)
+    )
+
+
+def test_no_python2_invocations():
+    """Skills should invoke `python3` rather than `python` for portability
+    across hosts where `python` may not exist."""
+    pattern = re.compile(r"\bpython (?=[a-zA-Z_./])")
     offenders = []
     for path in PATH_AWARE_SKILLS:
         p = Path(path)
@@ -224,83 +240,30 @@ def test_no_relative_python_skills_invocations():
             continue
         content = p.read_text()
         for m in pattern.finditer(content):
-            # Find the offending line
             line_no = content[: m.start()].count("\n") + 1
             offenders.append(f"{path}:{line_no}")
     assert not offenders, (
-        "Found relative `python skills/...` invocations — these break under "
-        "npx skills install (scripts live in per-host install dirs, not "
-        "under skills/). Use the {{REAPER_SKILL_DIR}} / "
-        "{{SEARCH_PAPER_SKILL_DIR}} / {{SKILL_DIR}} placeholders instead. "
+        "Found `python ...` invocations — use `python3 ...` for portability. "
         "Offenders: " + ", ".join(offenders)
     )
 
 
-def test_skill_dir_placeholders_are_defined():
-    """Every {{*SKILL_DIR}} placeholder used in a skill must also be defined
-    in that same file (so the agent has the substitution rules co-located
-    with the references that need substituting). A 'definition' is any
-    mention of the placeholder inside a Path-Resolution-style block — we
-    detect this by requiring the placeholder appears in a paragraph that
-    also contains the word 'install' or 'substitute' or 'resolve' (the
-    standardized preamble vocabulary).
-
-    Matches both the multi-skill form ({{REAPER_SKILL_DIR}},
-    {{SEARCH_PAPER_SKILL_DIR}}) and the own-directory form ({{SKILL_DIR}})
-    used by leaf skills like /search-paper.
+def test_no_relative_python_skills_invocations():
+    """Skills must never invoke `python3 skills/<name>/...` from inside a
+    SKILL.md — such paths only resolve at the repo root, not after install.
     """
-    placeholder_pattern = re.compile(r"\{\{([A-Z_]*SKILL_DIR)\}\}")
-    # Words that appear in a definition paragraph (per the standardized
-    # Path Resolution Protocol preamble).
-    definition_keywords = ("install", "substitute", "resolve", "denote", "absolute")
-
-    failures = []
+    pattern = re.compile(r"python3?\s+skills/")
+    offenders = []
     for path in PATH_AWARE_SKILLS:
         p = Path(path)
         if not p.exists():
             continue
         content = p.read_text()
-        used = set(placeholder_pattern.findall(content))
-        if not used:
-            continue
-        # Split into paragraphs and find which paragraphs define a placeholder
-        paragraphs = re.split(r"\n\s*\n", content)
-        defined = set()
-        for para in paragraphs:
-            if not any(kw in para.lower() for kw in definition_keywords):
-                continue
-            for ph in placeholder_pattern.findall(para):
-                defined.add(ph)
-        missing = used - defined
-        if missing:
-            failures.append(f"{path}: uses {sorted(missing)} but never defines them")
-    assert not failures, (
-        "Some skills reference {{*_SKILL_DIR}} placeholders without a local "
-        "definition paragraph. Each skill that uses a placeholder must "
-        "include a Path Resolution Protocol section that lists install "
-        "locations and tells the agent to substitute it. Failures:\n  "
-        + "\n  ".join(failures)
-    )
-
-
-def test_path_resolution_protocol_section_present():
-    """Skills that use {{*SKILL_DIR}} placeholders must declare a
-    'Path Resolution Protocol' section so the convention is visually
-    obvious to readers and downstream auditors. Matches both the
-    multi-skill placeholders (e.g. {{REAPER_SKILL_DIR}}) and the leaf
-    own-directory form ({{SKILL_DIR}})."""
-    placeholder_pattern = re.compile(r"\{\{[A-Z_]*SKILL_DIR\}\}")
-    failures = []
-    for path in PATH_AWARE_SKILLS:
-        p = Path(path)
-        if not p.exists():
-            continue
-        content = p.read_text()
-        if not placeholder_pattern.search(content):
-            continue
-        if "Path Resolution Protocol" not in content:
-            failures.append(path)
-    assert not failures, (
-        "Skills that use path placeholders must declare a 'Path Resolution "
-        "Protocol' section. Missing in: " + ", ".join(failures)
+        for m in pattern.finditer(content):
+            line_no = content[: m.start()].count("\n") + 1
+            offenders.append(f"{path}:{line_no}")
+    assert not offenders, (
+        "Found `python skills/...` invocations — use relative paths from "
+        "the skill root instead (e.g. `../search-paper/arxiv.py`). "
+        "Offenders: " + ", ".join(offenders)
     )

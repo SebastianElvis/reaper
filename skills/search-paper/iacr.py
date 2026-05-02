@@ -2,11 +2,11 @@
 """IACR ePrint platform driver: search, recent, download, url, pubinfo.
 
 Usage:
-    python iacr.py search "<query>" [--max-results N]
-    python iacr.py recent [--max-results N]
-    python iacr.py download <eprint_id> [--output-dir DIR]
-    python iacr.py url <eprint_id>
-    python iacr.py pubinfo <eprint_id>
+    python3 iacr.py search "<query>" [--max-results N]
+    python3 iacr.py recent [--max-results N]
+    python3 iacr.py download <eprint_id> [--output-dir DIR]
+    python3 iacr.py url <eprint_id>
+    python3 iacr.py pubinfo <eprint_id>
 
 Requires: pip install requests beautifulsoup4
 """

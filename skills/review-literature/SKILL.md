@@ -3,6 +3,8 @@ name: review-literature
 description: "Search for related academic work, download and read key papers, and produce a structured literature survey. Use when asked to find prior art, related papers, competing approaches, or known results for a research topic."
 user-invocable: true
 argument-hint: "<research-goal>"
+license: Apache-2.0
+compatibility: "Requires the sibling /search-paper skill (co-installed) and internet access; PDF reading capability recommended."
 ---
 
 # Review Literature

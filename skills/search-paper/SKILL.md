@@ -3,6 +3,8 @@ name: search-paper
 description: "Find papers, download PDFs, traverse citation graphs, and resolve publication venues across arXiv, IACR ePrint, Semantic Scholar, DBLP, and OpenAlex. Use when you need to find papers, trace citations, or determine where a paper was published."
 user-invocable: true
 argument-hint: "<query> [--source arxiv|iacr] [--max-results N]"
+license: Apache-2.0
+compatibility: "Requires python3 with arxiv, requests, beautifulsoup4 packages and internet access for arXiv, IACR ePrint, Semantic Scholar, DBLP, OpenAlex."
 ---
 
 # Search Paper
@@ -17,18 +19,6 @@ Invoke this skill by name. On slash-command hosts: `/search-paper "<query>"`.
 search-paper "post-quantum threshold signatures" --source iacr --max-results 15
 ```
 
-## Path Resolution Protocol
-
-This skill ships five Python scripts in the **same directory as this `SKILL.md`**. The placeholder **`{{SKILL_DIR}}`** below is a template token — **you MUST substitute it with the absolute install path of this skill before invoking, or the exec will fail.** Common install locations:
-
-- `~/.claude/skills/search-paper/` (Claude Code)
-- `~/.cursor/skills/search-paper/` (Cursor)
-- `~/.agents/skills/search-paper/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
-- `~/.continue/skills/search-paper/` (Continue)
-- `~/.windsurf/skills/search-paper/` (Windsurf)
-- `<repo-root>/skills/search-paper/` (during repo development)
-
-This skill has no sibling-skill dependencies — it ships its own scripts.
 
 ## Scripts
 
@@ -37,10 +27,10 @@ Run via Bash. All scripts emit JSON on stdout.
 ### `arxiv.py` — arXiv preprint server
 
 ```bash
-python {{SKILL_DIR}}/arxiv.py search "BFT consensus communication complexity" --max-results 10 --categories cs.CR,cs.DC
-python {{SKILL_DIR}}/arxiv.py recent "threshold signatures" --max-results 10 --categories cs.CR
-python {{SKILL_DIR}}/arxiv.py download 2305.12345 --output-dir reaper-workspace/papers/
-python {{SKILL_DIR}}/arxiv.py journal-ref 2305.12345
+python3 arxiv.py search "BFT consensus communication complexity" --max-results 10 --categories cs.CR,cs.DC
+python3 arxiv.py recent "threshold signatures" --max-results 10 --categories cs.CR
+python3 arxiv.py download 2305.12345 --output-dir reaper-workspace/papers/
+python3 arxiv.py journal-ref 2305.12345
 ```
 
 - `search` — array of `{arxiv_id, title, authors, year, abstract, categories, pdf_url, published, journal_ref}` sorted by relevance.
@@ -51,11 +41,11 @@ python {{SKILL_DIR}}/arxiv.py journal-ref 2305.12345
 ### `iacr.py` — IACR ePrint archive
 
 ```bash
-python {{SKILL_DIR}}/iacr.py search "threshold signatures" --max-results 10
-python {{SKILL_DIR}}/iacr.py recent --max-results 10
-python {{SKILL_DIR}}/iacr.py download 2024/1234 --output-dir reaper-workspace/papers/
-python {{SKILL_DIR}}/iacr.py url 2024/1234
-python {{SKILL_DIR}}/iacr.py pubinfo 2024/1234
+python3 iacr.py search "threshold signatures" --max-results 10
+python3 iacr.py recent --max-results 10
+python3 iacr.py download 2024/1234 --output-dir reaper-workspace/papers/
+python3 iacr.py url 2024/1234
+python3 iacr.py pubinfo 2024/1234
 ```
 
 - `search` — array of `{eprint_id, title, authors, year, abstract, publication_info, venue, pdf_url, url}`. Top 5 results are enriched with metadata from the paper page (including `publication_info`).
@@ -66,9 +56,9 @@ python {{SKILL_DIR}}/iacr.py pubinfo 2024/1234
 ### `semantic_scholar.py` — Semantic Scholar metadata
 
 ```bash
-python {{SKILL_DIR}}/semantic_scholar.py venue --arxiv 2305.12345
-python {{SKILL_DIR}}/semantic_scholar.py venue --title "HotStuff: BFT Consensus in the Lens of Blockchain"
-python {{SKILL_DIR}}/semantic_scholar.py citations 2305.12345 --max-results 20
+python3 semantic_scholar.py venue --arxiv 2305.12345
+python3 semantic_scholar.py venue --title "HotStuff: BFT Consensus in the Lens of Blockchain"
+python3 semantic_scholar.py citations 2305.12345 --max-results 20
 ```
 
 - `venue` — looks up the publication venue by arXiv ID (preferred when available — exact match) or by title (fuzzy match via `/paper/search/match`). Returns `{found, venue, venue_full, venue_type, year, title, authors}`.
@@ -77,7 +67,7 @@ python {{SKILL_DIR}}/semantic_scholar.py citations 2305.12345 --max-results 20
 ### `dblp.py` — DBLP (CS-focused)
 
 ```bash
-python {{SKILL_DIR}}/dblp.py venue "HotStuff: BFT Consensus" --author "Yin"
+python3 dblp.py venue "HotStuff: BFT Consensus" --author "Yin"
 ```
 
 - `venue` — title (+ optional author surname) lookup. DBLP is authoritative for CS conference and journal venues.
@@ -85,7 +75,7 @@ python {{SKILL_DIR}}/dblp.py venue "HotStuff: BFT Consensus" --author "Yin"
 ### `openalex.py` — OpenAlex (broad coverage)
 
 ```bash
-python {{SKILL_DIR}}/openalex.py venue "HotStuff: BFT Consensus in the Lens of Blockchain"
+python3 openalex.py venue "HotStuff: BFT Consensus in the Lens of Blockchain"
 ```
 
 - `venue` — title-based lookup. Use when DBLP doesn't cover the venue (non-CS, niche workshops, books).
@@ -123,10 +113,10 @@ A paper's archive ID (arXiv, ePrint) is *not* its publication venue. Resolve the
 
 ```bash
 # arXiv-known papers
-python {{SKILL_DIR}}/semantic_scholar.py venue --arxiv <arxiv_id>
+python3 semantic_scholar.py venue --arxiv <arxiv_id>
 
 # ePrint-only papers
-python {{SKILL_DIR}}/semantic_scholar.py venue --title "<exact title>"
+python3 semantic_scholar.py venue --title "<exact title>"
 ```
 
 If `found: true` and `venue` is non-empty → done. Record `source = "semantic_scholar"`.
@@ -137,10 +127,10 @@ Authors sometimes mark the venue on their own preprint:
 
 ```bash
 # arXiv: the journal_ref field
-python {{SKILL_DIR}}/arxiv.py journal-ref <arxiv_id>
+python3 arxiv.py journal-ref <arxiv_id>
 
 # ePrint: the "Publication info" line
-python {{SKILL_DIR}}/iacr.py pubinfo <eprint_id>
+python3 iacr.py pubinfo <eprint_id>
 ```
 
 If a non-empty `journal_ref` / `publication_info` is returned → done. Record `source = "arxiv_journal_ref"` or `"iacr_pubinfo"`.
@@ -148,7 +138,7 @@ If a non-empty `journal_ref` / `publication_info` is returned → done. Record `
 ### Layer 3 — DBLP (CS-authoritative title+author search)
 
 ```bash
-python {{SKILL_DIR}}/dblp.py venue "<title>" --author "<first author surname>"
+python3 dblp.py venue "<title>" --author "<first author surname>"
 ```
 
 If `found: true` → done. Record `source = "dblp"`.
@@ -156,7 +146,7 @@ If `found: true` → done. Record `source = "dblp"`.
 ### Layer 4 — OpenAlex (broad coverage)
 
 ```bash
-python {{SKILL_DIR}}/openalex.py venue "<title>"
+python3 openalex.py venue "<title>"
 ```
 
 If `found: true` → done. Record `source = "openalex"`.

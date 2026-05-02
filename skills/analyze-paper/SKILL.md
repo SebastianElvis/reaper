@@ -3,6 +3,8 @@ name: analyze-paper
 description: "Extract structured information from a research paper: system model, theorem statements, proof techniques, complexity claims, and red flags. Use when asked to analyze, summarize, or review an academic paper."
 user-invocable: true
 argument-hint: "<paper-path> [--output <path>] [--goal \"<goal>\"]"
+license: Apache-2.0
+compatibility: "Requires PDF reading capability for the paper under analysis."
 ---
 
 # Analyze Paper
@@ -25,18 +27,6 @@ analyze-paper reaper-workspace/papers/2024-1234.pdf --goal "post-quantum thresho
 - `--output <path>`: Write output to the given path instead of the default `reaper-workspace/notes/paper-summary.md`.
 - `--goal "<text>"`: The research goal as additional context. When provided, the output includes a **Relevance** section assessing how the paper relates to this goal, and reading depth is calibrated by relevance (see Step 1).
 
-## Path Resolution Protocol
-
-This skill references files in sibling skills. **`{{REAPER_SKILL_DIR}}`** below is a template placeholder — **you MUST substitute it with the absolute install path of the `/reaper` skill before reading, or the read will fail.** Common install locations:
-
-- `~/.claude/skills/reaper/` (Claude Code)
-- `~/.cursor/skills/reaper/` (Cursor)
-- `~/.agents/skills/reaper/` (Codex CLI, Cline, Gemini CLI, Copilot, OpenCode, Warp, Goose, Replit — universal target)
-- `~/.continue/skills/reaper/` (Continue)
-- `~/.windsurf/skills/reaper/` (Windsurf)
-- `<repo-root>/skills/reaper/` (during repo development)
-
-**Sibling-skill dependency**: This skill assumes the full `/reaper` package was installed together (`npx skills add SebastianElvis/reaper`). Single-skill installs will fail to resolve sibling references.
 
 ## Instructions
 
@@ -44,7 +34,7 @@ This skill references files in sibling skills. **`{{REAPER_SKILL_DIR}}`** below 
 
 Read the paper at the provided path using your host's file-read primitive (works for PDFs and text files on hosts that support PDF reading; otherwise extract text first).
 
-Follow the three-pass strategy from `{{REAPER_SKILL_DIR}}/references/paper-analysis.md`:
+Follow the three-pass strategy from `../reaper/references/paper-analysis.md`:
 
 - **Pass 1 (skeleton)**: Abstract, introduction, conclusion, theorem statements. Identify the main claims.
 - **Pass 2 (construction)**: Protocol details, proof sketches, figures. Understand the key technical idea.
@@ -76,7 +66,7 @@ Write the extracted information to `reaper-workspace/notes/paper-summary.md` (or
 What problem does this paper solve? Why does it matter?
 
 ## System Model
-[Extract all model dimensions relevant to the paper's domain. Consult `{{REAPER_SKILL_DIR}}/references/model.md` for the domain-appropriate dimensions to extract. Every applicable dimension must have a concrete answer.]
+[Extract all model dimensions relevant to the paper's domain. Consult `../reaper/references/model.md` for the domain-appropriate dimensions to extract. Every applicable dimension must have a concrete answer.]
 
 ## Construction Overview
 High-level protocol description. Key technical idea. Building blocks used.
@@ -105,7 +95,7 @@ Overall proof approach. Key lemmas. Reduction chain. Where the corruption thresh
 Non-standard notation. Formal definitions referenced by the proofs.
 
 ## Red Flags
-Any concerns identified during reading (see `{{REAPER_SKILL_DIR}}/references/paper-analysis.md` for common red flags).
+Any concerns identified during reading (see `../reaper/references/paper-analysis.md` for common red flags).
 
 ## Relevance
 [Present ONLY when --goal is provided. Tag one or more: *problem definition*, *formalization*, *solution technique*, *negative result*, *literature/context*, *writing model*. One sentence per tag explaining how this paper relates to the research goal.]

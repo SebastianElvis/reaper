@@ -27,7 +27,12 @@ pip install arxiv requests beautifulsoup4
 
 ## Key conventions
 
-- Skills are the unit of composition. Each skill directory contains a `SKILL.md` with YAML frontmatter — `name` (lowercase + hyphens, matches the directory name) and `description` are required by the [`vercel-labs/skills`](https://github.com/vercel-labs/skills) parser; everything else is optional.
+- Skills follow the [Agent Skills specification](https://agentskills.io/specification). Each skill directory contains a `SKILL.md` with YAML frontmatter. Required fields: `name` (1–64 chars, lowercase alphanumeric + hyphens, no leading/trailing/consecutive hyphens, must match the parent directory name) and `description` (1–1024 chars, describes both what the skill does and when to use it). Recognized optional fields: `license`, `compatibility`, `metadata`, `allowed-tools`. All skills in this repo set `license: Apache-2.0`.
+- Skill authoring follows the [best practices](https://agentskills.io/skill-creation/best-practices) and [description guidance](https://agentskills.io/skill-creation/optimizing-descriptions):
+  - Keep `SKILL.md` under 500 lines / ~5000 tokens; use `references/` for detail loaded on demand, and tell the agent *when* to load each reference file.
+  - Spend context wisely: add what the agent lacks, omit what it knows. Provide a clear default rather than a menu of options.
+  - Match instruction specificity to task fragility — be prescriptive for fragile/destructive operations, descriptive (with the *why*) for flexible ones.
+  - Descriptions use imperative phrasing ("Use when…"), focus on user intent, and stay under 1024 chars.
 - The orchestrator skill (`/reaper`) runs the full pipeline: clarify → analyze → literature → formalize → brainstorm → investigate ↔ critique → synthesize. After delivery, users can iterate by re-invoking the `/critique` skill with feedback.
 - Runtime state goes in `reaper-workspace/` (gitignored). Never commit workspace artifacts.
 - The six methodology principles (separation of concerns, fixed evaluation signal, structured results log, keep-or-discard loop, never stop, clarity and simplicity) govern how skills behave.

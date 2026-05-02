@@ -2,9 +2,9 @@
 """Semantic Scholar driver: venue lookup and citation graph.
 
 Usage:
-    python semantic_scholar.py venue --arxiv <arxiv_id>
-    python semantic_scholar.py venue --title "<title>" [--author "<surname>"]
-    python semantic_scholar.py citations <arxiv_id> [--max-results N]
+    python3 semantic_scholar.py venue --arxiv <arxiv_id>
+    python3 semantic_scholar.py venue --title "<title>" [--author "<surname>"]
+    python3 semantic_scholar.py citations <arxiv_id> [--max-results N]
 
 Requires: pip install requests
 """

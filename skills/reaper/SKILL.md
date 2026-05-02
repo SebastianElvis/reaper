@@ -3,6 +3,8 @@ name: reaper
 description: "Run the full Reaper research pipeline: analyze a paper (optional), review literature, formalize the problem, investigate hypotheses with critique loops, and synthesize a report. Use when given a research goal, optionally with a paper."
 user-invocable: true
 argument-hint: "\"<research-goal>\" [paper-path] [--codex]"
+license: Apache-2.0
+compatibility: "Requires python3 with arxiv, requests, beautifulsoup4 packages, internet access, and PDF reading capability. The --codex flag requires an MCP-capable host."
 ---
 
 # Reaper: AI-Native Research Pipeline
