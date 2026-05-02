@@ -240,9 +240,11 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
 - [x] Write `references/methodology.md` (proof verification, security analysis, protocol extension, comparison, counterexample patterns)
 - [x] Write `references/paper-analysis.md` (extraction guide for crypto/distributed systems/blockchain papers)
 - [x] Define the workspace file contract between skills (the table above, formalized)
+- [x] Build `/clarify-goal` skill (Stage 0); test independently
 - [x] Build `/analyze-paper` skill; test independently
 - [x] Build `/review-literature` skill (WebSearch only for now); test independently
 - [x] Build `/formalize-problem` skill; test that it produces trust assumptions + security properties + performance goals
+- [x] Build `/brainstorm` skill (Stage 2.5 recurring ideation); test independently
 - [x] Build `/investigate` skill with full loop discipline:
   - `notes/results.md` structured log with keep/discard per cycle (Principle 3)
   - `current-understanding.md` that only advances on keep (Principle 4)
@@ -250,8 +252,12 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
   - Simplicity criterion for evaluating cycles (Principle 6)
 - [x] Build `/synthesize` skill; test independently
 - [x] Build the `/reaper` orchestrator that composes them with subagent parallelism
-- [x] Create eval framework (`evals/evals.json`) with test cases and quality criteria
-- [x] Create test paper specifications (`dev/test-papers/README.md`)
+- [x] Create eval framework with test cases and quality criteria — ships as a layered system (`evals/`):
+  - **L1 structural**: deterministic Python graders (`evals/graders/structural.py`, `consistency.py`) for required sections, min lengths, broken refs, keep-or-discard cycle invariant. Runs in CI on every PR.
+  - **L2 skill rubric**: per-skill rubrics (`evals/rubrics/<skill>.yaml`) graded by `claude -p` (`evals/judge/`) with JSON-schema-pinned output. Subscription tokens, run locally / nightly.
+  - **L3 end-to-end**: the 3 cases in `evals/evals.json`, full `/reaper` pipeline. Pre-release.
+  - Orchestrator: `python3 -m evals.run_evals --layer {structural,judge,all}`. Fixtures live at `evals/fixtures/<skill>/<case>/` with reference + planted-negative variants per layer.
+- [x] Create test paper specifications (`dev/test-papers/README.md`) — specs only; actual PDFs not yet sourced
 - [x] Tune skill descriptions for reliable triggering (added action verbs, specific outputs, broader trigger phrases)
 - [ ] Upgrade `/synthesize` to produce a compilable LaTeX project instead of markdown:
   - [ ] Change output from `report.md` to `report/` directory (`main.tex`, `references.bib`, `Makefile`)
@@ -262,11 +268,14 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
   - [ ] Update the `/synthesize` SKILL.md template: replace the markdown template with LaTeX equivalents
   - [ ] Ensure the orchestrator and other skills that reference `report.md` (e.g., critique reading the report) are updated to read `report/main.tex`
   - [ ] Test: does `make` in `report/` produce a valid PDF without manual fixes?
-- [ ] Test full pipeline end-to-end with 3 real papers:
+- [ ] Source actual paper PDFs for the 3 specs in `dev/test-papers/README.md` (currently specs-only)
+- [ ] Expand L1+L2 eval coverage beyond `analyze-paper` — add fixtures (reference + ≥1 planted negative per layer) and rubrics for the remaining skills (`review-literature`, `formalize-problem`, `brainstorm`, `investigate`, `critique`, `synthesize`)
+- [ ] Calibrate judge prompts against `evals/golden/` (≥80% agreement with hand grades) before relying on new dimensions
+- [ ] Test full pipeline end-to-end with the 3 papers once sourced:
   - A cryptographic construction with a known proof gap
   - A consensus protocol paper (e.g., compare HotStuff variants)
   - A blockchain paper with questionable security claims
-- [ ] Iterate on skills based on test results (using eval framework)
+- [ ] Iterate on skills based on test results (using the layered eval framework)
 
 ### Horizon 2: The Library
 
@@ -407,7 +416,7 @@ Different models have different strengths. The critique skill should route consu
 
 **Methodology stage:** All stages — makes the entire pipeline portable across AI agent platforms.
 
-**Current state:** Reaper ships as standard `SKILL.md` folders compatible with the [`vercel-labs/skills`](https://github.com/vercel-labs/skills) convention. A single `npx skills add SebastianElvis/reaper` shallow-clones the repo and copies all 11 skill directories into the host agent's conventional skills folder, supporting 45+ targets including Cursor, OpenAI Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, OpenCode, Warp, Goose, Replit, and Claude Code. The orchestrator and inter-skill triggers use host-agnostic phrasing ("invoke the `<name>` skill") so that auto-discovery agents and slash-command agents both route correctly.
+**Current state:** Reaper ships as standard `SKILL.md` folders compatible with the [`vercel-labs/skills`](https://github.com/vercel-labs/skills) convention. A single `npx skills add SebastianElvis/reaper` shallow-clones the repo and copies all 10 skill directories into the host agent's conventional skills folder, supporting 45+ targets including Cursor, OpenAI Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, OpenCode, Warp, Goose, Replit, and Claude Code. The orchestrator and inter-skill triggers use host-agnostic phrasing ("invoke the `<name>` skill") so that auto-discovery agents and slash-command agents both route correctly.
 
 **Goal:** Make Reaper a first-class skills package — authored once, runnable on any host that consumes `SKILL.md` files. Achieved by converging on the `SKILL.md` convention rather than building per-host adapters.
 
@@ -652,7 +661,7 @@ The AI *is* the research agent. No wrapper needed.
 
 ### Why a Pipeline of Skills
 
-A monolithic "do research" skill is hard to test, hard to improve, and hard to reuse partially. By decomposing into `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/investigate`, `cross-verify`, and `/synthesize`, each skill:
+A monolithic "do research" skill is hard to test, hard to improve, and hard to reuse partially. By decomposing into `/clarify-goal`, `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/brainstorm`, `/investigate`, `/critique`, and `/synthesize`, each skill:
 - Can be tested and iterated independently
 - Can be used standalone (e.g., just analyze a paper without running the full pipeline)
 - Has a clear input/output contract via workspace files
@@ -660,7 +669,7 @@ A monolithic "do research" skill is hard to test, hard to improve, and hard to r
 
 ### Why Multi-Model Feedback
 
-No single model is best at everything. Claude is strong at structured reasoning and long-context analysis. Other models may catch different classes of errors, suggest alternative approaches, or have different training data. The cross-verify step treats other models as peer reviewers — the same role human collaborators play in real research. This is especially important because, unlike autoresearch's val_bpb, theoretical research lacks an objective evaluation oracle.
+No single model is best at everything. Claude is strong at structured reasoning and long-context analysis. Other models may catch different classes of errors, suggest alternative approaches, or have different training data. The `/critique` step treats other models as peer reviewers — the same role human collaborators play in real research. This is especially important because, unlike autoresearch's val_bpb, theoretical research lacks an objective evaluation oracle.
 
 ### Why File-Based State
 
