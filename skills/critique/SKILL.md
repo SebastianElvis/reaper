@@ -72,9 +72,9 @@ You write `reaper-workspace/feedbacks/round-N.md`:
 - **scope:** You return to the orchestrator with a request to run `formalize-problem` again. You do not run investigation cycles yet.
 - **deepen:** You invoke the `brainstorm` skill with the feedback context. You then invoke the `investigate` skill with `5`.
 - **explore:** You search for additional literature if necessary. You update `literature.md`, invoke `brainstorm` with the feedback context, then invoke `investigate` with `5`.
-- **rewrite:** You return to the orchestrator with a request to run `synthesize` again.
+- **rewrite:** You return to the orchestrator with a request to run `write-paper` again.
 
-After deepen or explore cycles, the orchestrator invokes `synthesize` for an updated report.
+After deepen or explore cycles, the orchestrator invokes `write-paper` for an updated report.
 
 ## Codex Consultation (`--codex`)
 

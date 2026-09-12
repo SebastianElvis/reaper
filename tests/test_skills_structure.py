@@ -19,7 +19,7 @@ EXPECTED_SKILLS = {
     "brainstorm": "skills/brainstorm/SKILL.md",
     "investigate": "skills/investigate/SKILL.md",
     "critique": "skills/critique/SKILL.md",
-    "synthesize": "skills/synthesize/SKILL.md",
+    "write-paper": "skills/write-paper/SKILL.md",
     # H2
     "search-paper": "skills/search-paper/SKILL.md",
 }
@@ -203,7 +203,7 @@ PATH_AWARE_SKILLS = [
     "skills/brainstorm/SKILL.md",
     "skills/investigate/SKILL.md",
     "skills/critique/SKILL.md",
-    "skills/synthesize/SKILL.md",
+    "skills/write-paper/SKILL.md",
     "skills/search-paper/SKILL.md",
 ]
 

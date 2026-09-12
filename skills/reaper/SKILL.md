@@ -55,7 +55,7 @@ You use these file rules:
 | `notes/current-understanding.md`, `notes/results.md`, `notes/ideas.md`, `notes/problem-statement.md`, `notes/literature.md` | One agent edits each file in place per batch. |
 | `papers/*-notes.md`, `investigations/*/analysis.md`, `investigations/*/proof.md` | One agent edits each file in place per batch. |
 | `logs/cycle-*.md`, `feedbacks/round-*.md`, `feedbacks/codex-consultation-*.md` | You create each file once. You never change it after creation. |
-| `notes/paper-summary.md`, `notes/clarified-goal.md`, `report.md` | The responsible skill writes the file. It can regenerate the file on a rerun. Other skills do not edit it. |
+| `notes/paper-summary.md`, `notes/clarified-goal.md`, `report/*` | The responsible skill writes the file. It can regenerate the file on a rerun. Other skills do not edit it. |
 
 The `review-literature` skill creates `notes/literature.md`. The `investigate` skill adds new literature findings in place.
 
@@ -113,7 +113,7 @@ N follows the complexity table.
 
 You apply the first matching condition:
 
-- If two consecutive batches contain only high-confidence keep results and no new hypotheses, you proceed to synthesis.
+- If two consecutive batches contain only high-confidence keep results and no new hypotheses, you proceed to Step 6.
 - Otherwise, if critique adds at least three useful hypotheses, you add an investigation batch.
 - Otherwise, if all hypotheses resolve early or more than half of a batch has status `discard`, you run `brainstorm`.
 
@@ -130,17 +130,17 @@ If any cycle returns outcome `reformulate`, you take these actions:
 5. You add new hypotheses below the preserved ideas.
 6. You restart the loop with a new cycle budget.
 
-### Step 6: Synthesize
+### Step 6: Write Paper
 
-You invoke the `synthesize` skill. It reads the relevant workspace evidence and writes `report.md`.
+You invoke the `write-paper` skill. It reads the relevant workspace evidence and writes `report/main.tex`, `report/references.bib`, and `report/Makefile`.
 
 ### Step 7: Present Results
 
-You read `reaper-workspace/report.md`. You present key findings with links to the report and audit record.
+You read `reaper-workspace/report/main.tex`. You present key findings with links to the LaTeX source and audit record. You include the build status and link to `report/main.pdf` after a successful build.
 
 ### Step 8: Explain Further Iteration
 
-You explain that quoted feedback to `critique` can start another review. Slash-command hosts can use `/critique "your feedback here"`. You do not wait for a reply. After later critique cycles, you invoke `synthesize` for an updated report.
+You explain that quoted feedback to `critique` can start another review. Slash-command hosts can use `/critique "your feedback here"`. You do not wait for a reply. After later critique cycles, you invoke `write-paper` for an updated report.
 
 ## Dependencies and Outputs
 
@@ -153,7 +153,7 @@ You explain that quoted feedback to `critique` can start another review. Slash-c
 | `/brainstorm` | Problem, ideas, current understanding, results | Updated `notes/ideas.md` |
 | `/investigate` | Problem, ideas, current understanding, results | Updated notes; `investigations/*`, `logs/*` |
 | `/critique` | Current understanding, results, problem, ideas | `feedbacks/*`; possible new ideas and cycles |
-| `/synthesize` | Current understanding, results, problem, ideas | `report.md` |
+| `/write-paper` | Current understanding, results, problem, ideas | `report/main.tex`, `report/references.bib`, `report/Makefile` |
 | `/search-paper` | Query or paper identifier | Search results, citations, or venue |
 
 ## Failure and Context Recovery
@@ -163,7 +163,7 @@ If a skill fails, you read its output to identify the cause before you retry. If
 1. You check `reaper-workspace/notes/` for existing files.
 2. You read `notes/results.md` for cycle progress.
 3. You compare `ideas.md` with results to identify unresolved hypotheses.
-4. You check `report.md` for completed synthesis.
+4. You check `report/main.tex` for the paper source. You check the build status before you report PDF completion.
 5. You check `feedbacks/` for later review rounds.
 
 | State | Action |

@@ -115,7 +115,7 @@ Need to resolve a paper's publication venue?
 
 ## Venue Resolution Protocol
 
-Every paper that appears in `notes/literature.md` or the `## References` section of `report.md` must have a real publication venue (CRYPTO, S&P, PODC, …) — not just an archive ID.
+Every paper that appears in `notes/literature.md` or `report/references.bib` must have a real publication venue (CRYPTO, S&P, PODC, …) — not just an archive ID.
 
 The authoritative layered protocol lives in the `/search-paper` skill's own `SKILL.md` ("Venue Resolution Protocol" section). At a glance, it walks Semantic Scholar → author-supplied field (arXiv `journal-ref` / ePrint `pubinfo`) → DBLP → OpenAlex, stopping at the first success, and labels the paper `(preprint)` if all layers fail. Callers should invoke `/search-paper` rather than orchestrating the layers themselves, and cache the resolved venue in their workspace notes to avoid re-resolving across cycles.
 
