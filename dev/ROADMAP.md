@@ -8,7 +8,7 @@
 
 Today, AI can answer questions about papers. Reaper goes further: it *does research*. Given a paper on a new consensus protocol and the goal "determine if this is secure under asynchrony," Reaper will read the paper, search academic sources (arXiv, IACR ePrint, Semantic Scholar, DBLP, OpenAlex) for related work, formalize the problem, attempt a proof or construct a counterexample, seek feedback from other AI models, and produce a structured research report with full reasoning traces.
 
-The key insight: research is a *pipeline* of distinct, composable activities (read, search, formalize, analyze, verify, synthesize), not a monolithic task. Reaper decomposes this pipeline into individual skills that can be invoked independently or orchestrated together, and leverages parallel subagents and multi-model feedback to approximate the quality of collaborative human research.
+The key insight: research is a *pipeline* of distinct, composable activities (read, search, formalize, analyze, verify, write), not a monolithic task. Reaper decomposes this pipeline into individual skills that can be invoked independently or orchestrated together, and leverages parallel subagents and multi-model feedback to approximate the quality of collaborative human research.
 
 ### Heritage: Karpathy's autoresearch
 
@@ -111,7 +111,7 @@ Uncertainty about whether the human wants you to continue is *never* a reason to
 **Clarity in expression** (Peyton Jones: writing is a primary mechanism for doing research, not just for reporting it):
 - **Write early, not last.** Each investigation cycle should update `current-understanding.md` not just with results but with *explanations* of those results, as if explaining at a whiteboard. Writing crystallizes understanding.
 - **One "ping" per finding.** Each cycle should produce one clear, sharp insight. If a cycle's outcome cannot be stated in a single sentence, it needs to be decomposed further.
-- **Contributions must be refutable.** Every claim — whether in `problem-statement.md` or `report.md` — should be specific enough that a reader could disagree with it. "We analyze the security of protocol X" is not a contribution. "We show that protocol X's safety proof fails under asynchrony because the simulator cannot handle abort in round 3" is.
+- **Contributions must be refutable.** Every claim — whether in `problem-statement.md` or `report/main.tex` — should be specific enough that a reader could disagree with it. "We analyze the security of protocol X" is not a contribution. "We show that protocol X's safety proof fails under asynchrony because the simulator cannot handle abort in round 3" is.
 
 When evaluating whether a cycle produced progress, weight clarity and elegance alongside novelty. A cycle that narrows the search space on an important question is a "keep" even if it didn't resolve the hypothesis.
 
@@ -132,7 +132,7 @@ reaper/
 │   ├── brainstorm/SKILL.md                 # Stage 2.5: recurring ideation
 │   ├── investigate/SKILL.md                # Stage 3: investigate (proof/analysis cycles)
 │   ├── critique/SKILL.md                   # Stage 3 sub-step: human / external-model / self review
-│   ├── synthesize/SKILL.md                 # Stage 4: synthesize (report generation)
+│   ├── write-paper/SKILL.md                # Stage 4 writes the LaTeX paper.
 │   └── search-paper/                       # Unified academic search + venue resolution
 │       ├── SKILL.md                        # Orchestrates the layered venue lookup
 │       ├── arxiv.py                        # arXiv API
@@ -173,7 +173,11 @@ reaper-workspace/
 │   └── NNN-<name>/                     # One directory per hypothesis
 ├── feedbacks/                          # Append-only — one file per event, never modified
 ├── logs/                               # Append-only — one file per event, never modified
-└── report.md                           # Final synthesized output (Markdown report) — written by `/synthesize`. A future horizon may add a compilable LaTeX project (see ROADMAP horizons for that direction).
+└── report/                             # The write-paper skill writes this project.
+    ├── main.tex                        # The paper source uses LaTeX.
+    ├── references.bib                  # The bibliography stores citation metadata.
+    ├── Makefile                        # The default target builds the PDF.
+    └── main.pdf                        # A successful build creates this file.
 ```
 
 ---
@@ -183,7 +187,7 @@ reaper-workspace/
 Each horizon enriches a specific stage of the methodology pipeline. H1 builds the decomposed pipeline from day one. H2 adds crypto-specific search. H3 strengthens the evaluation signal with multi-model feedback. H3.5 makes Reaper portable across AI agent platforms. H4 expands to the broader CS academic network. H5 makes the system honest about evidence quality. H6 adds proactive reformulation and claim provenance.
 
 ```
-Methodology stage:     Clarify → Baseline → Formalize → Brainstorm → Investigate ↔ Critique → Synthesize
+Methodology stage:     Clarify → Baseline → Formalize → Brainstorm → Investigate ↔ Critique → Write Paper
                          │         │           │            │              │              │          │
 H1 The Pipeline:         ✓       paper + web  ✓            ✓              ✓              ✓          ✓
 H2 The Library:                    + arXiv/ePrint                           + mid-loop search
@@ -205,7 +209,7 @@ H6 The Examiner:                                           + reformulation  + (s
 - `notes/ideas.md` containing the research ideas/hypotheses and their resolution status
 - `notes/results.md` showing cycle-by-cycle progression with keep/discard decisions
 - `notes/current-understanding.md` with the accumulated findings
-- `report.md` containing a synthesized Markdown report that a researcher could review (a compilable LaTeX project is a future horizon, not H1)
+- The `report/` directory contains a LaTeX research paper, a bibliography, and a Makefile.
 
 And each skill works standalone: invoke `analyze-paper paper.pdf` for just a structured summary, `/formalize-problem` for just a problem statement, etc.
 
@@ -220,10 +224,10 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
 | `/brainstorm` | Stage 2.5: Recurring ideation | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md`, `notes/results.md`, `notes/literature.md`, `notes/paper-summary.md` | Updates `notes/ideas.md` (adds new, edits existing inline) |
 | `/investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md` | `investigations/NNN-<name>/` (reuses on revisit), updates `notes/results.md` inline, edits `current-understanding.md` on keep |
 | `/critique` | Stage 3 sub-step: review | `investigations/`, `notes/current-understanding.md`, `notes/ideas.md` | `feedbacks/`, `logs/`, may add hypotheses to `notes/ideas.md` |
-| `/synthesize` | Stage 4: Synthesize | All `notes/`, `investigations/`, `notes/results.md` | `report.md` (synthesized Markdown report; a future horizon may add a compilable LaTeX project) |
+| `/write-paper` | Stage 4: Write Paper | All `notes/`, `investigations/`, `notes/results.md` | `report/main.tex`, `report/references.bib`, `report/Makefile` |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |
 
-**`/synthesize` report structure** (following Peyton Jones):
+**`/write-paper` report structure** (following Peyton Jones):
 - **One "ping"**: The report must have one clear, central finding stated upfront. If the research yielded multiple findings, the report must still identify the single most important one.
 - **Explicit, refutable contributions**: A bulleted list of specific claims, each concrete enough that a reader could disagree. Not "we analyze protocol X" but "we show that claim Y fails because Z."
 - **Examples before generality**: Introduce findings with a concrete example (a specific execution trace, a specific adversary strategy) before presenting the general argument.
@@ -250,7 +254,7 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
   - `current-understanding.md` that only advances on keep (Principle 4)
   - Never-stop and when-stuck guidance (Principle 5)
   - Simplicity criterion for evaluating cycles (Principle 6)
-- [x] Build `/synthesize` skill; test independently
+- [x] Build `/write-paper` skill; test independently
 - [x] Build the `/reaper` orchestrator that composes them with subagent parallelism
 - [x] Create eval framework with test cases and quality criteria — ships as a layered system (`evals/`):
   - **L1 structural**: deterministic Python graders (`evals/graders/structural.py`, `consistency.py`) for required sections, min lengths, broken refs, keep-or-discard cycle invariant. Runs in CI on every PR.
@@ -259,17 +263,14 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
   - Orchestrator: `python3 -m evals.run_evals --layer {structural,judge,all}`. Fixtures live at `evals/fixtures/<skill>/<case>/` with reference + planted-negative variants per layer.
 - [x] Create test paper specifications (`dev/test-papers/README.md`) — specs only; actual PDFs not yet sourced
 - [x] Tune skill descriptions for reliable triggering (added action verbs, specific outputs, broader trigger phrases)
-- [ ] Upgrade `/synthesize` to produce a compilable LaTeX project instead of markdown:
-  - [ ] Change output from `report.md` to `report/` directory (`main.tex`, `references.bib`, `Makefile`)
-  - [ ] Use `article` class by default; support venue-specific document classes (`llncs`, `acmart`, `IEEEtran`) selectable via clarified goal or user argument
-  - [ ] Map existing paper structure to LaTeX: `\begin{definition}`, `\begin{lemma}`, `\begin{theorem}`, `\begin{proof}` via `amsthm`; `\begin{conjecture}` for unproven claims
-  - [ ] Generate `references.bib` from `notes/literature.md` entries with `\cite{}` references in the body
-  - [ ] Include a `Makefile` that runs `latexmk -pdf main.tex` so `make` produces a PDF
-  - [ ] Update the `/synthesize` SKILL.md template: replace the markdown template with LaTeX equivalents
-  - [ ] Ensure the orchestrator and other skills that reference `report.md` (e.g., critique reading the report) are updated to read `report/main.tex`
-  - [ ] Test: does `make` in `report/` produce a valid PDF without manual fixes?
+- [x] The `/write-paper` skill replaces the former paper generation skill.
+- [x] The skill requires a LaTeX project with `main.tex`, `references.bib`, and `Makefile`.
+- [x] The skill uses the `article` class by default and accepts a user-specified venue template.
+- [x] The skill requires theorem environments, BibTeX citations, and PDF build checks.
+- [x] The pipeline, installer, documentation, and evaluation specification use the new name and output paths.
+- [ ] A full skill run must produce a valid PDF without manual fixes.
 - [ ] Source actual paper PDFs for the 3 specs in `dev/test-papers/README.md` (currently specs-only)
-- [ ] Expand L1+L2 eval coverage beyond `analyze-paper` — add fixtures (reference + ≥1 planted negative per layer) and rubrics for the remaining skills (`review-literature`, `formalize-problem`, `brainstorm`, `investigate`, `critique`, `synthesize`)
+- [ ] Expand L1+L2 eval coverage beyond `analyze-paper` — add fixtures (reference + ≥1 planted negative per layer) and rubrics for the remaining skills (`review-literature`, `formalize-problem`, `brainstorm`, `investigate`, `critique`, `write-paper`)
 - [ ] Calibrate judge prompts against `evals/golden/` (≥80% agreement with hand grades) before relying on new dimensions
 - [ ] Test full pipeline end-to-end with the 3 papers once sourced:
   - A cryptographic construction with a known proof gap
@@ -303,7 +304,7 @@ The `/search-paper` `SKILL.md` orchestrates a layered venue resolver: Semantic S
 - [x] Write `references/search-tools.md` — catalog of search tools with usage patterns, decision tree, and venue-resolution protocol
 - [x] Update `/review-literature` skill: structured search as primary, WebSearch as fallback, citation graph, recent papers, layered venue resolution per kept paper
 - [x] Update `/investigate` skill: mid-cycle literature search via search scripts
-- [x] Update `/synthesize` skill: References section uses resolved venues, never raw archive IDs
+- [x] Update `/write-paper` skill: References section uses resolved venues, never raw archive IDs
 - [x] Handle graceful degradation when search scripts are unavailable
 - [x] Document Python prerequisites in README
 - [ ] Test: given a seed paper, can Reaper find and summarize the 10 most relevant related works?
@@ -570,7 +571,7 @@ The `/critique` skill's self-review mode currently identifies "weak claims" and 
 - [ ] Update `notes/results.md` format to include evidence level column alongside existing confidence and outcome
 - [ ] Update `/investigate` skill: tag every claim with evidence level, require elevation plan for heuristic-level keeps
 - [ ] Update `/critique` skill: self-review checks evidence level vs. confidence, Codex consultation includes evidence context
-- [ ] Update `/synthesize` skill: distinguish proven claims from conjectures in the report (leverages LaTeX theorem/conjecture environments from H1)
+- [ ] Update `/write-paper` skill: distinguish proven claims from conjectures in the report (leverages LaTeX theorem/conjecture environments from H1)
 - [ ] Update orchestrator adaptation signals: factor in evidence distribution, not just keep/discard ratio
 - [ ] Test: does evidence tagging change keep/discard decisions compared to current behavior?
 
@@ -580,7 +581,7 @@ The `/critique` skill's self-review mode currently identifies "weak claims" and 
 
 **Goal:** Address two structural gaps: (1) the pipeline can reformulate reactively (the investigate skill already emits `outcome: reformulate` which triggers re-formalization), but has no *proactive* trigger when a pattern of failure suggests the problem statement itself is wrong; (2) claims in the final report don't link back to the investigation cycles that support them, making audit difficult.
 
-**Current state:** The investigate skill has `outcome: reformulate` which hands control to the orchestrator to re-run `/formalize-problem`. The orchestrator checks for this after each batch. But this only fires when a single cycle explicitly concludes "reformulate" — it doesn't detect the pattern of 5 consecutive inconclusive results that suggests the formalization is flawed. Separately, `/synthesize` reads investigation directories selectively but doesn't generate provenance links in the report.
+**Current state:** The investigate skill has `outcome: reformulate` which hands control to the orchestrator to re-run `/formalize-problem`. The orchestrator checks for this after each batch. But this only fires when a single cycle explicitly concludes "reformulate" — it doesn't detect the pattern of 5 consecutive inconclusive results that suggests the formalization is flawed. Separately, `/write-paper` reads investigation directories selectively but doesn't generate provenance links in the report.
 
 **What success looks like:** After 5 consecutive inconclusive/discard cycles where no individual cycle triggered reformulation, the orchestrator proactively escalates — passing the accumulated failure evidence to `/formalize-problem` for re-examination. The final report includes investigation references for every claim, so a reader can trace any finding back to its supporting reasoning.
 
@@ -597,13 +598,13 @@ The reformulated `problem-statement.md` replaces the old one (old version archiv
 
 #### Claim Provenance
 
-Every claim in `report.md` should reference the investigation cycle(s) that support it. The `/synthesize` skill already reads investigations selectively; provenance links are a natural extension:
+Every claim in `report/main.tex` should reference the investigation cycle(s) that support it. The `/write-paper` skill already reads investigations selectively; provenance links are a natural extension:
 
 - Each claim references the investigation directory and notes/results.md cycle that produced it
 - Evidence level (from H5) is included so readers know the strength of support
 - Claims supported by multiple cycles reference all of them
 
-This doesn't require a rigid format — the `/synthesize` skill should produce natural prose with inline references, not a mechanical template.
+This doesn't require a rigid format — the `/write-paper` skill should produce natural prose with inline references, not a mechanical template.
 
 #### Formal Verification (Stretch)
 
@@ -622,7 +623,7 @@ The investigate skill already has access to Bash for running external tools. Int
 
 - [ ] Add proactive reformulation trigger to orchestrator: count consecutive discards/inconclusives, escalate at N=5
 - [ ] Update `/formalize-problem` skill: accept "reformulation mode" with prior failure evidence alongside existing initial mode
-- [ ] Update `/synthesize` skill: generate investigation references for each claim in the report (uses LaTeX `\label`/`\ref` cross-references and BibTeX `\cite{}` from H1)
+- [ ] Update `/write-paper` skill: generate investigation references for each claim in the report (uses LaTeX `\label`/`\ref` cross-references and BibTeX `\cite{}` from H1)
 - [ ] Add `references/computation.md` — decision tree for when mechanical checking is worth attempting (Z3 for bounded search, Tamarin for protocol models)
 - [ ] (Stretch) Build Z3 integration for bounded counterexample search — lowest barrier, highest payoff
 - [ ] (Stretch) Build Tamarin integration for protocol security claims
@@ -642,7 +643,7 @@ Reaper's methodology draws from four sources:
 
 **[Zhiyun Qian, "How to Look for Ideas in Computer Science Research"](https://medium.com/digital-diplomacy/how-to-look-for-ideas-in-computer-science-research-7a3fa6f4696f)** — Systematic idea generation patterns. Qian's six patterns (fill-in-the-blank, expansion, build-a-hammer, start-small-then-generalize, reproduce-prior-work, external-sources) are incorporated into Principles 2 and 5, and into the `/formalize-problem` skill's approach to generating ideas. The "fill in the blank" pattern — mapping dimensions of existing research and finding unexplored combinations — is particularly powerful for theoretical research where the design space of threat models, protocol families, and security properties can be systematically enumerated.
 
-**[Simon Peyton Jones, "How to Write a Great Research Paper"](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/How-to-write-a-great-research-paper.pdf)** — Writing as research methodology. Peyton Jones's core insight — that writing is a primary mechanism for doing research, not just for reporting it — is woven into Principle 6 (Clarity and Simplicity). His structural advice (one clear "ping," explicit refutable contributions, examples before generality, narrative flow over chronological recounting) shapes the `/synthesize` skill's report format. Most importantly, the idea that you should write *before* you fully understand forces Reaper to crystallize its understanding in `current-understanding.md` at every cycle, not just at the end.
+**[Simon Peyton Jones, "How to Write a Great Research Paper"](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/How-to-write-a-great-research-paper.pdf)** — Writing as research methodology. Peyton Jones's core insight — that writing is a primary mechanism for doing research, not just for reporting it — is woven into Principle 6 (Clarity and Simplicity). His structural advice (one clear "ping," explicit refutable contributions, examples before generality, narrative flow over chronological recounting) shapes the `/write-paper` skill's report format. Most importantly, the idea that you should write *before* you fully understand forces Reaper to crystallize its understanding in `current-understanding.md` at every cycle, not just at the end.
 
 ### Why a Skill, Not Python
 
@@ -661,7 +662,7 @@ The AI *is* the research agent. No wrapper needed.
 
 ### Why a Pipeline of Skills
 
-A monolithic "do research" skill is hard to test, hard to improve, and hard to reuse partially. By decomposing into `/clarify-goal`, `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/brainstorm`, `/investigate`, `/critique`, and `/synthesize`, each skill:
+A monolithic "do research" skill is hard to test, hard to improve, and hard to reuse partially. By decomposing into `/clarify-goal`, `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/brainstorm`, `/investigate`, `/critique`, and `/write-paper`, each skill:
 - Can be tested and iterated independently
 - Can be used standalone (e.g., just analyze a paper without running the full pipeline)
 - Has a clear input/output contract via workspace files

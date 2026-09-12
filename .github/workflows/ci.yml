@@ -76,7 +76,7 @@ jobs:
             exit 1
           fi
           ls -la "$target"
-          expected="reaper clarify-goal analyze-paper review-literature formalize-problem brainstorm investigate critique synthesize search-paper"
+          expected="reaper clarify-goal analyze-paper review-literature formalize-problem brainstorm investigate critique write-paper search-paper"
           missing=0
           for skill in $expected; do
             if [ ! -f "$target/$skill/SKILL.md" ]; then

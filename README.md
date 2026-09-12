@@ -53,7 +53,7 @@ Reaper executes a multi-stage pipeline where investigation runs in parallel batc
                                                 │    │  --self  --codex  "feedback"   │
                                                 │    └────┬───────────────────┬───────┘
                                                 │         │                   │
-                                                │   deepen/explore    rewrite/done ──> /synthesize ──> report.md
+                                                │   deepen/explore    rewrite/done ──> /write-paper ──> report/main.tex
                                                 └─────────┘
 ```
 
@@ -63,7 +63,7 @@ Each skill can be used independently or composed by the orchestrator. Invoke by 
 
 | Skill | What it does |
 |-------|-------------|
-| `/reaper` | Full pipeline: clarify → analyze → literature → formalize → brainstorm → investigate ↔ critique → synthesize |
+| `/reaper` | Full pipeline: clarify → analyze → literature → formalize → brainstorm → investigate ↔ critique → write-paper |
 | `/clarify-goal` | Ask targeted clarifying questions to sharpen a vague research goal |
 | `/analyze-paper` | Extract structured information from a research paper |
 | `/review-literature` | Search and summarize related academic work |
@@ -71,7 +71,7 @@ Each skill can be used independently or composed by the orchestrator. Invoke by 
 | `/brainstorm` | Generate, prioritize, and refine research ideas based on current state |
 | `/investigate` | Run investigation cycles with keep-or-discard discipline |
 | `/critique` | Provide critique via human feedback, Codex consultation, or self-review (can trigger more investigation) |
-| `/synthesize` | Generate a structured research report from investigation results |
+| `/write-paper` | This skill writes a LaTeX research paper from investigation results. |
 | `/search-paper` | Find papers, download PDFs, trace citation graphs, and resolve publication venues across arXiv, IACR ePrint, Semantic Scholar, DBLP, and OpenAlex |
 
 > The `/<skill>` form is the canonical display convention used throughout these docs. Slash-command hosts (Claude Code) invoke them directly that way (e.g. `/clarify-goal`). Auto-discovery hosts (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, …) invoke them by the bare skill name — drop the leading `/` when asking the agent to run a skill.
@@ -181,8 +181,14 @@ reaper-workspace/
 │   └── codex-consultation-N.md     # Codex critique (alternates devil's advocate / inspiration)
 ├── logs/                           # Append-only — one file per cycle, never modified
 │   └── cycle-NNN-<slug>.md         # One log per investigation cycle (snapshot at cycle end)
-└── report.md                       # Final synthesized output
+└── report/
+    ├── main.tex                    # The paper source uses LaTeX.
+    ├── references.bib              # The bibliography stores citation metadata.
+    ├── Makefile                    # The default target builds the PDF.
+    └── main.pdf                    # A successful build creates this file.
 ```
+
+You can build the paper with `make -C reaper-workspace/report`. The build requires `latexmk` and a LaTeX distribution.
 
 The workspace contract is host-agnostic — any agent that can read and write files in the working directory produces the same workspace structure.
 

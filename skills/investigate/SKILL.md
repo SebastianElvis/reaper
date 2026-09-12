@@ -182,7 +182,7 @@ The main agent waits for all subagents in the batch. It performs these actions:
 The summary uses `## Batch Summary (Cycles NNN-MMM)`.
 It lists Keep findings and Discard patterns with one sentence per finding or pattern.
 
-Only the main agent writes shared notes during merge. The `brainstorm` and `synthesize` skills use batch summaries to reduce file reading. For a batch of one, the main agent can run Steps A-E directly.
+Only the main agent writes shared notes during merge. The `brainstorm` and `write-paper` skills use batch summaries to reduce file reading. For a batch of one, the main agent can run Steps A-E directly.
 
 ## Completion
 

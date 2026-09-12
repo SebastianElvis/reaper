@@ -7,7 +7,7 @@ AI-native scientific research pipeline distributed as a host-agnostic skills pac
 - `skills/` — 10 composable skills (each has a `SKILL.md` defining its behavior; the `/<skill>` form is the canonical display convention used in all user-facing docs)
   - `/reaper` — Main orchestrator that chains all other skills
   - `/clarify-goal` — Interactive goal clarification (asks user targeted questions before pipeline runs)
-  - `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/brainstorm`, `/investigate`, `/critique`, `/synthesize` — Pipeline stages
+  - `/analyze-paper`, `/review-literature`, `/formalize-problem`, `/brainstorm`, `/investigate`, `/critique`, `/write-paper` — Pipeline stages
   - `/search-paper` — Academic search + citation graph + venue resolution. Bundles five Python drivers (`arxiv.py`, `iacr.py`, `semantic_scholar.py`, `dblp.py`, `openalex.py`); the `SKILL.md` itself orchestrates the layered venue lookup.
 - `tests/` — Python tests for skill structure, search scripts, and L1 eval graders
 - `evals/` — Layered evaluation system. L1 code-based graders (`graders/`), L2 Claude-CLI LLM judges (`judge/`), per-skill rubrics (`rubrics/`), and fixtures with reference + planted-negative variants. Orchestrator: `python3 -m evals.run_evals`. See `evals/README.md`.
@@ -37,7 +37,7 @@ pip install arxiv requests beautifulsoup4 pyyaml
   - Spend context wisely: add what the agent lacks, omit what it knows. Provide a clear default rather than a menu of options.
   - Match instruction specificity to task fragility — be prescriptive for fragile/destructive operations, descriptive (with the *why*) for flexible ones.
   - Descriptions use imperative phrasing ("Use when…"), focus on user intent, and stay under 1024 chars.
-- The orchestrator skill (`/reaper`) runs the full pipeline: clarify → analyze → literature → formalize → brainstorm → investigate ↔ critique → synthesize. After delivery, users can iterate by re-invoking the `/critique` skill with feedback.
+- The orchestrator skill (`/reaper`) runs the full pipeline: clarify → analyze → literature → formalize → brainstorm → investigate ↔ critique → write-paper. After delivery, users can iterate by re-invoking the `/critique` skill with feedback.
 - Runtime state goes in `reaper-workspace/` (gitignored). Never commit workspace artifacts.
 - You must follow the shared [language rules](skills/reaper/references/language.md) for skill files and Reaper outputs.
 - The six methodology principles (separation of concerns, fixed evaluation signal, structured results log, keep-or-discard loop, never stop, clarity and simplicity) govern how skills behave.
