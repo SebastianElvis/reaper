@@ -39,6 +39,7 @@ pip install arxiv requests beautifulsoup4 pyyaml
   - Descriptions use imperative phrasing ("Use when…"), focus on user intent, and stay under 1024 chars.
 - The orchestrator skill (`/reaper`) runs the full pipeline: clarify → analyze → literature → formalize → brainstorm → investigate ↔ critique → synthesize. After delivery, users can iterate by re-invoking the `/critique` skill with feedback.
 - Runtime state goes in `reaper-workspace/` (gitignored). Never commit workspace artifacts.
+- You must follow the shared [language rules](skills/reaper/references/language.md) for skill files and Reaper outputs.
 - The six methodology principles (separation of concerns, fixed evaluation signal, structured results log, keep-or-discard loop, never stop, clarity and simplicity) govern how skills behave.
 - Domain-specific content (impossibility results, trust model checklists, venue tiers, definitional standards) lives in `skills/reaper/references/`, not inline in skills. Skills reference these files but remain domain-agnostic — the reference files can be swapped for a different research domain.
 - Python scripts live alongside the skill that uses them (e.g., `skills/search-paper/arxiv.py`).

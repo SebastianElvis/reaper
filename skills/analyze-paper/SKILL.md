@@ -1,114 +1,73 @@
 ---
 name: analyze-paper
-description: "Extract structured information from a research paper: system model, theorem statements, proof techniques, complexity claims, and red flags. Use when asked to analyze, summarize, or review an academic paper."
+description: "This skill extracts claims, models, proofs, and limitations from a research paper. You use it to analyze or summarize an academic paper."
 user-invocable: true
 argument-hint: "<paper-path> [--output <path>] [--goal \"<goal>\"]"
 license: Apache-2.0
-compatibility: "Requires PDF reading capability for the paper under analysis."
+compatibility: "The host must read PDFs or extract their text."
 ---
 
 # Analyze Paper
 
-Extract structured information from an academic paper, producing a comprehensive summary that downstream skills can build on.
+You must read and apply the [language rules](../reaper/references/language.md) before you write any output.
 
 ## Usage
 
-Invoke this skill by name with the paper path (and optional flags). On slash-command hosts, prefix with `/` (e.g. `/analyze-paper <args>`).
+You invoke this skill by name with a paper path. Slash-command hosts use `/analyze-paper <args>`.
 
 ```
-# Analyze the primary paper under study
 analyze-paper path/to/paper.pdf
-
-# Analyze a literature paper with research goal as context
 analyze-paper reaper-workspace/papers/2024-1234.pdf --goal "post-quantum threshold signatures" --output reaper-workspace/papers/2024-1234-notes.md
 ```
 
-**Argument parsing:** The first non-flag argument is the paper path. Optional flags:
-- `--output <path>`: Write output to the given path instead of the default `reaper-workspace/notes/paper-summary.md`.
-- `--goal "<text>"`: The research goal as additional context. When provided, the output includes a **Relevance** section assessing how the paper relates to this goal, and reading depth is calibrated by relevance (see Step 1).
+The first argument without a flag gives the paper path.
 
+- `--output <path>` sets the output path. The default path is `reaper-workspace/notes/paper-summary.md`.
+- `--goal "<text>"` supplies the research goal. This flag requires a Relevance section.
 
 ## Instructions
 
 ### 1. Read the Paper
 
-Read the paper at the provided path using your host's file-read primitive (works for PDFs and text files on hosts that support PDF reading; otherwise extract text first).
+You read the paper with the host's file tool. You extract text first if the host cannot read PDFs. You follow `../reaper/references/paper-analysis.md`:
 
-Follow the three-pass strategy from `../reaper/references/paper-analysis.md`:
+- **Pass 1:** You read the abstract, introduction, conclusion, and theorem statements. You identify the main claims.
+- **Pass 2:** You read the protocol, proof outlines, and figures. You identify the technical approach.
+- **Pass 3:** You read the full proofs, appendices, and security reductions. You check each logical step.
 
-- **Pass 1 (skeleton)**: Abstract, introduction, conclusion, theorem statements. Identify the main claims.
-- **Pass 2 (construction)**: Protocol details, proof sketches, figures. Understand the key technical idea.
-- **Pass 3 (proofs)**: Full formal proofs, appendices, security reductions. Verify logical steps.
-
-When `--goal` is provided, calibrate depth by relevance to the goal: Pass 1 for all papers; Pass 2 for medium-relevance; all three passes for high-relevance papers.
+With `--goal`, you use Pass 1 for all papers. You also use Pass 2 for papers with medium relevance. You use all three passes for papers with high relevance.
 
 ### 2. Extract Information
 
-For each section below, extract the relevant information. When extracting theorem statements or formal claims, copy them **verbatim** — do not paraphrase.
-
-**Critical**: Distinguish what the paper *claims* (in the introduction, abstract) from what it *actually proves* (in the theorems, proofs). Note any discrepancies.
+You copy formal claims verbatim. You record differences between the paper's claims and its proofs.
 
 ### 3. Write Output
 
-Write the extracted information to `reaper-workspace/notes/paper-summary.md` (or the path specified by `--output`) with the following structure:
+You write the summary to the default path or the `--output` path.
+The title is `# Paper Summary: [Paper Title]`.
+You use these level-two sections:
 
-```markdown
-# Paper Summary: [Paper Title]
+| Section | Content |
+|---|---|
+| Metadata | You copy Title, Authors, Venue/Year, Paper ID, and Link. |
+| Problem Statement | You explain the problem and its importance. |
+| System Model | You give concrete answers for every applicable dimension in `../reaper/references/model.md`. |
+| Construction Overview | You describe the protocol, technique, and components. |
+| Key Results | You copy each theorem verbatim with its number, model, and proof technique. |
+| Proof Technique | You explain lemmas, reductions, and steps that use the corruption threshold or network model. |
+| Complexity Claims | You state communication, round, and computation costs. |
+| Strengths | You assess novelty, methods, proofs, evaluation, and clarity. You label each strength major or minor. |
+| Weaknesses | You identify incorrect methods, missing proofs, unsupported claims, unfair comparisons, and unclear text. You label each weakness major, minor, or fatal. |
+| Key Definitions and Notation | You explain unusual notation and definitions that the proofs use. |
+| Red Flags | You state specific concerns from `../reaper/references/paper-analysis.md`, or you state that you found none. |
+| Relevance | You include this section only with `--goal`. You explain each applicable tag in one sentence. |
 
-## Metadata
-- **Title**:
-- **Authors**:
-- **Venue/Year**:
-- **Paper ID**: (ePrint, arXiv, DOI)
-- **Link**: (e.g., https://arxiv.org/abs/XXXX.XXXXX or https://eprint.iacr.org/YYYY/NNNN)
+Relevance tags are `problem definition`, `formalization`, `solution technique`, `negative result`, `literature/context`, and `writing model`.
 
-## Problem Statement
-What problem does this paper solve? Why does it matter?
+You adjust section length to the paper's content. You omit sections that do not apply, such as absent complexity claims.
 
-## System Model
-[Extract all model dimensions relevant to the paper's domain. Consult `../reaper/references/model.md` for the domain-appropriate dimensions to extract. Every applicable dimension must have a concrete answer.]
+## Quality Criteria
 
-## Construction Overview
-High-level protocol description. Key technical idea. Building blocks used.
-
-## Key Results
-List each theorem/claim verbatim:
-1. **Theorem X.X**: [exact statement]
-   - Model: [exact model under which this is proved]
-   - Proof technique: [game-based / simulation / reduction]
-
-## Proof Technique
-Overall proof approach. Key lemmas. Reduction chain. Where the corruption threshold and network model are used.
-
-## Complexity Claims
-- Communication: 
-- Rounds:
-- Computation:
-
-## Strengths
-[Label each major/minor: novelty, methodology fit, proof rigor, evaluation quality, clarity.]
-
-## Weaknesses
-[Label each major/minor/fatal: broken methodology, missing proofs, unjustified claims, unfair comparisons, unclear writing, overclaimed results.]
-
-## Key Definitions and Notation
-Non-standard notation. Formal definitions referenced by the proofs.
-
-## Red Flags
-Any concerns identified during reading (see `../reaper/references/paper-analysis.md` for common red flags).
-
-## Relevance
-[Present ONLY when --goal is provided. Tag one or more: *problem definition*, *formalization*, *solution technique*, *negative result*, *literature/context*, *writing model*. One sentence per tag explaining how this paper relates to the research goal.]
-```
-
-Sections should be **proportional to what the paper warrants**. If a paper has no complexity claims, omit that section. If the proof technique is trivial, keep it brief. The template is a guide, not a form to fill in mechanically.
-
-### Quality Criteria
-
-- Every theorem statement is copied verbatim, not paraphrased
-- When a System Model section is present, it covers every dimension that applies to the paper (network, adversary, trust, communication, crypto). Omit the section only if the paper does not warrant it (e.g. pure information-theoretic results); never partially fill it
-- Strengths and weaknesses are labeled with severity (major/minor/fatal) and are honest — if the paper looks solid, say so; if there are concerns, list them specifically
-- Red flags section is honest — no concerns is a valid answer
-- The summary is useful standalone — a reader who hasn't seen the paper should understand the key claims and approach
-- When `--goal` is provided, relevance tags are specific to the goal, not generic ("related to our topic")
-- If the PDF is unreadable, try page-by-page with the `pages` parameter. If it still fails, report the error — do not fabricate a summary
+- You cover every applicable model dimension: network, adversary, trust, communication, and cryptography. You omit System Model only when unnecessary.
+- The summary explains the claims and approach without the source paper.
+- If PDF reading fails, you try individual pages with `pages`. If reading still fails, you report an error without an invented summary.

@@ -25,6 +25,7 @@ How you invoke a skill depends on the host agent. The `/<skill>` form above is t
 - **Built-in academic search** — paper search, PDF download, citation graph tracing, and venue resolution across arXiv, IACR ePrint, Semantic Scholar, DBLP, and OpenAlex
 - **Domain-agnostic design** — ships with cryptography and distributed systems references, but swap the reference files to adapt to any research domain
 - **Multi-model AI consultation** — optionally consult Codex, Gemini, DeepSeek, or local models for a second opinion at every pipeline stage
+- **Output language** — Reaper follows the shared [language rules](skills/reaper/references/language.md).
 - **Composable skills** — each pipeline stage is an independent skill you can run standalone
 - **Host-agnostic** — distributed as plain `SKILL.md` folders that work across 45+ AI coding agents
 

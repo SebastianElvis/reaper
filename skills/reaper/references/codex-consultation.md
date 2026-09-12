@@ -1,6 +1,7 @@
 # Codex Consultation Protocol
 
-Shared protocol for consulting an external AI model (OpenAI Codex via MCP) from any skill in the pipeline. When the `--codex` flag is set, every skill may optionally consult Codex at a natural checkpoint — after its main work but before writing final output.
+This protocol enables optional external reviews with `--codex`.
+You follow the [language rules](language.md) for review requests and feedback.
 
 ## Setup
 

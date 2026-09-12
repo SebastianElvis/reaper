@@ -1,101 +1,63 @@
 ---
 name: search-paper
-description: "Find papers, download PDFs, traverse citation graphs, and resolve publication venues across arXiv, IACR ePrint, Semantic Scholar, DBLP, and OpenAlex. Use when you need to find papers, trace citations, or determine where a paper was published."
+description: "This skill finds papers, downloads PDFs, traces citations, and identifies publication venues. You use it for academic paper searches and venue checks."
 user-invocable: true
 argument-hint: "<query> [--source arxiv|iacr] [--max-results N]"
 license: Apache-2.0
-compatibility: "Requires python3 with arxiv, requests, beautifulsoup4 packages and internet access for arXiv, IACR ePrint, Semantic Scholar, DBLP, OpenAlex."
+compatibility: "This skill requires python3, arxiv, requests, beautifulsoup4, and internet access."
 ---
 
 # Search Paper
 
-A single skill that wraps five platform drivers — two preprint archives (arXiv, IACR ePrint) and three metadata services (Semantic Scholar, DBLP, OpenAlex). The SKILL.md itself acts as the orchestrator: each script does one thing per platform, and the agent chains them.
+You must read and apply the [language rules](../reaper/references/language.md) before you write any output.
 
 ## Usage
 
-Invoke this skill by name. On slash-command hosts: `/search-paper "<query>"`.
+You invoke this skill by name. Slash-command hosts use `/search-paper "<query>"`.
 
 ```
 search-paper "post-quantum threshold signatures" --source iacr --max-results 15
 ```
 
-
 ## Scripts
 
-Run via Bash. All scripts emit JSON on stdout.
+You run scripts through the shell with paths relative to this skill directory.
+All scripts write JSON to stdout.
 
-### `arxiv.py` — arXiv preprint server
+| Script | Commands and results |
+|---|---|
+| `arxiv.py` | `search` returns `{arxiv_id, title, authors, year, abstract, categories, pdf_url, published, journal_ref}` by relevance. `recent` returns these fields by submission date. |
+| `arxiv.py` | `download` saves a PDF and returns `{path, title}`. `journal-ref` returns the author's venue field. |
+| `iacr.py` | `search` returns `{eprint_id, title, authors, year, abstract, publication_info, venue, pdf_url, url}`. The first five results include paper-page metadata. |
+| `iacr.py` | `recent` returns the newest papers. `download` saves the PDF. `url` returns its URL. `pubinfo` extracts publication information and attempts venue parsing. |
+| `semantic_scholar.py` | `venue` accepts an arXiv ID or title. It returns `{found, venue, venue_full, venue_type, year, title, authors}`. |
+| `semantic_scholar.py` | `citations` returns forward and backward citations with venues when known. Title lookup uses `/paper/search/match` for approximate matches. |
+| `dblp.py` | `venue` searches by title and optional author surname for computer science publications. |
+| `openalex.py` | `venue` searches by title when DBLP lacks coverage. |
+
+You use these command forms:
 
 ```bash
 python3 arxiv.py search "BFT consensus communication complexity" --max-results 10 --categories cs.CR,cs.DC
 python3 arxiv.py recent "threshold signatures" --max-results 10 --categories cs.CR
 python3 arxiv.py download 2305.12345 --output-dir reaper-workspace/papers/
-python3 arxiv.py journal-ref 2305.12345
-```
-
-- `search` — array of `{arxiv_id, title, authors, year, abstract, categories, pdf_url, published, journal_ref}` sorted by relevance.
-- `recent` — same fields, sorted by submission date (newest first). Requires a query and/or `--categories`.
-- `download` — saves PDF, returns `{path, title}`.
-- `journal-ref` — author-supplied venue (sparse but authoritative when present).
-
-### `iacr.py` — IACR ePrint archive
-
-```bash
 python3 iacr.py search "threshold signatures" --max-results 10
 python3 iacr.py recent --max-results 10
 python3 iacr.py download 2024/1234 --output-dir reaper-workspace/papers/
 python3 iacr.py url 2024/1234
-python3 iacr.py pubinfo 2024/1234
-```
-
-- `search` — array of `{eprint_id, title, authors, year, abstract, publication_info, venue, pdf_url, url}`. Top 5 results are enriched with metadata from the paper page (including `publication_info`).
-- `recent` — most-recently-posted ePrint papers.
-- `download` / `url` — PDF download and URL resolution.
-- `pubinfo` — scrapes the "Publication info" line from the paper page (e.g. *"A major revision of CRYPTO 2023"*) and best-effort parses out the venue acronym + year.
-
-### `semantic_scholar.py` — Semantic Scholar metadata
-
-```bash
-python3 semantic_scholar.py venue --arxiv 2305.12345
-python3 semantic_scholar.py venue --title "HotStuff: BFT Consensus in the Lens of Blockchain"
 python3 semantic_scholar.py citations 2305.12345 --max-results 20
 ```
 
-- `venue` — looks up the publication venue by arXiv ID (preferred when available — exact match) or by title (fuzzy match via `/paper/search/match`). Returns `{found, venue, venue_full, venue_type, year, title, authors}`.
-- `citations` — forward (who cites this) + backward (what this builds on) citations. Each entry includes `venue` when known.
-
-### `dblp.py` — DBLP (CS-focused)
-
-```bash
-python3 dblp.py venue "HotStuff: BFT Consensus" --author "Yin"
-```
-
-- `venue` — title (+ optional author surname) lookup. DBLP is authoritative for CS conference and journal venues.
-
-### `openalex.py` — OpenAlex (broad coverage)
-
-```bash
-python3 openalex.py venue "HotStuff: BFT Consensus in the Lens of Blockchain"
-```
-
-- `venue` — title-based lookup. Use when DBLP doesn't cover the venue (non-CS, niche workshops, books).
-
-## Role
-
-- **Standalone**: Invoked directly by the user to search for papers, trace citations, or resolve a venue.
-- **Building block**: Called by `/review-literature` and `/investigate` for structured paper search and venue resolution.
+The arXiv `recent` command requires a query or `--categories`.
+The venue protocol below gives the other command forms.
 
 ## Instructions
 
-When invoked directly:
-
-1. Parse the user's query and any flags from the argument.
-2. Pick the right script(s):
-   - Crypto/security topic → run `iacr.py search` AND `arxiv.py search --categories cs.CR`.
-   - General CS topic → run `arxiv.py search` with appropriate categories.
-   - Citation context → `semantic_scholar.py citations <arxiv_id>`.
-   - Venue resolution → follow the **Venue Resolution Protocol** below.
-3. Format paper results as a readable table:
+1. You read the query and flags.
+2. You select the requested operation. Citation requests use `semantic_scholar.py citations <arxiv_id>`. Venue requests use the Venue Resolution Protocol.
+3. For paper discovery, you use `iacr.py search` and `arxiv.py search --categories cs.CR` for cryptography or security.
+4. For other computer science discovery, you use `arxiv.py search` with suitable categories.
+5. You present results in this table with quoted abstract excerpts for highly relevant papers.
 
 ```markdown
 | # | Title | Authors | Year | Venue | ID | Link |
@@ -103,70 +65,55 @@ When invoked directly:
 | 1 | ... | ... | ... | ... | arXiv:XXXX.XXXXX | [arXiv](https://arxiv.org/abs/XXXX.XXXXX) |
 ```
 
-4. For each highly relevant result, show the abstract excerpt.
-
 ## Venue Resolution Protocol
 
-A paper's archive ID (arXiv, ePrint) is *not* its publication venue. Resolve the actual venue (CRYPTO, S&P, PODC, …) for every paper that goes into a literature review or report references section. Run the layers in order and **stop at the first success**:
+An archive ID does not identify a publication venue. You find a venue for every paper in a literature review or report reference list. You run these layers in order. You stop at the first successful result.
 
-### Layer 1 — Semantic Scholar (cheapest, highest hit-rate)
+### Layer 1: Semantic Scholar
 
 ```bash
-# arXiv-known papers
 python3 semantic_scholar.py venue --arxiv <arxiv_id>
-
-# ePrint-only papers
 python3 semantic_scholar.py venue --title "<exact title>"
 ```
 
-If `found: true` and `venue` is non-empty → done. Record `source = "semantic_scholar"`.
+You use title search for papers without an arXiv ID. If `found: true` and `venue` contains a value, you record `source = "semantic_scholar"`.
 
-### Layer 2 — Author-supplied field on the source archive
-
-Authors sometimes mark the venue on their own preprint:
+### Layer 2: Archive Metadata
 
 ```bash
-# arXiv: the journal_ref field
 python3 arxiv.py journal-ref <arxiv_id>
-
-# ePrint: the "Publication info" line
 python3 iacr.py pubinfo <eprint_id>
 ```
 
-If a non-empty `journal_ref` / `publication_info` is returned → done. Record `source = "arxiv_journal_ref"` or `"iacr_pubinfo"`.
+You use the script for the paper's archive. If `journal_ref` or `publication_info` contains a value, you record the result. You set `source = "arxiv_journal_ref"` or `source = "iacr_pubinfo"`.
 
-### Layer 3 — DBLP (CS-authoritative title+author search)
+### Layer 3: DBLP
 
 ```bash
 python3 dblp.py venue "<title>" --author "<first author surname>"
 ```
 
-If `found: true` → done. Record `source = "dblp"`.
+If `found: true`, you record `source = "dblp"`.
 
-### Layer 4 — OpenAlex (broad coverage)
+### Layer 4: OpenAlex
 
 ```bash
 python3 openalex.py venue "<title>"
 ```
 
-If `found: true` → done. Record `source = "openalex"`.
+If `found: true`, you record `source = "openalex"`.
 
-### Layer 5 — Preprint-only label
+### Layer 5: Preprint Label
 
-If all four layers fail, label the entry `(preprint)` rather than silently omitting. Do **not** guess a venue from the topic or author affiliation — an unverified guess is worse than an honest "preprint only".
+If all four layers fail, you label the entry `(preprint)`. You do not infer a venue from the topic or author's institution.
 
-### Notes
+### Saved Results
 
-- Layers 1 + 2 cover ~80% of papers at near-zero cost. Add layers 3 + 4 only when needed.
-- Cache results in your workspace notes — don't re-resolve the same paper across cycles.
-- When two sources disagree, prefer the higher-tier source name (Semantic Scholar's `publicationVenue.name` over DBLP's terse acronym, etc.). Record both if confidence is low.
+You save venue results in workspace notes to avoid repeated searches. If sources disagree, you prefer the higher-ranked source in this protocol. You prefer a full venue name, such as `publicationVenue.name`, to an acronym. You record both results if confidence is low.
 
 ## Quality Criteria
 
-- Search returns results (graceful error message if API is down or script fails)
-- Results are formatted as a readable table with abstract excerpts for top hits
-- For literature reviews and synthesized reports, every cited paper has a resolved venue or an explicit `(preprint)` label — no entry shows only an arXiv/ePrint ID where a venue is expected
-- If a script fails (missing deps, network error), report the error to the caller and continue with other layers
+- If an API or script fails, you report the error and continue with other sources or layers.
 
 ## Dependencies
 
