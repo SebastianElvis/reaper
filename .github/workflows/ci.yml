@@ -92,7 +92,7 @@ jobs:
             fi
           done
           # Reference files used by other skills must travel with the reaper skill dir
-          for ref in model.md impossibility-results.md definitional-standards.md methodology.md paper-analysis.md venue-tiers.md search-tools.md codex-consultation.md; do
+          for ref in language.md model.md impossibility-results.md definitional-standards.md methodology.md paper-analysis.md venue-tiers.md search-tools.md codex-consultation.md; do
             if [ ! -f "$target/reaper/references/$ref" ]; then
               echo "::error::Missing reaper reference file: $target/reaper/references/$ref"
               missing=$((missing + 1))
