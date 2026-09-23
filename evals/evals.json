@@ -12,7 +12,7 @@
         "hypotheses": "notes/problem-statement.md must contain falsifiable claims with explicit success/failure conditions targeting the proof gap",
         "results": "notes/results.md must have at least 5 cycle rows with keep/discard decisions",
         "current-understanding": "notes/current-understanding.md must identify the specific proof gap (not just 'there may be issues')",
-        "report": "report/main.tex must have a one-sentence central finding, refutable contributions, and concrete examples"
+        "report": "The paper in report/ must have a one-sentence central finding, refutable contributions, and concrete examples"
       },
       "quality_criteria": [
         "The proof gap is identified with specificity (which lemma, which step, what goes wrong)",
@@ -38,7 +38,7 @@
         "hypotheses": "notes/problem-statement.md must include claims about relative performance under the same model",
         "results": "notes/results.md must show comparison cycles using consistent dimensions from methodology.md",
         "current-understanding": "notes/current-understanding.md must contain a structured comparison table",
-        "report": "report/main.tex must identify at least one unfair or misleading comparison in the original paper (if any)"
+        "report": "The paper in report/ must identify at least one unfair or misleading comparison in the original paper (if any)"
       },
       "quality_criteria": [
         "Comparisons use the same threat model for all protocols (flagged if original paper doesn't)",
@@ -64,7 +64,7 @@
         "hypotheses": "notes/problem-statement.md must include hypotheses about whether specific claims are valid",
         "results": "notes/results.md must show at least one counterexample search cycle",
         "current-understanding": "notes/current-understanding.md must clearly state which claims hold, which fail, and which are undetermined",
-        "report": "report/main.tex must present any counterexample with a concrete execution trace"
+        "report": "The paper in report/ must present any counterexample with a concrete execution trace"
       },
       "quality_criteria": [
         "At least one counterexample search is attempted (not just proof verification)",
@@ -103,7 +103,7 @@
     },
     {
       "skill": "write-paper",
-      "test": "report/main.tex contains a complete LaTeX paper. The paper states one central finding and specific contributions. Each finding starts with a concrete example. Open questions state specific problems. The paper uses theorem environments and preserves confidence levels. Each citation resolves to report/references.bib. The default target in report/Makefile builds main.pdf without errors or unresolved references when LaTeX tools are available."
+      "test": "report/main.tex inputs one report/sections/*.tex file per section in order. Together they contain a complete LaTeX paper. The paper states one central finding and specific contributions. Each finding starts with a concrete example. Open questions state specific problems. The paper uses theorem environments and preserves confidence levels. Each citation resolves to report/references.bib. The default target in report/Makefile builds main.pdf without errors or unresolved references when LaTeX tools are available."
     },
     {
       "skill": "search-paper (arxiv.py)",

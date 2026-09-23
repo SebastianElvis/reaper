@@ -46,8 +46,10 @@ You give each subagent a small JSON object of about 100 words. The object contai
 You use web search for results that structured APIs can miss:
 
 - Conference proceedings outside arXiv and ePrint.
-- Blog posts and talks that do not duplicate a paper entry.
+- Blog posts and talks from reputable authors or institutions that do not duplicate a paper entry.
 - Preprints on author websites that do not duplicate a proceedings entry.
+
+You use the reputation criteria in `references/venue-tiers.md`. You discard blog posts and talks from other sources.
 
 ### 4. Trace Citations
 
@@ -78,7 +80,8 @@ You keep high and medium relevance papers. You keep low relevance papers only fo
 ### 7. Resolve Publication Venues
 
 You invoke the `search-paper` skill's Venue Resolution Protocol for each kept paper. You prefer an arXiv ID, then an ePrint ID, then a title with the first author's surname. You save the returned venue or `(preprint)` in workspace notes.
-You do not infer a venue from a topic or institution. You use one parallel subagent per paper if the host supports it.
+You do not infer a venue from a topic or institution.
+You keep papers from Tier 1 or Tier 2 venues in `references/venue-tiers.md`. You keep an ePrint or arXiv preprint only if an author or institution is reputable by the same file. You discard all other papers. Later steps use only the papers that you keep. You use one parallel subagent per paper if the host supports it.
 
 ### 8. Download and Analyze Papers
 
@@ -119,7 +122,7 @@ You write `reaper-workspace/notes/literature.md` with title `# Literature Review
 
 Both literature tables use columns `#`, `Title`, `Authors`, `Year`, `Venue`, `Key Contribution`, `Link`, and `Local Path`.
 Same-Goal Works also uses `Relation to Our Goal`. Same-Approach Works uses `Shared Technique`.
-The Venue column contains a resolved venue or `(preprint)`.
+The Venue column contains a resolved Tier 1 or Tier 2 venue, or `(preprint)`.
 Paper Index paths use `papers/<filename>.pdf` and `papers/<id>-notes.md`.
 
 ## Fallback
@@ -128,7 +131,7 @@ Each search operation can fail independently. You continue the review with the a
 
 - If all structured searches fail, you use web search for all queries. You add the exact error at the start of `literature.md`. The note states `Structured paper search was unavailable. This review uses web search only.`
 - If citation search fails, you omit Citation Graph or use web results. You mark each affected row `citation graph unavailable`.
-- If venue lookup fails, you use `(preprint)` in the Venue column.
+- If venue lookup fails, you treat the paper as a preprint.
 - If a download fails, you mark Local Path `unavailable`. You state that the paper assessment uses only its abstract.
 
 ## Quality Criteria
@@ -138,5 +141,6 @@ Each search operation can fail independently. You continue the review with the a
 - Each paper note contains results, strengths, weaknesses, and a specific relation to the goal.
 - The summary explains the area without prior knowledge. Each gap specifies a research direction.
 - Every paper comes from an actual search result.
+- Every paper comes from a Tier 1 or Tier 2 venue, or is a preprint from a reputable author or institution.
 - You use multiple structured sources unless you record a structured-search failure.
 - You include forward and backward citations unless you mark citation search unavailable.

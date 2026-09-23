@@ -74,7 +74,7 @@ Log every Codex consultation to the skill's own output file (e.g., a `## Codex C
 **When**: This skill has its own dedicated Codex consultation mode (`--codex`). See the critique SKILL.md for the full devil's advocate / inspiration protocol.
 
 ### write-paper
-**When**: After drafting the report, before writing final `report/main.tex`.
+**When**: After drafting the report, before writing the final `report/sections/*.tex` files.
 **Ask**: "Here is the central finding and contributions of a research report. Are the claims clearly stated and well-supported? Any logical gaps or unclear arguments?"
 **Send**: Central finding + contributions list + 1-sentence summary of each finding (~500 words).
 **Act on**: Revise contributions for clarity; strengthen or qualify claims based on feedback.

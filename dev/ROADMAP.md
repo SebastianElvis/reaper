@@ -175,8 +175,10 @@ reaper-workspace/
 ├── logs/                               # Append-only — one file per event, never modified
 └── report/                             # The write-paper skill writes this project.
     ├── main.tex                        # The paper source uses LaTeX.
+    ├── sections/NN-<name>.tex          # Each section has its own file. main.tex inputs them in order.
     ├── references.bib                  # The bibliography stores citation metadata.
-    ├── Makefile                        # The default target builds the PDF.
+    ├── Makefile                        # The default target builds the PDF. `make clean` removes build files.
+    ├── .gitignore                      # Git ignores LaTeX build files.
     └── main.pdf                        # A successful build creates this file.
 ```
 
@@ -224,7 +226,7 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
 | `/brainstorm` | Stage 2.5: Recurring ideation | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md`, `notes/results.md`, `notes/literature.md`, `notes/paper-summary.md` | Updates `notes/ideas.md` (adds new, edits existing inline) |
 | `/investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md` | `investigations/NNN-<name>/` (reuses on revisit), updates `notes/results.md` inline, edits `current-understanding.md` on keep |
 | `/critique` | Stage 3 sub-step: review | `investigations/`, `notes/current-understanding.md`, `notes/ideas.md` | `feedbacks/`, `logs/`, may add hypotheses to `notes/ideas.md` |
-| `/write-paper` | Stage 4: Write Paper | All `notes/`, `investigations/`, `notes/results.md` | `report/main.tex`, `report/references.bib`, `report/Makefile` |
+| `/write-paper` | Stage 4: Write Paper | All `notes/`, `investigations/`, `notes/results.md` | `report/main.tex`, `report/sections/*.tex`, `report/references.bib`, `report/Makefile`, `report/.gitignore` |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |
 
 **`/write-paper` report structure** (following Peyton Jones):
@@ -232,6 +234,8 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
 - **Explicit, refutable contributions**: A bulleted list of specific claims, each concrete enough that a reader could disagree. Not "we analyze protocol X" but "we show that claim Y fails because Z."
 - **Examples before generality**: Introduce findings with a concrete example (a specific execution trace, a specific adversary strategy) before presenting the general argument.
 - **Narrative flow**: Problem → why it matters → what we found → evidence → how it compares to prior understanding. Not a chronological diary of the investigation.
+- **Figure 1 and Table 1**: Figure 1 shows the main architecture. Table 1 compares same-goal works with this paper.
+- **Standard terminology**: Use the terms that related work uses. Avoid jargon and pipeline-internal terms. Define any new term at first use.
 
 #### Subagent Parallelism
 
@@ -265,6 +269,7 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
 - [x] Tune skill descriptions for reliable triggering (added action verbs, specific outputs, broader trigger phrases)
 - [x] The `/write-paper` skill replaces the former paper generation skill.
 - [x] The skill requires a LaTeX project with `main.tex`, `references.bib`, and `Makefile`.
+- [x] Each section has its own `sections/NN-<name>.tex` file. `main.tex` inputs the files in order.
 - [x] The skill uses the `article` class by default and accepts a user-specified venue template.
 - [x] The skill requires theorem environments, BibTeX citations, and PDF build checks.
 - [x] The pipeline, installer, documentation, and evaluation specification use the new name and output paths.
