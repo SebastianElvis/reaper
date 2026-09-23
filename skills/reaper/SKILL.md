@@ -132,11 +132,11 @@ If any cycle returns outcome `reformulate`, you take these actions:
 
 ### Step 6: Write Paper
 
-You invoke the `write-paper` skill. It reads the relevant workspace evidence and writes `report/main.tex`, `report/references.bib`, and `report/Makefile`.
+You invoke the `write-paper` skill. It reads the relevant workspace evidence and writes `report/main.tex`, `report/sections/*.tex`, `report/references.bib`, `report/Makefile`, and `report/.gitignore`.
 
 ### Step 7: Present Results
 
-You read `reaper-workspace/report/main.tex`. You present key findings with links to the LaTeX source and audit record. You include the build status and link to `report/main.pdf` after a successful build.
+You read `reaper-workspace/report/main.tex` and the section files that it inputs. You present key findings with links to the LaTeX source and audit record. You include the build status and link to `report/main.pdf` after a successful build.
 
 ### Step 8: Explain Further Iteration
 
@@ -153,7 +153,7 @@ You explain that quoted feedback to `critique` can start another review. Slash-c
 | `/brainstorm` | Problem, ideas, current understanding, results | Updated `notes/ideas.md` |
 | `/investigate` | Problem, ideas, current understanding, results | Updated notes; `investigations/*`, `logs/*` |
 | `/critique` | Current understanding, results, problem, ideas | `feedbacks/*`; possible new ideas and cycles |
-| `/write-paper` | Current understanding, results, problem, ideas | `report/main.tex`, `report/references.bib`, `report/Makefile` |
+| `/write-paper` | Current understanding, results, problem, ideas | `report/main.tex`, `report/sections/*.tex`, `report/references.bib`, `report/Makefile`, `report/.gitignore` |
 | `/search-paper` | Query or paper identifier | Search results, citations, or venue |
 
 ## Failure and Context Recovery
@@ -163,7 +163,7 @@ If a skill fails, you read its output to identify the cause before you retry. If
 1. You check `reaper-workspace/notes/` for existing files.
 2. You read `notes/results.md` for cycle progress.
 3. You compare `ideas.md` with results to identify unresolved hypotheses.
-4. You check `report/main.tex` for the paper source. You check the build status before you report PDF completion.
+4. You check `report/main.tex` and `report/sections/` for the paper source. You check the build status before you report PDF completion.
 5. You check `feedbacks/` for later review rounds.
 
 | State | Action |

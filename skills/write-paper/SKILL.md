@@ -11,7 +11,7 @@ license: Apache-2.0
 You must read and apply the [language rules](../reaper/references/language.md) before you write any output.
 
 This skill writes a LaTeX research paper in `reaper-workspace/report/`.
-You create `main.tex`, `references.bib`, and `Makefile`. You do not write a Markdown paper.
+You create `main.tex`, one `sections/NN-<name>.tex` file for each section, `references.bib`, `Makefile`, and `.gitignore`. You do not write a Markdown paper.
 
 ## Usage
 
@@ -60,6 +60,8 @@ You use this structure:
 | Appendix A: Investigation Log | You convert the `notes/results.md` table to LaTeX. You retain cycle identifiers for reproducibility. |
 
 You state contributions as specific informal results in the introduction.
+The introduction must contain Figure 1 and Table 1. Figure 1 shows the main architecture of the proposed approach. You draw it with TikZ.
+Table 1 compares this paper with the Same-Goal Works in `notes/literature.md`. Its columns are the assumptions, properties, and costs that the papers share. Its last row is this paper.
 You use `amsthm` environments for numbered definitions, lemmas, theorems, propositions, and conjectures.
 You use the `proof` environment for complete proofs. Each proof names its technique and justifies every step.
 The `proof` environment supplies the end marker. You label incomplete arguments as proof sketches and state each gap.
@@ -77,13 +79,15 @@ You select the technical sections by result type:
 
 ### 4. Create the LaTeX Project
 
-- You write a complete `main.tex` with a document class, package declarations, title, abstract, and document environment.
-- You define each theorem environment before use. You load `amsmath` and `amssymb` for mathematics and `hyperref` for links.
+- You write each section, including the abstract and each appendix, in its own file `sections/NN-<name>.tex`. `NN` is the order of the section in the paper, for example `sections/01-introduction.tex`.
+- You write `main.tex` with the document class, package declarations, title, and document environment. Its body contains only `\maketitle`, `\input{sections/NN-<name>}` commands in section order, `\appendix` before the first appendix, and the bibliography commands.
+- You define each theorem environment before use. You load `amsmath` and `amssymb` for mathematics, `tikz` for figures, and `hyperref` for links.
 - You use LaTeX math, lists, and tables. You escape reserved characters in prose, paths, and bibliography fields.
 - You create `references.bib` from verified entries in `notes/literature.md`. You preserve authors, titles, and venues. You include DOI or URL fields. With the `plain` style, you also put a `\url{}` link in the `note` field so the reference displays the link. You do not invent missing metadata.
 - You use `\cite{key}` for citations, `\bibliographystyle{plain}`, and `\bibliography{references}`. Each citation key must match a bibliography entry.
 - You use unique `\label{}` keys and `\ref{}` for section, theorem, and equation references.
-- You make the default `Makefile` target run `latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex`. You use a tab for the recipe line.
+- You make the default `Makefile` target run `latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex`. You add a `clean` target that runs `latexmk -C`. You use a tab for each recipe line.
+- You write a `.gitignore` that ignores LaTeX build files: `*.aux`, `*.bbl`, `*.blg`, `*.fdb_latexmk`, `*.fls`, `*.log`, `*.out`, `*.synctex.gz`, `*.toc`, and `main.pdf`.
 
 ### 5. Apply Writing Rules
 
@@ -92,6 +96,9 @@ You select the technical sections by result type:
 - You support technical claims with formal arguments. Each proof supplies its assumptions, technique, and step justifications.
 - You order the main sections by problem, importance, result, evidence, and comparison.
 - You remove statements that do not describe a specific contribution.
+- You use the terms that the related work in `notes/literature.md` uses for each concept. If sources use different terms, you use the most common term.
+- You do not make a new term for a known concept. You avoid jargon. If you must add a new term, you define it at first use and name the nearest term from related work.
+- You do not use Reaper workflow terms, such as cycle, batch, or hypothesis status, outside Appendix A.
 
 ### 6. Validate the Paper
 
@@ -120,7 +127,9 @@ If `current-understanding.md` is empty or missing, you reconstruct findings from
 ## Quality Criteria
 
 - The introduction gives an informal result. The body gives the formal claim.
+- Figure 1 shows the main architecture. Table 1 compares Same-Goal Works with this paper.
 - Proven claims have complete proofs. Unproven claims retain their gap or conjecture labels.
 - Definitions use precise predicates. Counterexamples include concrete execution traces.
+- Terms match the related work. Each new term has a definition at first use.
 - Open questions specify concrete problems or conjectures.
 - Each reference names a real venue or uses `(preprint)`.

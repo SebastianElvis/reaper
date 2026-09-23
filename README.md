@@ -183,8 +183,10 @@ reaper-workspace/
 │   └── cycle-NNN-<slug>.md         # One log per investigation cycle (snapshot at cycle end)
 └── report/
     ├── main.tex                    # The paper source uses LaTeX.
+    ├── sections/NN-<name>.tex      # Each section has its own file. main.tex inputs them in order.
     ├── references.bib              # The bibliography stores citation metadata.
-    ├── Makefile                    # The default target builds the PDF.
+    ├── Makefile                    # The default target builds the PDF. `make clean` removes build files.
+    ├── .gitignore                  # Git ignores LaTeX build files.
     └── main.pdf                    # A successful build creates this file.
 ```
 

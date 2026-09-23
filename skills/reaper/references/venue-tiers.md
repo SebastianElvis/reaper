@@ -4,13 +4,13 @@ Domain-specific reference for assessing the credibility and weight of academic s
 
 ## Venue Tiers
 
-Weight results heavily toward top venues. A peer-reviewed top-conference paper is far more trustworthy than an unreviewed preprint.
+The literature review keeps papers from Tier 1 and Tier 2 venues. It also keeps an IACR ePrint or arXiv preprint if an author or institution is reputable. It discards all other papers.
 
 | Tier | Venues | Weight |
 |------|--------|--------|
 | **Tier 1 (flagship)** | CRYPTO, EUROCRYPT, ASIACRYPT, CCS, S&P (Oakland), NDSS, USENIX Security, PODC, DISC, STOC, FOCS, SODA, TCC | Strongest signal. Prefer these over all others. |
 | **Tier 2 (strong)** | PKC, CT-RSA, FC, ACNS, SCN, OPODIS, SSS, Journal of Cryptology, Distributed Computing (journal), JACM, SICOMP | Strong signal. Treat nearly as tier 1. |
-| **Tier 3 (preprint/other)** | IACR ePrint (unreviewed), arXiv (unreviewed), workshops, lesser conferences | Use for recency and breadth, but verify claims independently. Do not treat unreviewed results as established. |
+| **Tier 3 (preprint/other)** | IACR ePrint (unreviewed), arXiv (unreviewed), workshops, lesser conferences | You keep an ePrint or arXiv preprint only from a reputable author or institution. You discard all other Tier 3 papers. Verify preprint claims independently. |
 
 ## Author Weighting
 
@@ -18,6 +18,8 @@ Give additional weight to papers by:
 - **Program committee members and editors** of top venues in the relevant area (they shape what gets accepted and reflect community expertise)
 - **Established researchers** with a strong publication record in the specific sub-area (not just generally prolific authors)
 - **Original authors** of foundational results being built upon (they understand the subtleties best)
+
+An author is reputable if the author matches one of these criteria. An institution is reputable if its researchers regularly publish in Tier 1 venues of the area.
 
 ## Conflict Resolution
 
