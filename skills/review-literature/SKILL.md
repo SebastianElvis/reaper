@@ -106,7 +106,19 @@ You use the paper notes to check how the source paper uses each result with high
 
 You record differences under `### Discrepancies with Paper Under Analysis` in each `<id>-notes.md`. You summarize these differences in `## Gaps Identified` for the formalization stage.
 
-### 10. Write Output
+### 10. Set the Venue Bar
+
+The venue bar is the standard that the paper must exceed. It comes from the target venue and from the related work. You write it to `reaper-workspace/notes/venue-bar.md`.
+
+1. **Target venue:** You use the target venue in `notes/clarified-goal.md`. If the goal names no venue, you select the Tier 1 venue in `references/venue-tiers.md` that published the most Same-Goal Works.
+2. **Venue rules:** You read the current call for papers. If it is not published, you use the most recent call and mark each rule `(proxy: <year>)`. You record the template, page limit, anonymity rules, and mandatory sections, such as ethics or artifact availability.
+3. **Exemplar papers:** You select 3-5 Same-Goal Works from the target venue or a peer Tier 1 venue from the last three years. If fewer papers qualify, you invoke the `search-paper` skill to find recent papers from the target venue on a related topic. You download each exemplar to `reaper-workspace/papers/`.
+4. **Bar measurement:** You read each exemplar. You record its contributions, its novelty claim against prior work, and its evidence, such as proofs, experiments, baselines, and metrics. You also record its section list, page count, figure and table count, and writing and presentation practices.
+5. **Bar checklist:** You write numbered checklist items from the venue rules and the exemplars. Each item names its source, such as the call for papers or exemplar E2. The items cover contributions, novelty, evidence, writing, presentation, and format. For contributions and novelty, each item states the improvement over the exemplars that the work must show.
+
+`venue-bar.md` has title `# Venue Bar` and the level-two sections Venue Rules, Exemplar Papers, and Bar Checklist.
+
+### 11. Write Output
 
 You write `reaper-workspace/notes/literature.md` with title `# Literature Review` and these level-two sections:
 
@@ -133,6 +145,7 @@ Each search operation can fail independently. You continue the review with the a
 - If citation search fails, you omit Citation Graph or use web results. You mark each affected row `citation graph unavailable`.
 - If venue lookup fails, you treat the paper as a preprint.
 - If a download fails, you mark Local Path `unavailable`. You state that the paper assessment uses only its abstract.
+- If the call for papers or an exemplar is unavailable, you build the bar from the available sources. You mark each affected checklist item `unverified` in `venue-bar.md`.
 
 ## Quality Criteria
 
@@ -144,3 +157,4 @@ Each search operation can fail independently. You continue the review with the a
 - Every paper comes from a Tier 1 or Tier 2 venue, or is a preprint from a reputable author or institution.
 - You use multiple structured sources unless you record a structured-search failure.
 - You include forward and backward citations unless you mark citation search unavailable.
+- Each bar checklist item names its source. The contribution and novelty items state the improvement over the exemplars.

@@ -270,7 +270,8 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
 - [x] The `/write-paper` skill replaces the former paper generation skill.
 - [x] The skill requires a LaTeX project with `main.tex`, `references.bib`, and `Makefile`.
 - [x] Each section has its own `sections/NN-<name>.tex` file. `main.tex` inputs the files in order.
-- [x] The skill uses the `article` class by default and accepts a user-specified venue template.
+- [x] The `/review-literature` skill sets a target venue bar from the call for papers and 3-5 exemplar papers. The `/write-paper` skill uses the venue template and audits the paper against the bar.
+- [x] The paper reports only final results. It has no cycle numbers, hypothesis labels, result log, or research history.
 - [x] The skill requires theorem environments, BibTeX citations, and PDF build checks.
 - [x] The pipeline, installer, documentation, and evaluation specification use the new name and output paths.
 - [ ] A full skill run must produce a valid PDF without manual fixes.
