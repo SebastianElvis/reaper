@@ -161,6 +161,8 @@ When a user invokes the `/reaper` skill (by name on auto-discovery hosts, as `/r
 
 ```
 reaper-workspace/
+├── .gitignore                          # Git ignores LaTeX and Python build files. Git tracks papers/.
+├── papers/                             # Downloaded PDFs and <id>-notes.md files
 ├── notes/                              # Evolving — edited inline to reflect latest state
 │   ├── clarified-goal.md              # Refined goal, scope, assumptions, Q&A
 │   ├── paper-summary.md                # Structured extraction from the paper
