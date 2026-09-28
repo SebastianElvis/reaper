@@ -55,7 +55,7 @@ You use these file rules:
 | `notes/current-understanding.md`, `notes/results.md`, `notes/ideas.md`, `notes/problem-statement.md`, `notes/literature.md` | One agent edits each file in place per batch. |
 | `papers/*-notes.md`, `investigations/*/analysis.md`, `investigations/*/proof.md` | One agent edits each file in place per batch. |
 | `logs/cycle-*.md`, `feedbacks/round-*.md`, `feedbacks/codex-consultation-*.md` | You create each file once. You never change it after creation. |
-| `notes/paper-summary.md`, `notes/clarified-goal.md`, `report/*` | The responsible skill writes the file. It can regenerate the file on a rerun. Other skills do not edit it. |
+| `notes/paper-summary.md`, `notes/clarified-goal.md`, `notes/venue-bar.md`, `notes/bar-audit.md`, `report/*` | The responsible skill writes the file. It can regenerate the file on a rerun. Other skills do not edit it. |
 
 The `review-literature` skill creates `notes/literature.md`. The `investigate` skill adds new literature findings in place.
 
@@ -89,7 +89,7 @@ You invoke the `clarify-goal` skill with `"<research-goal>"` and the paper path,
 If the user supplies a paper, you run two independent subagents in parallel:
 
 1. You invoke the `analyze-paper` skill with `<paper-path>` to write `notes/paper-summary.md`.
-2. You invoke the `review-literature` skill with the refined goal to write `notes/literature.md`.
+2. You invoke the `review-literature` skill with the refined goal to write `notes/literature.md` and `notes/venue-bar.md`.
 
 You use the host's parallel tool, or sequential execution if that tool is unavailable. You wait for both stages before you continue. Without a paper, you run only `review-literature`. In that mode, the workspace has no `notes/paper-summary.md`.
 
@@ -132,11 +132,12 @@ If any cycle returns outcome `reformulate`, you take these actions:
 
 ### Step 6: Write Paper
 
-You invoke the `write-paper` skill. It reads the relevant workspace evidence and writes `report/main.tex`, `report/sections/*.tex`, `report/references.bib`, `report/Makefile`, and `report/.gitignore`.
+You invoke the `write-paper` skill. It uses the bar in `notes/venue-bar.md` as input. It writes `report/main.tex`, `report/sections/*.tex`, `report/references.bib`, `report/Makefile`, and `report/.gitignore`. The paper reports only final results. It audits the paper against the bar in `notes/bar-audit.md`.
+If the audit names an item that needs a new result, you invoke `critique` with that item as feedback. You then continue Step 5 and invoke `write-paper` again. You do this at most once.
 
 ### Step 7: Present Results
 
-You read `reaper-workspace/report/main.tex` and the section files that it inputs. You present key findings with links to the LaTeX source and audit record. You include the build status and link to `report/main.pdf` after a successful build.
+You read `reaper-workspace/report/main.tex` and the section files that it inputs. You present key findings with links to the LaTeX source and audit record. You state the target venue and the bar audit counts. You include the build status and link to `report/main.pdf` after a successful build.
 
 ### Step 8: Explain Further Iteration
 
@@ -148,12 +149,12 @@ You explain that quoted feedback to `critique` can start another review. Slash-c
 |---|---|---|
 | `/clarify-goal` | Goal; optional paper | `notes/clarified-goal.md` |
 | `/analyze-paper` | Paper; optional goal and output path | `notes/paper-summary.md` or `papers/<id>-notes.md` |
-| `/review-literature` | Goal; optional paper summary | `notes/literature.md`, `papers/*` |
+| `/review-literature` | Goal; optional paper summary | `notes/literature.md`, `notes/venue-bar.md`, `papers/*` |
 | `/formalize-problem` | Clarified goal, literature, optional paper summary | `notes/problem-statement.md`, `notes/ideas.md` |
 | `/brainstorm` | Problem, ideas, current understanding, results | Updated `notes/ideas.md` |
 | `/investigate` | Problem, ideas, current understanding, results | Updated notes; `investigations/*`, `logs/*` |
 | `/critique` | Current understanding, results, problem, ideas | `feedbacks/*`; possible new ideas and cycles |
-| `/write-paper` | Current understanding, results, problem, ideas | `report/main.tex`, `report/sections/*.tex`, `report/references.bib`, `report/Makefile`, `report/.gitignore` |
+| `/write-paper` | Current understanding, results, problem, ideas, literature, venue bar | `notes/bar-audit.md`, `report/main.tex`, `report/sections/*.tex`, `report/references.bib`, `report/Makefile`, `report/.gitignore` |
 | `/search-paper` | Query or paper identifier | Search results, citations, or venue |
 
 ## Failure and Context Recovery

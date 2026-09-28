@@ -42,6 +42,7 @@ You check the goal against the paper or research domain.
 - **Success criteria:** You determine whether the user needs a counterexample, proof gap, or performance bound.
 - **Assumptions:** You identify assumptions that the user can change, such as synchrony or adversary type.
 - **Comparison:** You identify the metric and baseline for each comparison.
+- **Target venue:** You identify the conference or journal for the paper. The default is the Tier 1 venue in `../reaper/references/venue-tiers.md` that fits the topic best.
 
 ### 3. Ask Questions
 
@@ -59,6 +60,7 @@ After the user responds, you combine their answers with defaults for unanswered 
 | Scope | You identify the parts of the paper or topic that the research covers. |
 | Key Assumptions | You state investigation assumptions. |
 | Success Criteria | You state the evidence that answers the goal. |
+| Target Venue | You name the venue and the deadline if the user gives one. |
 
 ### 5. Report
 

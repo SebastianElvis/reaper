@@ -71,7 +71,7 @@ Each skill can be used independently or composed by the orchestrator. Invoke by 
 | `/brainstorm` | Generate, prioritize, and refine research ideas based on current state |
 | `/investigate` | Run investigation cycles with keep-or-discard discipline |
 | `/critique` | Provide critique via human feedback, Codex consultation, or self-review (can trigger more investigation) |
-| `/write-paper` | This skill writes a LaTeX research paper from investigation results. |
+| `/write-paper` | This skill writes a LaTeX research paper that meets the bar of the target venue. The paper reports only final results. |
 | `/search-paper` | Find papers, download PDFs, trace citation graphs, and resolve publication venues across arXiv, IACR ePrint, Semantic Scholar, DBLP, and OpenAlex |
 
 > The `/<skill>` form is the canonical display convention used throughout these docs. Slash-command hosts (Claude Code) invoke them directly that way (e.g. `/clarify-goal`). Auto-discovery hosts (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, …) invoke them by the bare skill name — drop the leading `/` when asking the agent to run a skill.
@@ -171,7 +171,9 @@ reaper-workspace/
 │   ├── problem-statement.md        # Formalized problem (model, properties, metrics)
 │   ├── ideas.md                    # Research ideas/hypotheses (edited inline on revisit)
 │   ├── current-understanding.md    # "Branch tip" — advances only on keep
-│   └── results.md                  # One row per hypothesis, updated inline on revisit
+│   ├── results.md                  # One row per hypothesis, updated inline on revisit
+│   ├── venue-bar.md                # Target venue rules, exemplar papers, bar checklist
+│   └── bar-audit.md                # PASS/PARTIAL/FAIL per bar checklist item
 ├── investigations/                 # Evolving — reuse directory on revisit, edit inline
 │   └── NNN-<name>/                 # One directory per hypothesis
 │       ├── analysis.md             # Reasoning, attempts, dead ends, insights
