@@ -48,6 +48,8 @@ You invoke each skill by name with the host's skill mechanism. You read its `SKI
 
 You create `reaper-workspace/` with `notes/`, `papers/`, `investigations/`, `feedbacks/`, and `logs/`.
 
+You write `reaper-workspace/.gitignore` if it does not exist. It ignores LaTeX build files (`*.aux`, `*.bbl`, `*.blg`, `*.fdb_latexmk`, `*.fls`, `*.log`, `*.out`, `*.synctex.gz`, `*.toc`) and Python files (`__pycache__/`, `*.pyc`, `.venv/`, `.pytest_cache/`). It does not ignore `*.pdf`. Git must track the downloaded papers in `papers/`, because later stages and reruns read them.
+
 You use these file rules:
 
 | Files | Rule |
