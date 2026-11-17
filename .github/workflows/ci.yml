@@ -35,6 +35,8 @@ jobs:
         run: pip install pytest pyyaml
       - name: Run L1 eval tests
         run: pytest tests/test_skill_outputs.py -v
+      - name: Check installed script execution
+        run: pytest tests/test_search_paper.py -k installed_script -v
 
   # Network-dependent integration tests against live arXiv / IACR ePrint APIs.
   # Non-blocking: external services can rate-limit, return 5xx, or change
@@ -85,14 +87,14 @@ jobs:
             fi
           done
           # Co-located Python scripts must travel with their skill dirs
-          for script in search-paper/arxiv.py search-paper/iacr.py search-paper/semantic_scholar.py search-paper/dblp.py search-paper/openalex.py; do
+          for script in search-paper/scripts/arxiv.py search-paper/scripts/iacr.py search-paper/scripts/semantic_scholar.py search-paper/scripts/dblp.py search-paper/scripts/openalex.py; do
             if [ ! -f "$target/$script" ]; then
               echo "::error::Missing required asset: $target/$script"
               missing=$((missing + 1))
             fi
           done
           # Reference files used by other skills must travel with the reaper skill dir
-          for ref in language.md model.md impossibility-results.md definitional-standards.md methodology.md paper-analysis.md venue-tiers.md search-tools.md codex-consultation.md; do
+          for ref in research-state.md language.md model.md impossibility-results.md definitional-standards.md methodology.md paper-analysis.md venue-tiers.md search-tools.md codex-consultation.md; do
             if [ ! -f "$target/reaper/references/$ref" ]; then
               echo "::error::Missing reaper reference file: $target/reaper/references/$ref"
               missing=$((missing + 1))

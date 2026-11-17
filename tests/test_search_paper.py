@@ -6,8 +6,12 @@ Uses real API calls (integration tests). Requires network access.
 import json
 import subprocess
 import sys
+import shutil
+from pathlib import Path
 
-SKILL_DIR = "skills/search-paper"
+import pytest
+
+SKILL_DIR = Path(__file__).resolve().parents[1] / "skills/search-paper/scripts"
 PYTHON = sys.executable
 
 
@@ -84,13 +88,6 @@ def test_arxiv_recent_requires_query_or_categories():
     assert "query" in err_payload.lower() or "categories" in err_payload.lower()
 
 
-def test_arxiv_cli_help():
-    r = run("arxiv.py", ["--help"])
-    assert r.returncode == 0
-    assert "search" in r.stdout.lower()
-    assert "recent" in r.stdout.lower()
-    assert "journal-ref" in r.stdout.lower()
-
 
 # ---------------------------------------------------------------------------
 # iacr.py
@@ -143,12 +140,6 @@ def test_iacr_recent_returns_results():
     assert isinstance(data, list)
 
 
-def test_iacr_cli_help():
-    r = run("iacr.py", ["--help"])
-    assert r.returncode == 0
-    assert "search" in r.stdout.lower()
-    assert "pubinfo" in r.stdout.lower()
-
 
 # ---------------------------------------------------------------------------
 # semantic_scholar.py
@@ -182,12 +173,6 @@ def test_s2_citations_returns_refs_and_cites():
     assert isinstance(data["citations"], list)
 
 
-def test_s2_cli_help():
-    r = run("semantic_scholar.py", ["--help"])
-    assert r.returncode == 0
-    assert "venue" in r.stdout.lower()
-    assert "citations" in r.stdout.lower()
-
 
 # ---------------------------------------------------------------------------
 # dblp.py
@@ -203,11 +188,6 @@ def test_dblp_venue_returns_fields():
         assert field in data, f"Missing field: {field}"
 
 
-def test_dblp_cli_help():
-    r = run("dblp.py", ["--help"])
-    assert r.returncode == 0
-    assert "venue" in r.stdout.lower()
-
 
 # ---------------------------------------------------------------------------
 # openalex.py
@@ -221,7 +201,25 @@ def test_openalex_venue_returns_fields():
         assert field in data, f"Missing field: {field}"
 
 
-def test_openalex_cli_help():
-    r = run("openalex.py", ["--help"])
-    assert r.returncode == 0
-    assert "venue" in r.stdout.lower()
+
+@pytest.mark.parametrize("script, commands", [
+    ("arxiv.py", ["search", "recent", "journal-ref"]),
+    ("iacr.py", ["search", "pubinfo"]),
+    ("semantic_scholar.py", ["venue", "citations"]),
+    ("dblp.py", ["venue"]),
+    ("openalex.py", ["venue"]),
+])
+def test_installed_script_runs_from_workspace(tmp_path, script, commands):
+    installed = tmp_path / "installed skill" / "scripts"
+    shutil.copytree(SKILL_DIR, installed)
+    workspace = tmp_path / "research workspace"
+    workspace.mkdir()
+    result = subprocess.run([PYTHON, str(installed / script), "--help"],
+                            cwd=workspace, capture_output=True, text=True, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert all(command in result.stdout for command in commands)
+    if script == "iacr.py":
+        result = subprocess.run([PYTHON, str(installed / script), "url", "2024/1234"],
+                                cwd=workspace, capture_output=True, text=True, timeout=10)
+        assert result.returncode == 0, result.stderr
+        assert json.loads(result.stdout)["eprint_id"] == "2024/1234"

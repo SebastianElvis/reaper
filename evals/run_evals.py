@@ -1,28 +1,4 @@
-"""Eval orchestrator.
-
-Modes:
-
-  L1 only (no LLM, no network — runs in CI on every PR):
-      python -m evals.run_evals --layer structural [--skill analyze-paper]
-
-  L1 + L2 (uses `claude` CLI as judge — locally, on demand):
-      python -m evals.run_evals --layer all --skill analyze-paper
-
-  Calibration (judge against the gold reference, not a fresh skill output):
-      python -m evals.run_evals --layer judge --skill analyze-paper \\
-          --variant reference   # expect passes
-      python -m evals.run_evals --layer judge --skill analyze-paper \\
-          --variant negative    # expect failures
-
-For each fixture, the orchestrator stages artifacts under
-`evals/runs/<run-id>/<skill>/<case>/<variant>/` (clean per the eval guide's
-"isolated environments" requirement) and runs:
-
-  - structural graders (cheap, deterministic — see graders/structural.py),
-  - one judge call per rubric dimension (see judge/judge.py).
-
-Reports go to evals/reports/<run-id>.{md,json}.
-"""
+"""This runner grades saved examples or fresh agent outputs."""
 
 from __future__ import annotations
 
@@ -30,6 +6,9 @@ import argparse
 import datetime as dt
 import json
 import shutil
+import subprocess
+import tempfile
+import shlex
 import sys
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -40,7 +19,6 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 REPO_ROOT = ROOT.parent
 
-# Make `from evals.judge.judge import ...` work when invoked as a script.
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -56,25 +34,19 @@ from evals.judge.judge import (  # noqa: E402
 
 SCHEMA_PATH = ROOT / "judge" / "schemas" / "rubric.json"
 
-
-# ---------------------------------------------------------------------------
-# Data
-# ---------------------------------------------------------------------------
-
 @dataclass
 class StructuralReport:
     name: str
     passed: bool
     detail: str
 
-
 @dataclass
 class CaseReport:
     skill: str
     case_id: str
     variant: str
-    kind: str  # "reference" | "negative"
-    target_layer: str | None  # only set on negatives
+    kind: str
+    target_layer: str | None
     structural: list[StructuralReport] = field(default_factory=list)
     judge: list[dict] = field(default_factory=list)
 
@@ -86,36 +58,17 @@ class CaseReport:
     def judge_passed(self) -> bool:
         return bool(self.judge) and all(v["passed"] for v in self.judge)
 
-
-# ---------------------------------------------------------------------------
-# Fixture loading
-# ---------------------------------------------------------------------------
-
-def list_fixtures(skill_filter: str | None = None) -> list[Path]:
-    """Return spec.yaml paths for every fixture (optionally filtered by skill)."""
+def list_fixtures(skill_filter: str | None = None, fresh: bool = False) -> list[Path]:
     fixtures_root = ROOT / "fixtures"
     specs = sorted(fixtures_root.glob("*/*/spec.yaml"))
     if skill_filter:
         specs = [s for s in specs if s.parent.parent.name == skill_filter]
-    return specs
-
+    return [s for s in specs if ("expectations" if fresh else "reference") in load_spec(s)]
 
 def load_spec(spec_path: Path) -> dict:
     return yaml.safe_load(spec_path.read_text())
 
-
-# ---------------------------------------------------------------------------
-# Trial isolation — copy fixture artifacts into a fresh run dir
-# ---------------------------------------------------------------------------
-
 def variants_for(spec: dict) -> list[dict]:
-    """Return a list of variant descriptors {id, kind, artifact, target_layer?}.
-
-    `kind` is one of "reference" or "negative". Negatives carry a
-    `target_layer` so the orchestrator knows which grader is supposed to
-    fail (structural-targeted negatives are L1's problem; judge-targeted
-    negatives are L2's).
-    """
     out: list[dict] = [{
         "id": "reference",
         "kind": "reference",
@@ -131,22 +84,14 @@ def variants_for(spec: dict) -> list[dict]:
         })
     return out
 
-
 def stage_variant(spec_path: Path, variant: dict, run_dir: Path) -> Path:
-    """Copy `inputs/` and the variant artifact into a clean trial dir.
-
-    Returns the trial directory. Per the eval methodology: every trial gets
-    a fresh, isolated environment. The judge's --add-dir points here.
-    """
     spec_dir = spec_path.parent
     spec = load_spec(spec_path)
     skill = spec["skill"]
     case_id = spec["case_id"]
 
     trial_dir = run_dir / skill / case_id / variant["id"]
-    if trial_dir.exists():
-        shutil.rmtree(trial_dir)
-    trial_dir.mkdir(parents=True)
+    trial_dir.mkdir(parents=True, exist_ok=False)
 
     inputs_src = spec_dir / "inputs"
     if inputs_src.is_dir():
@@ -160,15 +105,43 @@ def stage_variant(spec_path: Path, variant: dict, run_dir: Path) -> Path:
 
     return trial_dir
 
+def generate_trial(spec_path: Path, run_dir: Path, command: str, timeout: int) -> Path:
+    spec = load_spec(spec_path)
+    trial = run_dir / spec["skill"] / spec["case_id"] / "fresh"
+    trial.mkdir(parents=True, exist_ok=False)
+    with tempfile.TemporaryDirectory(prefix="reaper-eval-") as directory:
+        work = Path(directory)
+        shutil.copytree(spec_path.parent / "inputs", work, dirs_exist_ok=True)
+        shutil.copytree(REPO_ROOT / "skills", work / "skills")
+        prompt = f"Use skills/{spec['skill']}/SKILL.md. Work only in this directory. " + spec["goal"]
+        (trial / "prompt.txt").write_text(prompt)
+        proc = subprocess.run(shlex.split(command), input=prompt, cwd=work, text=True,
+                              capture_output=True, timeout=timeout, check=False)
+        (trial / "stdout.txt").write_text(proc.stdout)
+        (trial / "stderr.txt").write_text(proc.stderr)
+        if proc.returncode:
+            raise ValueError(f"The candidate exited with status {proc.returncode}.")
+        if not proc.stdout.strip():
+            raise ValueError("The candidate returned no answer.")
+        parts = ["# Evidence", "## Response", proc.stdout]
+        for source in sorted((spec_path.parent / "inputs").rglob("*")):
+            if source.is_file():
+                parts.extend([f"## Original input: {source.relative_to(spec_path.parent)}", source.read_text(errors="replace")])
+        for source in sorted(work.rglob("*")):
+            relative = source.relative_to(work)
+            if source.is_file() and not source.is_symlink() and relative.parts[0] != "skills" and source.suffix in {".md", ".txt", ".json", ".tex"}:
+                destination = trial / "artifacts" / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, destination)
+                parts.extend([f"## {relative}", source.read_text(errors="replace")])
+        (trial / "evidence.md").write_text("\n\n".join(parts))
+    (trial / "expectations.md").write_text(spec["expectations"])
+    shutil.copytree(spec_path.parent / "inputs", trial / "inputs")
+    return trial
 
-# ---------------------------------------------------------------------------
-# Structural (L1)
-# ---------------------------------------------------------------------------
 
-# Per-skill structural specs derived from evals.json's skill_unit_tests.
-# Keep this small and readable; per-fixture overrides live in spec.yaml
-# (we'll layer that in when more skills are wired up).
 SKILL_STRUCTURAL_RULES = {
+    "reaper": {"artifact": "evidence.md", "required_sections": ["Response"], "min_chars": 100},
     "analyze-paper": {
         "artifact": "paper-summary.md",
         "required_sections": [
@@ -183,30 +156,24 @@ SKILL_STRUCTURAL_RULES = {
     },
 }
 
-
 def run_structural(skill: str, trial_dir: Path) -> list[StructuralReport]:
     rules = SKILL_STRUCTURAL_RULES.get(skill)
     if not rules:
-        return []
+        return [StructuralReport("coverage", False, "This skill has no structural rules.")]
     artifact = trial_dir / rules["artifact"]
     results = [
         structural.has_sections(artifact, rules["required_sections"]),
         structural.min_length_chars(artifact, rules["min_chars"]),
-        structural.no_broken_local_links(artifact, trial_dir),
     ]
+    if skill != "reaper":
+        results.append(structural.no_broken_local_links(artifact, trial_dir))
     return [StructuralReport(r.name, r.passed, r.detail) for r in results]
-
-
-# ---------------------------------------------------------------------------
-# Judge (L2)
-# ---------------------------------------------------------------------------
 
 def load_rubric(skill: str) -> dict:
     rubric_path = ROOT / "rubrics" / f"{skill}.yaml"
     if not rubric_path.is_file():
         raise FileNotFoundError(f"no rubric for skill: {skill} ({rubric_path})")
     return yaml.safe_load(rubric_path.read_text())
-
 
 def run_judge(
     skill: str,
@@ -234,9 +201,6 @@ def run_judge(
                 schema_path=SCHEMA_PATH,
                 **({"model": model} if model else {}),
             )
-            # Post-hoc anti-confabulation check: every quote in `evidence`
-            # should be locatable in at least one source artifact. Surface
-            # but don't block — the heuristic has false negatives.
             sources = [
                 p.read_text(errors="replace")
                 for p in artifact_paths
@@ -263,11 +227,6 @@ def run_judge(
                 "rationale": f"judge error: {e}",
             })
     return verdicts
-
-
-# ---------------------------------------------------------------------------
-# Reporting
-# ---------------------------------------------------------------------------
 
 def render_markdown(reports: list[CaseReport], run_id: str, env: dict) -> str:
     lines = [f"# Eval report `{run_id}`", ""]
@@ -301,94 +260,66 @@ def render_markdown(reports: list[CaseReport], run_id: str, env: dict) -> str:
             lines.append("")
     return "\n".join(lines)
 
-
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
-
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    p.add_argument(
-        "--layer", choices=["structural", "judge", "all"], default="structural",
-        help="`structural` = L1 only (no LLM); `judge` = L2 only; `all` = both",
-    )
-    p.add_argument("--skill", default=None, help="Filter to one skill")
-    p.add_argument(
-        "--variant", default=None,
-        help="Filter to one variant id (default: all variants from spec.yaml)",
-    )
-    p.add_argument("--model", default=None, help="Override judge model")
-    p.add_argument("--run-id", default=None, help="Run identifier (default: timestamp+uuid)")
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--layer", choices=["structural", "judge", "all"], default="structural")
+    p.add_argument("--skill")
+    p.add_argument("--variant")
+    p.add_argument("--model")
+    p.add_argument("--run-id")
+    p.add_argument("--fresh", action="store_true")
+    p.add_argument("--candidate-command", help="The runner splits this command without a shell.")
+    p.add_argument("--timeout", type=int, default=180)
     args = p.parse_args(argv)
-
+    if args.fresh and (not args.candidate_command or args.variant):
+        p.error("Fresh runs require --candidate-command and exclude --variant.")
+    if args.timeout <= 0:
+        p.error("The timeout must be positive.")
     run_id = args.run_id or f"{dt.datetime.now():%Y%m%d-%H%M%S}-{uuid.uuid4().hex[:6]}"
-    run_dir = ROOT / "runs" / run_id
-    run_dir.mkdir(parents=True, exist_ok=True)
-
-    specs = list_fixtures(args.skill)
+    if Path(run_id).name != run_id or run_id in {".", ".."}:
+        p.error("The run ID must be a single directory name.")
+    specs = list_fixtures(args.skill, args.fresh)
     if not specs:
-        print(f"No fixtures found (skill filter: {args.skill!r})", file=sys.stderr)
-        return 2
-
-    reports: list[CaseReport] = []
+        p.error("No cases match the requested skill.")
+    run_dir = ROOT / "runs" / run_id
+    run_dir.mkdir(parents=True, exist_ok=False)
+    reports = []
     any_failure = False
     for spec_path in specs:
         spec = load_spec(spec_path)
-        skill = spec["skill"]
-        case_id = spec["case_id"]
-        for variant in variants_for(spec):
+        variants = [{"id": "fresh", "kind": "fresh", "target_layer": None}] if args.fresh else variants_for(spec)
+        for variant in variants:
             if args.variant and variant["id"] != args.variant:
                 continue
-            print(f"==> {skill}/{case_id}/{variant['id']}")
-            trial_dir = stage_variant(spec_path, variant, run_dir)
-            report = CaseReport(
-                skill=skill,
-                case_id=case_id,
-                variant=variant["id"],
-                kind=variant["kind"],
-                target_layer=variant["target_layer"],
-            )
-            if args.layer in ("structural", "all"):
-                report.structural = run_structural(skill, trial_dir)
-            if args.layer in ("judge", "all"):
-                trial_id = f"{run_id}/{skill}/{case_id}/{variant['id']}"
-                report.judge = run_judge(
-                    skill, trial_dir, args.model, trial_id=trial_id,
-                )
+            report = CaseReport(spec["skill"], spec["case_id"], variant["id"], variant["kind"], variant["target_layer"])
+            print(f"==> {report.skill}/{report.case_id}/{report.variant}", flush=True)
+            try:
+                trial_dir = generate_trial(spec_path, run_dir, args.candidate_command, args.timeout) if args.fresh else stage_variant(spec_path, variant, run_dir)
+                if args.layer in ("structural", "all"):
+                    report.structural = run_structural(report.skill, trial_dir)
+                if args.layer in ("judge", "all"):
+                    report.judge = run_judge(report.skill, trial_dir, args.model, trial_id=f"{run_id}/{report.case_id}/{report.variant}")
+                if report.kind == "negative":
+                    passed = report.structural_passed if report.target_layer == "structural" else report.judge_passed
+                    any_failure |= passed and args.layer in (report.target_layer, "all")
+                else:
+                    any_failure |= args.layer in ("structural", "all") and not report.structural_passed
+                    any_failure |= args.layer in ("judge", "all") and not report.judge_passed
+            except (OSError, ValueError, subprocess.SubprocessError) as error:
+                report.structural.append(StructuralReport("execution", False, str(error)))
+                any_failure = True
             reports.append(report)
-
-            # Expectations:
-            #   reference  : every active layer must pass.
-            #   negative   : the layer it targets must fail.
-            if variant["kind"] == "reference":
-                if args.layer in ("structural", "all") and not report.structural_passed:
-                    any_failure = True
-                if args.layer in ("judge", "all") and not report.judge_passed:
-                    any_failure = True
-            else:  # negative
-                tl = variant["target_layer"]
-                if tl == "structural" and args.layer in ("structural", "all"):
-                    if report.structural_passed:
-                        any_failure = True  # graders too permissive
-                if tl == "judge" and args.layer in ("judge", "all"):
-                    if report.judge_passed:
-                        any_failure = True  # judge missed the planted flaw
-
+    if not reports:
+        p.error("No variants match the requested filter.")
+    env = {"cli_version": claude_cli_version() if args.layer != "structural" else None,
+           "judge_model": args.model, "candidate_command": args.candidate_command,
+           "mode": "fresh" if args.fresh else "calibration", "timeout": args.timeout}
     reports_dir = ROOT / "reports"
     reports_dir.mkdir(exist_ok=True)
-    md_path = reports_dir / f"{run_id}.md"
-    json_path = reports_dir / f"{run_id}.json"
-    env = {
-        "cli_version": claude_cli_version() if args.layer != "structural" else None,
-        "judge_model": args.model,
-    }
-    md_path.write_text(render_markdown(reports, run_id, env))
-    json_path.write_text(json.dumps(
-        {"run_id": run_id, "env": env, "cases": [asdict(r) for r in reports]},
-        indent=2, default=str,
-    ))
-    print(f"\nReport: {md_path}")
-    return 1 if any_failure else 0
+    (reports_dir / f"{run_id}.md").write_text(render_markdown(reports, run_id, env))
+    (reports_dir / f"{run_id}.json").write_text(json.dumps({"run_id": run_id, "env": env, "cases": [asdict(r) for r in reports]}, indent=2))
+    print(f"Report: {reports_dir / run_id}.json")
+    return int(any_failure)
 
 
 if __name__ == "__main__":

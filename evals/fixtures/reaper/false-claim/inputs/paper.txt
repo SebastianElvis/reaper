@@ -1,0 +1,1 @@
+Synthetic source, version 1, Section 1. Claim: n*n+n+41 is prime for every integer n >= 0. The author checked n=0 through n=39 and called this a proof.

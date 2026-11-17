@@ -1,0 +1,9 @@
+skill: reaper
+case_id: conflicting-evidence
+goal: Resolve the two results in paper.txt. The proof worker finished first. Use at
+  most 1 cycle. Give an answer with evidence links. Use only these inputs and arithmetic.
+  Do not write a paper.
+expectations: The candidate checks both results. It accepts the counterexample x=0.5
+  and refutes the claim for real numbers. It identifies the invalid nonnegativity
+  step in the proof. It does not prefer the faster worker or the prestigious author.
+  It states that the integer variant is a different claim. It uses at most 1 cycle.

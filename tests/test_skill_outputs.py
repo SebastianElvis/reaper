@@ -1,28 +1,20 @@
-"""L1 (structural) eval tests — run on every PR, no LLM, no network.
-
-These exercise the code-based graders in `evals/graders/` against the
-committed fixture artifacts under `evals/fixtures/`. They cover the
-deterministic half of `evals/evals.json` (`skill_unit_tests`) — leaving
-the subjective `quality_criteria` half to LLM-judge runs.
-
-Two invariants per fixture:
-  - the `reference/` artifact must pass every structural rule,
-  - the `negative/` artifact must violate at least one rule (so we know
-    the graders aren't trivially permissive — see "one-sided evals" in
-    Anthropic's eval guide).
-"""
+"""These tests check calibration, fresh generation, and cycle consistency."""
 
 from __future__ import annotations
 
+import json
+import shlex
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from evals import run_evals as runner
 from evals.graders import structural  # noqa: E402
 from evals.graders.consistency import check_cycle_consistency  # noqa: E402
 from evals.run_evals import (  # noqa: E402
@@ -227,14 +219,60 @@ def test_cycle_consistency_ignores_unrelated_keep_in_prose(tmp_path: Path):
 # ---------------------------------------------------------------------------
 
 def test_every_fixture_skill_has_rules():
-    """Don't let a fixture be added without graders — that's silent
-    capability drift (per the guide: maintainers should detect saturation
-    and add coverage; the inverse — coverage without graders — is just
-    invisible)."""
-    for spec_path in list_fixtures():
+    specs = set(list_fixtures() + list_fixtures(fresh=True))
+    assert specs == set((runner.ROOT / "fixtures").glob("*/*/spec.yaml"))
+    for spec_path in specs:
         spec = load_spec(spec_path)
-        skill = spec["skill"]
-        assert skill in SKILL_STRUCTURAL_RULES, (
-            f"fixture {spec_path} targets skill {skill!r} but "
-            f"SKILL_STRUCTURAL_RULES has no entry for it"
-        )
+        assert spec["skill"] == spec_path.parent.parent.name
+        assert spec["case_id"] == spec_path.parent.name
+        assert spec["skill"] in SKILL_STRUCTURAL_RULES
+        assert runner.load_rubric(spec["skill"])["dimensions"]
+
+
+def command(code):
+    return shlex.join([sys.executable, "-c", code])
+
+
+def test_generation_hides_answers_and_preserves_evidence(tmp_path):
+    spec = runner.list_fixtures("reaper", fresh=True)[0]
+    trial = runner.generate_trial(spec, tmp_path, command(
+        "from pathlib import Path; import sys; "
+        "assert 'SKILL.md' in sys.stdin.read(); "
+        "assert Path('skills/reaper/SKILL.md').is_file(); "
+        "assert not list(Path('.').rglob('spec.yaml')); "
+        "assert not Path('expectations.md').exists(); "
+        "Path('result.md').write_text('The claim remains unresolved.'); "
+        "print('The budget is exhausted.')"
+    ), 5)
+    assert (trial / "artifacts/result.md").read_text() == "The claim remains unresolved."
+    assert "Original input" in (trial / "evidence.md").read_text()
+    assert (trial / "expectations.md").is_file()
+    with pytest.raises(FileExistsError):
+        runner.generate_trial(spec, tmp_path, command("print('overwrite')"), 5)
+
+
+@pytest.mark.parametrize("code, timeout", [("raise SystemExit(2)", 5), ("pass", 5), ("import time; time.sleep(5)", 0.01)])
+def test_generation_failure_fails_the_run(tmp_path, monkeypatch, code, timeout):
+    root = tmp_path / "evals"
+    task = root / "fixtures/reaper/failure"
+    (task / "inputs").mkdir(parents=True)
+    (task / "spec.yaml").write_text(yaml.safe_dump({
+        "skill": "reaper", "case_id": "failure", "goal": "Check the input.", "expectations": "The answer cites evidence."
+    }))
+    monkeypatch.setattr(runner, "ROOT", root)
+    generate = runner.generate_trial
+    monkeypatch.setattr(runner, "generate_trial", lambda spec, run, cmd, _: generate(spec, run, cmd, timeout))
+    assert runner.main(["--fresh", "--candidate-command", command(code), "--run-id", "failure"]) == 1
+    report = json.loads((root / "reports/failure.json").read_text())
+    assert report["cases"][0]["structural"][0]["name"] == "execution"
+    assert not report["cases"][0]["structural"][0]["passed"]
+
+
+def test_fresh_cases_have_private_expectations_and_rubrics():
+    specs = runner.list_fixtures("reaper", fresh=True)
+    assert len(specs) == 4
+    for path in specs:
+        spec = runner.load_spec(path)
+        assert spec["goal"] and spec["expectations"]
+        assert (path.parent / "inputs").is_dir()
+        assert runner.load_rubric(spec["skill"])["dimensions"]

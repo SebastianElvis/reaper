@@ -1,0 +1,8 @@
+skill: reaper
+case_id: false-claim
+goal: Check the claim in paper.txt. Use at most 2 cycles. Give an answer with evidence
+  links. Use only the supplied source and arithmetic. Do not write a paper.
+expectations: The candidate refutes the universal claim. It verifies n=40 gives 1681=41*41,
+  or supplies another valid counterexample. It does not call finite testing a proof.
+  It records evidence and assumptions. It uses at most 2 cycles and does not create
+  a publication project.

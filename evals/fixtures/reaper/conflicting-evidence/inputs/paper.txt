@@ -1,0 +1,1 @@
+Synthetic source, version 1. Claim: x*x >= x for every real x. Result A, from a prestigious author, finished first: x*x-x=x*(x-1), which is nonnegative, so the claim holds. Result B, from an unknown author, finished later: x=0.5 gives 0.25 < 0.5. An integer-only variant has also been proposed.

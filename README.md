@@ -24,10 +24,14 @@ How you invoke a skill depends on the host agent. The `/<skill>` form above is t
 - **Parallel investigation with keep-or-discard discipline** — multiple hypotheses are investigated concurrently; only genuine progress advances the working state, while dead ends stay logged
 - **Built-in academic search** — paper search, PDF download, citation graph tracing, and venue resolution across arXiv, IACR ePrint, Semantic Scholar, DBLP, and OpenAlex
 - **Domain-agnostic design** — ships with cryptography and distributed systems references, but swap the reference files to adapt to any research domain
-- **Multi-model AI consultation** — optionally consult Codex, Gemini, DeepSeek, or local models for a second opinion at every pipeline stage
+- **External review** — Reaper can request Codex feedback during critique. Other model backends remain planned.
 - **Output language** — Reaper follows the shared [language rules](skills/reaper/references/language.md).
 - **Composable skills** — each pipeline stage is an independent skill you can run standalone
 - **Host-agnostic** — distributed as plain `SKILL.md` folders that work across 45+ AI coding agents
+
+Reaper selects stages from the requested scope. A summary uses paper analysis. A narrow claim check uses only the evidence and checks it needs. Reaper creates a LaTeX paper only when the user requests publication output.
+
+Reaper defaults to 3 investigation cycles for a narrow claim and 10 cycles for an open research goal. A user limit overrides these defaults. Interrupted cycles consume budget. Resume preserves existing work and claim evidence.
 
 ## How It Works
 
@@ -71,7 +75,7 @@ Each skill can be used independently or composed by the orchestrator. Invoke by 
 | `/brainstorm` | Generate, prioritize, and refine research ideas based on current state |
 | `/investigate` | Run investigation cycles with keep-or-discard discipline |
 | `/critique` | Provide critique via human feedback, Codex consultation, or self-review (can trigger more investigation) |
-| `/write-paper` | This skill writes a LaTeX research paper that meets the bar of the target venue. The paper reports only final results. |
+| `/write-paper` | This skill writes a LaTeX research paper that meets the bar of the target venue. The paper separates supported results from conjectures and limitations. |
 | `/search-paper` | Find papers, download PDFs, trace citation graphs, and resolve publication venues across arXiv, IACR ePrint, Semantic Scholar, DBLP, and OpenAlex |
 
 > The `/<skill>` form is the canonical display convention used throughout these docs. Slash-command hosts (Claude Code) invoke them directly that way (e.g. `/clarify-goal`). Auto-discovery hosts (Cursor, Codex CLI, Cline, Continue, Gemini CLI, Copilot, Windsurf, …) invoke them by the bare skill name — drop the leading `/` when asking the agent to run a skill.
@@ -134,12 +138,12 @@ See the [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugi
 
 A few skill features are host-specific:
 
-- The `--codex` flag enables external-model consultation via MCP. It currently requires a host with MCP support (Claude Code, OpenCode, etc.) and silently falls back to self-review elsewhere.
+- The `--codex` flag enables external-model consultation via MCP. It currently requires a host with MCP support (Claude Code, OpenCode, etc.) and reports unavailable external review and uses self-review elsewhere.
 - Frontmatter keys `user-invocable`, `argument-hint`, hooks, and `context: fork` are Claude-Code-specific. They are preserved in the SKILL.md files but no-op on other hosts.
 
 ### Optional: Multi-model AI consultation
 
-Pass `--codex` to enable pipeline-wide AI consultation — every skill gains a checkpoint where it can consult an external model for a second opinion. The orchestrator controls when consultations happen and routes to the best-suited model (see `skills/reaper/references/codex-consultation.md` for the protocol).
+The `--codex` flag requests external review during critique. The orchestrator schedules any resulting research within the shared budget. The [review protocol](skills/reaper/references/codex-consultation.md) defines evidence, logging, and fallback.
 
 **Supported backends:**
 
@@ -156,7 +160,7 @@ Example registration on Claude Code:
 claude mcp add codex-cli -- npx -y codex-mcp-server
 ```
 
-Other MCP-capable hosts use their own equivalent registration. If no model backends are configured, AI consultation is silently skipped and the pipeline continues with self-review only.
+Other MCP-capable hosts use their own equivalent registration. If no model backends are configured, Reaper reports unavailable external review and continues with self-review.
 
 ## Workspace
 
@@ -164,9 +168,10 @@ When Reaper runs, it creates a `reaper-workspace/` directory:
 
 ```
 reaper-workspace/
-├── .gitignore                      # Git ignores LaTeX and Python build files. Git tracks papers/.
+├── .gitignore                      # Git ignores generated build files.
 ├── papers/                         # Downloaded PDFs and <id>-notes.md files
 ├── notes/                          # Evolving — edited inline to reflect latest state
+│   ├── research-state.md           # The run records its budget and cycle reservations.
 │   ├── clarified-goal.md           # Refined goal, scope, assumptions, Q&A
 │   ├── paper-summary.md            # Structured paper extraction
 │   ├── literature.md               # Related work survey
@@ -181,8 +186,8 @@ reaper-workspace/
 │       ├── analysis.md             # Reasoning, attempts, dead ends, insights
 │       └── proof.md                # Formal proofs (theorems, lemmas, corollaries)
 ├── feedbacks/                      # Append-only — one file per event, never modified
-│   ├── round-N.md                  # Human feedback classified by type
-│   └── codex-consultation-N.md     # Codex critique (alternates devil's advocate / inspiration)
+│   ├── round-N.md                  # The record contains human feedback or self-review.
+│   └── codex-consultation-N.md     # The record contains an external review and its limitations.
 ├── logs/                           # Append-only — one file per cycle, never modified
 │   └── cycle-NNN-<slug>.md         # One log per investigation cycle (snapshot at cycle end)
 └── report/
@@ -216,7 +221,7 @@ python3 -m evals.run_evals --layer structural
 python3 -m evals.run_evals --layer all --skill analyze-paper
 ```
 
-Each fixture pairs a gold-standard reference with planted negatives — one targeting L1 (drops a required section) and one targeting L2 (fabricated theorem statements, generic content) — so a permissive grader fails CI as visibly as a missed regression. See [`evals/README.md`](evals/README.md) for the full design and how to add a fixture.
+Calibration fixtures pair reference outputs with planted failures. Fresh cases run the skill on new tasks and grade its output. These modes share `evals/fixtures/`. See [`evals/README.md`](evals/README.md) for the full design and how to add a fixture.
 
 ## Methodology
 
@@ -226,7 +231,7 @@ Reaper's research loop follows six principles:
 2. **Fixed Evaluation Signal** — Clarify the goal, establish baseline via paper analysis and literature review, then formalize into precise hypotheses with trust assumptions, security properties, and impossibility screening
 3. **Structured Results Log** — Every hypothesis gets one row in `notes/results.md` with action, outcome, confidence, and keep/discard status; revisits update the row inline rather than appending duplicates
 4. **Keep-or-Discard Loop** — `current-understanding.md` only advances on genuine progress; dead ends stay logged but don't pollute working state
-5. **Never Stop** — Run all cycles without asking permission to continue; if stuck, re-read the paper, question assumptions, combine discarded results, search for more related work, or try a radically different approach
+5. **Shared Budget** — Reaper uses one cycle limit across investigation, critique, and reformulation. It stops when the goal resolves, the budget ends, or no distinct useful method remains. It reports unresolved claims.
 6. **Clarity and Simplicity** — One "ping" per finding, refutable claims, fewer assumptions = better; write early to crystallize understanding, not just to report it
 
 See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full methodology and development roadmap.
@@ -245,15 +250,15 @@ See [`dev/ROADMAP.md`](dev/ROADMAP.md) for the full roadmap.
 
 ## Acknowledgements
 
-Reaper's methodology draws from the following sources:
+These sources inform Reaper's methods. They do not validate its research conclusions. Reaper adapts their advice to the user's scope and evidence.
 
-- **[karpathy/autoresearch](https://github.com/karpathy/autoresearch)** — Loop discipline: constrain the loop so the AI can iterate autonomously with a clear signal of progress. The structured results log, keep-or-discard mechanism, and never-stop policy are direct adaptations.
-- **[Richard Hamming, "You and Your Research"](https://d37ugbyn3rpeym.cloudfront.net/stripe-press/TAODSAE_zine_press.pdf)** — The importance filter ("Why are you not working on the important problems?") and the technique of inverting blockages into insights.
-- **[Zhiyun Qian, "How to Look for Ideas in Computer Science Research"](https://medium.com/digital-diplomacy/how-to-look-for-ideas-in-computer-science-research-7a3fa6f4696f)** — Systematic idea generation patterns (fill-in-the-blank, start-small-then-generalize, build-a-hammer) for formulating research ideas.
-- **[Simon Peyton Jones, "How to Write a Great Research Paper"](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/How-to-write-a-great-research-paper.pdf)** — Writing as a primary mechanism for doing research, not just reporting it. Shapes the report structure: one clear "ping," explicit refutable contributions, examples before generality.
-- **[S. Keshav, "How to Read a Paper" (ACM SIGCOMM CCR, 2007)](http://ccr.sigcomm.org/online/files/p83-keshavA.pdf)** — The three-pass method for reading papers: first pass for the big picture, second pass to grasp content without details, third pass to virtually re-derive the work and challenge every assumption. Structures how the literature review skill reads downloaded papers at increasing depth.
-- **[Mathew Stiller-Reeve, "How to Write a Thorough Peer Review" (Nature, 2018)](https://www.nature.com/articles/d41586-018-06991-0)** — Three-reading review method (aims → scientific substance → presentation) and the mirror technique. Structures the per-paper notes in the literature review skill: mirror the paper's claims, classify issues as major/minor/fatal, evaluate whether conclusions answer the introduction's questions.
-- **[`vercel-labs/skills`](https://github.com/vercel-labs/skills)** — The cross-agent skills convention and CLI installer that makes Reaper portable across 45+ AI coding agents.
+- [Karpathy's autoresearch](https://github.com/karpathy/autoresearch) supplies an example of experiment logging and keep-or-discard decisions. Its training loop uses a measured validation score. Reaper instead checks claim evidence and uses a finite shared budget. It does not adopt the indefinite-loop instruction.
+- [Richard Hamming's “You and Your Research”](https://www.cs.virginia.edu/~robins/YouAndYourResearch.html) encourages researchers to explain why a problem matters. Reaper uses this question to rank work within the user's goal.
+- [Zhiyun Qian's research advice](https://medium.com/digital-diplomacy/how-to-look-for-ideas-in-computer-science-research-7a3fa6f4696f) suggests design-space exploration, reusable techniques, and small starting cases. These methods generate candidates. They do not establish novelty.
+- [Simon Peyton Jones's writing advice](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/How-to-write-a-great-research-paper.pdf) supports early drafts, explicit contributions, examples, and links from claims to evidence. Reaper drafts arguments in investigation notes before preparing a requested paper.
+- [S. Keshav's reading method](https://cs.uwaterloo.ca/~brecht/courses/Perf-Eval-Shared/readings/keshav-paper-reading.pdf) uses up to three passes. Reaper selects reading depth for the task and records what remains unchecked.
+- [Mathew Stiller-Reeve's peer-review article](https://www.nature.com/articles/d41586-018-06991-0) provides review guidance. Reaper's severity labels and output format are local conventions, not requirements attributed to that article.
+- [`vercel-labs/skills`](https://github.com/vercel-labs/skills) provides the installer used by this repository.
 
 ## License
 

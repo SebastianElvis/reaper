@@ -6,3 +6,4 @@ __pycache__/
 reaper-workspace/
 evals/runs/
 evals/reports/
+!evals/fixtures/**/inputs/reaper-workspace/

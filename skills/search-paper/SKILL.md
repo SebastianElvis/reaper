@@ -21,8 +21,13 @@ search-paper "post-quantum threshold signatures" --source iacr --max-results 15
 
 ## Scripts
 
-You run scripts through the shell with paths relative to this skill directory.
-All scripts write JSON to stdout.
+You execute the bundled script for each supported operation. A command example or a recalled result does not complete the operation.
+You resolve `search_skill_dir` to the absolute directory containing this installed `SKILL.md`. You resolve `research_workspace` to the user's research workspace, not the skill directory.
+You set both shell variables before using the commands below. You quote paths and keep the shell in the user's working directory.
+The executable files live in `scripts/`. All scripts write JSON to stdout.
+You check the exit status and parse the returned JSON before using a result. You inspect error fields even when the process exits successfully.
+You record the command, result source, and any error in the existing research notes or returned result. Workers return this evidence to the main agent.
+You can reuse a recorded result when its query, source, and version still answer the request.
 
 | Script | Commands and results |
 |---|---|
@@ -38,14 +43,14 @@ All scripts write JSON to stdout.
 You use these command forms:
 
 ```bash
-python3 arxiv.py search "BFT consensus communication complexity" --max-results 10 --categories cs.CR,cs.DC
-python3 arxiv.py recent "threshold signatures" --max-results 10 --categories cs.CR
-python3 arxiv.py download 2305.12345 --output-dir reaper-workspace/papers/
-python3 iacr.py search "threshold signatures" --max-results 10
-python3 iacr.py recent --max-results 10
-python3 iacr.py download 2024/1234 --output-dir reaper-workspace/papers/
-python3 iacr.py url 2024/1234
-python3 semantic_scholar.py citations 2305.12345 --max-results 20
+python3 "$search_skill_dir/scripts/arxiv.py" search "BFT consensus communication complexity" --max-results 10 --categories cs.CR,cs.DC
+python3 "$search_skill_dir/scripts/arxiv.py" recent "threshold signatures" --max-results 10 --categories cs.CR
+python3 "$search_skill_dir/scripts/arxiv.py" download 2305.12345 --output-dir "$research_workspace/papers"
+python3 "$search_skill_dir/scripts/iacr.py" search "threshold signatures" --max-results 10
+python3 "$search_skill_dir/scripts/iacr.py" recent --max-results 10
+python3 "$search_skill_dir/scripts/iacr.py" download 2024/1234 --output-dir "$research_workspace/papers"
+python3 "$search_skill_dir/scripts/iacr.py" url 2024/1234
+python3 "$search_skill_dir/scripts/semantic_scholar.py" citations 2305.12345 --max-results 20
 ```
 
 The arXiv `recent` command requires a query or `--categories`.
@@ -55,8 +60,8 @@ The venue protocol below gives the other command forms.
 
 1. You read the query and flags.
 2. You select the requested operation. Citation requests use `semantic_scholar.py citations <arxiv_id>`. Venue requests use the Venue Resolution Protocol.
-3. For paper discovery, you use `iacr.py search` and `arxiv.py search --categories cs.CR` for cryptography or security.
-4. For other computer science discovery, you use `arxiv.py search` with suitable categories.
+3. You honor an explicit `--source`. Otherwise, you use the relevant archive scripts for the topic. Cryptography can use IACR ePrint and arXiv.
+4. You execute the selected command with the requested query and result limit. For arXiv, you select categories that match the topic.
 5. You present results in this table with quoted abstract excerpts for highly relevant papers.
 
 ```markdown
@@ -72,8 +77,8 @@ An archive ID does not identify a publication venue. You find a venue for every 
 ### Layer 1: Semantic Scholar
 
 ```bash
-python3 semantic_scholar.py venue --arxiv <arxiv_id>
-python3 semantic_scholar.py venue --title "<exact title>"
+python3 "$search_skill_dir/scripts/semantic_scholar.py" venue --arxiv <arxiv_id>
+python3 "$search_skill_dir/scripts/semantic_scholar.py" venue --title "<exact title>"
 ```
 
 You use title search for papers without an arXiv ID. If `found: true` and `venue` contains a value, you record `source = "semantic_scholar"`.
@@ -81,8 +86,8 @@ You use title search for papers without an arXiv ID. If `found: true` and `venue
 ### Layer 2: Archive Metadata
 
 ```bash
-python3 arxiv.py journal-ref <arxiv_id>
-python3 iacr.py pubinfo <eprint_id>
+python3 "$search_skill_dir/scripts/arxiv.py" journal-ref <arxiv_id>
+python3 "$search_skill_dir/scripts/iacr.py" pubinfo <eprint_id>
 ```
 
 You use the script for the paper's archive. If `journal_ref` or `publication_info` contains a value, you record the result. You set `source = "arxiv_journal_ref"` or `source = "iacr_pubinfo"`.
@@ -90,7 +95,7 @@ You use the script for the paper's archive. If `journal_ref` or `publication_inf
 ### Layer 3: DBLP
 
 ```bash
-python3 dblp.py venue "<title>" --author "<first author surname>"
+python3 "$search_skill_dir/scripts/dblp.py" venue "<title>" --author "<first author surname>"
 ```
 
 If `found: true`, you record `source = "dblp"`.
@@ -98,22 +103,24 @@ If `found: true`, you record `source = "dblp"`.
 ### Layer 4: OpenAlex
 
 ```bash
-python3 openalex.py venue "<title>"
+python3 "$search_skill_dir/scripts/openalex.py" venue "<title>"
 ```
 
 If `found: true`, you record `source = "openalex"`.
 
-### Layer 5: Preprint Label
+### Layer 5: Unresolved Status
 
-If all four layers fail, you label the entry `(preprint)`. You do not infer a venue from the topic or author's institution.
+If all four layers fail, you record `(unknown)`. You use `(preprint)` only when the source establishes that status. You do not infer a venue from the topic or author's institution.
 
 ### Saved Results
 
-You save venue results in workspace notes to avoid repeated searches. If sources disagree, you prefer the higher-ranked source in this protocol. You prefer a full venue name, such as `publicationVenue.name`, to an acronym. You record both results if confidence is low.
+You save venue results in workspace notes to avoid repeated searches. If sources disagree, you verify the exact title, authors, version, and publisher record. Query order does not establish correctness. You prefer a full venue name, such as `publicationVenue.name`, to an acronym. You record both results if confidence is low.
 
 ## Quality Criteria
 
-- If an API or script fails, you report the error and continue with other sources or layers.
+- You use web search to supplement unsupported sources or after an observed script failure. A host without shell execution reports that limitation before using a fallback.
+- You preserve the actual failure or missing capability in the result. You do not report a fallback search as a successful script run.
+- You verify downloaded files at the returned path before reporting completion.
 
 ## Dependencies
 
