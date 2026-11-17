@@ -31,11 +31,11 @@ EXPECTED_REFERENCES = [
 ]
 
 EXPECTED_SCRIPTS = [
-    "skills/search-paper/arxiv.py",
-    "skills/search-paper/iacr.py",
-    "skills/search-paper/semantic_scholar.py",
-    "skills/search-paper/dblp.py",
-    "skills/search-paper/openalex.py",
+    "skills/search-paper/scripts/arxiv.py",
+    "skills/search-paper/scripts/iacr.py",
+    "skills/search-paper/scripts/semantic_scholar.py",
+    "skills/search-paper/scripts/dblp.py",
+    "skills/search-paper/scripts/openalex.py",
 ]
 
 
@@ -158,17 +158,6 @@ def test_search_tools_reference_exists_and_complete():
     assert "Venue Resolution Protocol" in content, "search-tools.md missing the layered venue protocol"
 
 
-def test_evals_json_valid():
-    """evals.json should be valid JSON with expected structure."""
-    import json
-    content = Path("evals/evals.json").read_text()
-    data = json.loads(content)
-    assert "test_cases" in data
-    assert "skill_unit_tests" in data
-    assert len(data["test_cases"]) >= 3
-    assert len(data["skill_unit_tests"]) >= 5
-
-
 def test_readme_mentions_prerequisites():
     """README should document Python prerequisites."""
     content = Path("README.md").read_text()
@@ -264,6 +253,6 @@ def test_no_relative_python_skills_invocations():
             offenders.append(f"{path}:{line_no}")
     assert not offenders, (
         "Found `python skills/...` invocations — use relative paths from "
-        "the skill root instead (e.g. `../search-paper/arxiv.py`). "
+        "the skill root instead (e.g. `../search-paper/scripts/arxiv.py`). "
         "Offenders: " + ", ".join(offenders)
     )

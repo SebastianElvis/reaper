@@ -4,23 +4,21 @@ Layered evaluation for the Reaper skills, following [*Demystifying Evals
 for AI Agents*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents).
 The model-based judge is the local `claude` CLI — no API key required.
 
-## Three layers
+## Evaluation modes
 
-| Layer | Grader | Cost | Cadence | What it covers |
-|---|---|---|---|---|
-| **L1 Structural** | Code (`evals/graders/`) | Free | Every PR (CI) | Required sections present, min lengths, no broken refs, keep-or-discard cycle invariant |
-| **L2 Skill rubric** | `claude -p` (`evals/judge/`) | Subscription tokens | Locally / nightly | Per-skill quality dimensions (groundedness, specificity, completeness) |
-| **L3 End-to-end** | Both | Subscription tokens | Pre-release | Full `/reaper` pipeline against the 3 cases in `evals/evals.json` |
+The default mode grades saved examples. This mode checks grader calibration.
+The fresh mode runs a candidate agent before grading its new response and workspace.
+The fresh cases cover false claims, conflicting evidence, interrupted runs, and budget exhaustion.
+Structural checks verify artifact shape. Judge checks assess behavior. A structural pass alone does not establish research correctness.
 
 ## Layout
 
 ```
 evals/
-  evals.json                 # case registry (kept for human reference)
   fixtures/<skill>/<case>/   # one directory per fixture
     spec.yaml                # variant declarations + expected layer outcomes
     inputs/                  # what the skill consumes (paper text, etc.)
-    reference/               # gold-standard output (must pass every layer)
+    reference/               # This optional directory stores a calibration output.
     negative-structural/     # planted L1 violation (drops a section, etc.)
     negative-quality/        # planted L2 violation (fabricated claim, etc.)
   rubrics/<skill>.yaml       # which dimensions apply, and their pass thresholds
@@ -38,44 +36,35 @@ evals/
 
 ## Running
 
+You run calibration without an agent:
+
 ```bash
-# L1 only — same thing CI runs (no claude CLI required)
 python3 -m evals.run_evals --layer structural
-
-# L2 only — judges every variant of every fixture (uses claude CLI)
-python3 -m evals.run_evals --layer judge --skill analyze-paper
-
-# Full run (L1 + L2)
-python3 -m evals.run_evals --layer all --skill analyze-paper
-
-# One variant of one case
-python3 -m evals.run_evals --layer all --skill analyze-paper --variant reference
 ```
 
-The orchestrator stages each variant into a fresh `evals/runs/<run-id>/`
-directory before grading — per the eval guide's "isolated environments"
-recommendation. Reports land in `evals/reports/<run-id>.{md,json}`.
+You run fresh tasks with a candidate command that reads the task from stdin:
 
-The pytest entry point that CI uses lives at `tests/test_skill_outputs.py`
-and exercises the same L1 graders.
+```bash
+python3 -m evals.run_evals --fresh --skill reaper --layer all --timeout 180 \
+  --candidate-command 'claude -p --no-session-persistence --permission-mode acceptEdits --tools Read,Write,Edit,Glob,Grep --allowedTools Read,Write,Edit,Glob,Grep --strict-mcp-config --disable-slash-commands'
+```
 
-## Adding a fixture
+The runner executes the command without a shell. Each task uses a new temporary directory outside the repository. The directory contains only task inputs and the current skills. The runner withholds expected answers from the candidate prompt and workspace.
+The directory provides test isolation, not an operating-system sandbox. The command must use appropriate host permissions.
+The runner saves the response, original inputs, and generated text artifacts before it removes the temporary directory. The judge receives those records and the private expectations.
+A failed command, timeout, or empty response fails the case. The runner never replaces an existing run directory.
+The reports record the candidate command and judge model. You can pin the candidate model in its command.
+You use `--layer structural` for a transport check without a judge. You do not treat that result as a behavior evaluation.
 
-1. Create `evals/fixtures/<skill>/<case>/`.
-2. Put what the skill consumes under `inputs/` (paper text, prior notes, etc.).
-3. Hand-write a gold-standard output under `reference/`.
-4. Write at least one **structural negative** (drops a required section, etc.)
-   under `negative-structural/` and one **quality negative** (fabricated
-   claim, generic content) under `negative-quality/`. One-sided evals create
-   one-sided optimization; both directions matter.
-5. Declare the variants in `spec.yaml` (see the existing
-   `cryptography-sample` fixture). Each negative carries a `target_layer`
-   so the orchestrator knows which grader is supposed to fail.
-6. If this is a new skill, add an entry to `SKILL_STRUCTURAL_RULES` in
-   `evals/run_evals.py` and a rubric file under `evals/rubrics/`.
+## Adding a case
 
-`tests/test_skill_outputs.py::test_every_fixture_skill_has_rules` will fail
-if you add a fixture without graders — coverage without graders is invisible.
+You create `evals/fixtures/<skill>/<case>/spec.yaml` with `skill`, `case_id`, and `goal` fields.
+You put source files and any prior workspace in `inputs/`.
+You add `expectations` for a fresh case. The runner withholds these expectations from the candidate.
+You add `reference` and `negatives` for calibration. Each negative names its target layer and expected failures.
+A case can support both modes. The runner selects cases by these fields. Reference outputs remain optional for fresh cases.
+You add structural rules and a skill rubric when the skill has no graders.
+The tests check case discovery, metadata, graders, isolation, and failure reporting in `tests/test_skill_outputs.py`.
 
 ## Adding a judge dimension
 
@@ -112,3 +101,9 @@ dimensions it's planted to violate (see `expected_failures.judge` in
 - `--no-session-persistence` + per-trial `--add-dir` keep trials isolated.
 - `--model claude-opus-4-7` is pinned, so judge drift is detectable when
   the model is bumped.
+
+## Research checks
+
+The research judge checks proof gaps, fair protocol comparisons, security claims, literature support, and requested publication outputs when these checks apply.
+The source selection guidance remains in `dev/test-papers/README.md`. These suggested papers do not count as executed cases until a fixture supplies their inputs and expectations.
+Search API tests remain in `tests/test_search_paper.py`. Cycle consistency checks remain in `graders/consistency.py`.

@@ -1,5 +1,7 @@
 # Reaper Development Roadmap
 
+This document records historical plans and future proposals. Current behavior follows the skill files and their shared references. Some earlier designs below no longer apply.
+
 ## Vision
 
 **Reaper is an AI-native scientific research pipeline.** It takes a research paper and a research goal as input, and autonomously conducts rigorous, multi-step academic research — the kind a PhD student would do over days or weeks, compressed into hours.
@@ -145,7 +147,7 @@ reaper/
 │   ├── ROADMAP.md                          # This file
 │   └── test-papers/                        # Papers for testing
 ├── evals/
-│   └── evals.json                          # Test cases for skill evaluation
+│   └── fixtures/<skill>/<case>/spec.yaml   # Each case defines its inputs and expectations.
 ├── .claude-plugin/                         # Claude-Code-specific plugin manifest (other hosts ignore)
 │   ├── plugin.json
 │   └── marketplace.json
@@ -265,7 +267,7 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
 - [x] Create eval framework with test cases and quality criteria — ships as a layered system (`evals/`):
   - **L1 structural**: deterministic Python graders (`evals/graders/structural.py`, `consistency.py`) for required sections, min lengths, broken refs, keep-or-discard cycle invariant. Runs in CI on every PR.
   - **L2 skill rubric**: per-skill rubrics (`evals/rubrics/<skill>.yaml`) graded by `claude -p` (`evals/judge/`) with JSON-schema-pinned output. Subscription tokens, run locally / nightly.
-  - **L3 end-to-end**: the 3 cases in `evals/evals.json`, full `/reaper` pipeline. Pre-release.
+  - **L3 end-to-end**: Fresh cases in `evals/fixtures/` test the selected research stages before release.
   - Orchestrator: `python3 -m evals.run_evals --layer {structural,judge,all}`. Fixtures live at `evals/fixtures/<skill>/<case>/` with reference + planted-negative variants per layer.
 - [x] Create test paper specifications (`dev/test-papers/README.md`) — specs only; actual PDFs not yet sourced
 - [x] Tune skill descriptions for reliable triggering (added action verbs, specific outputs, broader trigger phrases)
@@ -643,15 +645,8 @@ The investigate skill already has access to Bash for running external tools. Int
 
 ### Intellectual Heritage
 
-Reaper's methodology draws from four sources:
-
-**[karpathy/autoresearch](https://github.com/karpathy/autoresearch)** — The loop discipline. Constrain the loop enough that the AI can iterate autonomously at high speed, with a clear signal of what constitutes progress. The structured results log, keep-or-discard mechanism, never-stop policy, and simplicity criterion are all direct adaptations. The key difference: autoresearch has `val_bpb` as an objective oracle. Reaper must rely on softer evaluation signals (hypothesis resolution, logical consistency, rigor). This is why Horizon 3 (multi-model feedback) matters — cross-model verification partially compensates for the lack of an objective metric.
-
-**[Richard Hamming, "You and Your Research"](https://d37ugbyn3rpeym.cloudfront.net/stripe-press/TAODSAE_zine_press.pdf)** (Stripe Press edition of *The Art of Doing Science and Engineering*) — The importance filter and problem-inversion technique. Hamming's central question — "Why are you not working on the important problems in your field?" — shapes the importance filter in Principle 2: prioritize hypotheses by consequence, not convenience. His technique of inverting blockages into insights (if you can't prove it, try to disprove it) is built into the "when stuck" protocol in Principle 5. Hamming also taught that effort compounds — steady, disciplined investigation cycles accumulate understanding the way compound interest accumulates capital.
-
-**[Zhiyun Qian, "How to Look for Ideas in Computer Science Research"](https://medium.com/digital-diplomacy/how-to-look-for-ideas-in-computer-science-research-7a3fa6f4696f)** — Systematic idea generation patterns. Qian's six patterns (fill-in-the-blank, expansion, build-a-hammer, start-small-then-generalize, reproduce-prior-work, external-sources) are incorporated into Principles 2 and 5, and into the `/formalize-problem` skill's approach to generating ideas. The "fill in the blank" pattern — mapping dimensions of existing research and finding unexplored combinations — is particularly powerful for theoretical research where the design space of threat models, protocol families, and security properties can be systematically enumerated.
-
-**[Simon Peyton Jones, "How to Write a Great Research Paper"](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/How-to-write-a-great-research-paper.pdf)** — Writing as research methodology. Peyton Jones's core insight — that writing is a primary mechanism for doing research, not just for reporting it — is woven into Principle 6 (Clarity and Simplicity). His structural advice (one clear "ping," explicit refutable contributions, examples before generality, narrative flow over chronological recounting) shapes the `/write-paper` skill's report format. Most importantly, the idea that you should write *before* you fully understand forces Reaper to crystallize its understanding in `current-understanding.md` at every cycle, not just at the end.
+The [README acknowledgements](../README.md#acknowledgements) record the current source attributions and adaptation limits.
+The research skills use evidence checks. Reviewer agreement does not substitute for verification.
 
 ### Why a Skill, Not Python
 

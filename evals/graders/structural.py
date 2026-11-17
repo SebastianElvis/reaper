@@ -1,11 +1,4 @@
-"""Code-based (L1) graders.
-
-These are deterministic, cheap, and run on every PR. They test that skill
-outputs satisfy structural invariants from `evals/evals.json` (sections
-present, table row counts, JSON shape, no broken file references).
-
-L1 catches regressions; subjective quality is left to L2 LLM-judge graders.
-"""
+"""These graders check sections, table rows, and local links in skill outputs."""
 
 from __future__ import annotations
 

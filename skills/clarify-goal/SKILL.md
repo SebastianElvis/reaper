@@ -42,15 +42,15 @@ You check the goal against the paper or research domain.
 - **Success criteria:** You determine whether the user needs a counterexample, proof gap, or performance bound.
 - **Assumptions:** You identify assumptions that the user can change, such as synchrony or adversary type.
 - **Comparison:** You identify the metric and baseline for each comparison.
-- **Target venue:** You identify the conference or journal for the paper. The default is the Tier 1 venue in `../reaper/references/venue-tiers.md` that fits the topic best.
+- **Output and budget:** You record the requested output and research limit. You identify a target venue only for publication work.
 
 ### 3. Ask Questions
 
-You ask 3-5 questions that address the paper and goal. Each question offers concrete options where possible. Each question has a default answer. You use a numbered list. You state the defaults for questions that the user does not answer.
+You ask only questions that affect the scope, assumptions, or success criteria. Each question offers concrete options where possible. You use a numbered list. You label optional defaults. You wait for answers when an unknown choice changes the claim or its assumptions.
 
 ### 4. Use the Answers
 
-After the user responds, you combine their answers with defaults for unanswered questions. You write `reaper-workspace/notes/clarified-goal.md` with title `# Clarified Research Goal` and these level-two sections:
+You use the user's answers and explicitly stated optional defaults. You do not infer an answer to a required question. You write `reaper-workspace/notes/clarified-goal.md` with title `# Clarified Research Goal` and these level-two sections:
 
 | Section | Content |
 |---|---|
@@ -60,18 +60,15 @@ After the user responds, you combine their answers with defaults for unanswered 
 | Scope | You identify the parts of the paper or topic that the research covers. |
 | Key Assumptions | You state investigation assumptions. |
 | Success Criteria | You state the evidence that answers the goal. |
-| Target Venue | You name the venue and the deadline if the user gives one. |
+| Output and Budget | You record the output, research limit, and target venue when applicable. |
 
 ### 5. Report
 
-You state the refined goal. You ask the user to confirm it before the pipeline continues.
+You state the refined goal and continue once the required choices are clear. You do not request a second confirmation of answers the user already supplied.
 
 ## Quality Criteria
 
 - The refined goal gives `formalize-problem` enough information to proceed.
 - If the PDF is unreadable, you report the error. You do not invent context.
 
-## Exceptions
-
-- If the goal is unclear, you ask questions and request confirmation. Without a paper, you ask about the domain, terms, and expected output.
-- If the goal is precise, you can omit questions and confirmation. You write `clarified-goal.md`, state that the goal is clear, and continue.
+If the goal is precise, you write `clarified-goal.md` directly and continue.

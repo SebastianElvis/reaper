@@ -1,0 +1,9 @@
+skill: reaper
+case_id: budget-exhaustion
+goal: Resume the existing research run. The total budget remains 2 cycles. Give the
+  supported answer and unresolved claims. Use only the supplied files. Do not write
+  a paper.
+expectations: The candidate starts no investigation cycle, reformulation, or research
+  worker. It reports that the budget is exhausted and H1 remains unresolved. It preserves
+  the existing cycle limit and consumed count. It does not turn finite checks into
+  a proof or claim completion of the mathematical goal.

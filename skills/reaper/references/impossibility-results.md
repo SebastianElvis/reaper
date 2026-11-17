@@ -1,26 +1,23 @@
-# Known Impossibility Results and Lower Bounds
+# Impossibility Results and Lower Bounds
 
-Domain-specific reference for screening hypotheses against fundamental limits. The examples below are for cryptography and distributed systems. For other research domains, adapt this file with the relevant impossibility results and lower bounds for that field.
+You treat this list as a source guide. You inspect the exact theorem before using it to reject a claim.
+You record its task, validity condition, fault model, network, setup, randomization, cost unit, and parameter range.
 
 ## Distributed Computing
 
-- **FLP** [Fischer, Lynch, Paterson 1985]: No deterministic consensus in asynchrony with even 1 crash fault
-- **DLS** [Dwork, Lynch, Stockmeyer 1988]: No partially-synchronous consensus tolerating t >= n/3 Byzantine faults
-- **Byzantine agreement bound**: Requires t < n/3 without trusted setup (or t < n/2 with PKI + randomization)
-- **Dolev-Strong**: Authenticated broadcast requires t < n
-- **Fischer-Lynch-Merritt**: k-set agreement impossible with t >= k crash faults in async
-- **Communication lower bounds**: Omega(n^2) for deterministic Byzantine agreement without threshold signatures (Dolev-Reischuk)
+- FLP rules out guaranteed termination for deterministic consensus in its asynchronous message-passing model with a possible crash. It does not rule out safety or all randomized termination guarantees. You consult [Fischer, Lynch, and Paterson](https://groups.csail.mit.edu/tds/papers/Lynch/jacm85.pdf).
+- Byzantine resilience depends on synchrony, authentication, validity, and the task. You do not use one universal threshold. You inspect the relevant theorem in [Dwork, Lynch, and Stockmeyer](https://groups.csail.mit.edu/tds/papers/Lynch/jacm88.pdf).
+- Authenticated broadcast and consensus can have different validity requirements. You do not transfer a threshold between them without checking the definitions.
+- Saks and Zaharoglou prove that deterministic wait-free k-set agreement is impossible for k < n in their asynchronous shared-memory model. You consult their [paper](https://courses.csail.mit.edu/6.852/08/papers/SaksZaharoglu.pdf). You verify the separate resilience reduction before claiming a general t-fault result.
+- Dolev and Reischuk distinguish worst-case messages from signature counts. Their classical deterministic authenticated setting gives an Ω(n + t²) message bound and an Ω(nt) signature bound. Their unauthenticated setting gives an Ω(nt) message bound. You check the original model before applying these bounds. Quadratic growth requires a corresponding relation between t and n. You consult the [original publication](https://research.ibm.com/publications/bounds-on-information-exchange-for-byzantine-agreement--1).
 
 ## Cryptography
 
-- **Authenticated channels**: Many impossibilities disappear with a PKI — check whether the paper's model includes one
-- **One-way functions**: If P = NP, no one-way functions exist (and thus no secure encryption, signatures, etc.)
-- **Random oracle pitfalls**: Schemes secure in the random oracle model may be insecure when the oracle is instantiated with a concrete hash function
+You check the exact hardness assumption and setup model. A PKI can change an impossibility result's premises; it does not remove every impossibility.
+A random-oracle proof does not by itself prove security for a specific concrete hash function.
 
-## How to Use
+## Effect on the Research Question
 
-For each hypothesis, check whether it contradicts a known impossibility or lower bound from this list. If it does:
-
-1. **Flag it explicitly** in the hypothesis with a warning
-2. **Reformulate**: "Under what additional assumptions does this become possible?" or "What weaker property can be achieved?"
-3. Do NOT leave it as a hypothesis for the investigate skill to waste cycles on
+A verified matching impossibility can resolve the user's question negatively.
+You preserve the original claim and its evidence. You propose changed assumptions or weaker properties separately.
+An uncertain model match remains unresolved. You do not discard a hypothesis based on this summary alone.

@@ -4,10 +4,10 @@ Domain-specific reference for pinning down the dimensions of a research problem'
 
 ## Trust Assumption Checklist
 
-Every dimension must have a concrete answer, not "TBD":
+You specify each applicable dimension. You identify missing assumptions rather than inventing them.
 
 - **Communication**: point-to-point / broadcast / both? Authenticated channels? Reliable delivery?
-- **Timing**: synchronous (known Delta) / partially synchronous (unknown Delta, known GST) / asynchronous?
+- **Timing**: synchronous (known Delta) / partially synchronous (unknown fixed bounds, or known bounds after an unknown stabilization time) / asynchronous?
 - **PKI/setup**: plain model / PKI / CRS / trusted dealer / random oracle / algebraic group model?
 - **Corruption timing**: static (before execution) / adaptive (during execution) / mobile (between epochs)?
 - **Corruption power**: crash / omission / Byzantine / covert?
@@ -25,11 +25,11 @@ Map the dimensions of existing work and find unexplored combinations. Example di
 - Protocol families (leader-based, leaderless, DAG-based, etc.)
 - Security properties (safety, liveness, fairness, accountability, etc.)
 
-Which cells in this matrix are empty? Those are candidate hypotheses.
+An empty cell suggests a candidate question. You check its relevance, feasibility, and prior work before assigning value.
 
-## Importance Filter Examples
+## Priorities
 
-Prioritize hypotheses by consequence:
-- A security proof gap that invalidates a deployed protocol > a tighter constant in a complexity bound
-- An impossibility result that rules out an entire approach > an incremental improvement
-- A finding that changes how practitioners build systems > a purely theoretical curiosity
+You rank questions by the user's goal and the consequence of resolving them.
+A practical flaw, a tighter bound, or a theoretical result can matter under different goals. You do not use one universal ranking.
+You use [Hamming's advice](https://www.cs.virginia.edu/~robins/YouAndYourResearch.html) as a prompt to explain importance, not as permission to replace the user's question.
+The partial-synchrony examples follow the two models in [Dwork, Lynch, and Stockmeyer](https://groups.csail.mit.edu/tds/papers/Lynch/jacm88.pdf).

@@ -1,0 +1,7 @@
+skill: reaper
+artifact: evidence.md
+dimensions:
+  - name: research-correctness
+    prompt: prompts/research-correctness.md
+    applies_to: [evidence.md, expectations.md]
+    passing_score: 2

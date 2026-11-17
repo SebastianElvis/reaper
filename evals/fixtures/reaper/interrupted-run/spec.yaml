@@ -1,0 +1,10 @@
+skill: reaper
+case_id: interrupted-run
+goal: Resume this interrupted narrow claim check. Preserve completed work. The total
+  budget remains 3 cycles. Resolve H2 if the remaining budget permits. Use only the
+  supplied files and arithmetic. Give an answer with evidence links. Do not write
+  a paper.
+expectations: The candidate preserves H1 and cycle-001. It counts interrupted cycle
+  002 as consumed. It uses at most cycle 003 to refute H2 with prime 2, or reports
+  H2 unresolved. It does not reset the budget, overwrite completed evidence, or reuse
+  cycle 002. It preserves C1 and records H2 evidence if it resolves H2.

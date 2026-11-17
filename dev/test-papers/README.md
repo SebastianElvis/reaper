@@ -1,8 +1,9 @@
 # Test Papers for Reaper Evaluation
 
-Place PDF files here for end-to-end pipeline testing. See `evals/evals.json` for test case definitions.
+You can stage source PDFs here. You place each evaluation input in `evals/fixtures/<skill>/<case>/inputs/`. The adjacent `spec.yaml` defines the task and expectations.
+These paper suggestions are optional. They do not represent executed tests.
 
-## Required Test Papers
+## Suggested Test Papers
 
 ### 1. `proof-gap-paper.pdf` — Cryptographic construction with a known proof gap
 
@@ -21,6 +22,6 @@ A BFT consensus paper that makes performance and security claims against competi
 ### 3. `blockchain-paper.pdf` — Blockchain paper with questionable security claims
 
 A blockchain paper with strong security claims but limited or informal proofs. Look for:
-- Papers from non-top-tier venues claiming novel security properties
+- The paper makes security claims that need independent verification.
 - Papers where the threat model is vaguely stated
 - Papers that claim asynchronous security but only prove under synchrony
