@@ -1,0 +1,28 @@
+# Calibration case for the LaTeX project layout of the write-paper skill.
+# The L1 grader `latex_project` checks the file layout only. No L2 rubric
+# exists for write-paper yet, so this case gives no judge coverage.
+
+skill: write-paper
+case_id: latex-layout
+goal: "Write the paper for the threshold signature result."
+
+reference:
+  artifact: reference/report
+
+negatives:
+  - id: structural
+    target_layer: structural
+    artifact: negative-structural/report
+    expected_failures:
+      structural: [latex_inputs_resolve, latex_floats_in_own_files]
+    notes: |
+      A section contains an inline figure environment, and a section
+      inputs a table file that does not exist.
+
+  - id: structural-files
+    target_layer: structural
+    artifact: negative-structural-files/report
+    expected_failures:
+      structural: [latex_required_files]
+    notes: |
+      The project has no Makefile.

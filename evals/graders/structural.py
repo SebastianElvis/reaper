@@ -150,3 +150,39 @@ def min_length_chars(path: Path, minimum: int) -> GraderResult:
         passed=n >= minimum,
         detail=f"length {n} chars (need ≥{minimum})",
     )
+
+
+# ---------------------------------------------------------------------------
+# LaTeX project layout (write-paper)
+# ---------------------------------------------------------------------------
+
+_INPUT_RE = re.compile(r"\\input\{([^}]+)\}")
+_FLOAT_RE = re.compile(r"\\begin\{(figure|table)\*?\}")
+
+
+def _tex(path: Path) -> str:
+    return re.sub(r"(?<!\\)%.*", "", path.read_text())
+
+
+def latex_project(root: Path) -> list[GraderResult]:
+    """The write-paper project must keep sections, figures, and tables in their own files."""
+    sections = sorted((root / "sections").glob("[0-9][0-9]-*.tex"))
+    missing = [n for n in ("main.tex", "references.bib", "Makefile", ".gitignore") if not (root / n).is_file()]
+    if not sections:
+        missing.append("sections/NN-<name>.tex")
+    if (root / "Makefile").is_file() and "latexmk" not in (root / "Makefile").read_text():
+        missing.append("latexmk in Makefile")
+    if missing:
+        return [GraderResult("latex_required_files", False, f"missing: {missing}")]
+    sources = [root / "main.tex", *sections]
+    broken = [f"{p.name}: {t}" for p in sources for t in _INPUT_RE.findall(_tex(p))
+              if not (root / t).with_suffix(".tex").is_file()]
+    inline = [p.name for p in sources if _FLOAT_RE.search(_tex(p)) or (p.name == "main.tex" and "\\section" in _tex(p))]
+    for folder, kind in (("figures", "figure"), ("tables", "table")):
+        inline += [f"{folder}/{p.name}" for p in (root / folder).glob("*.tex")
+                   if not any(m.group(1) == kind for m in _FLOAT_RE.finditer(_tex(p)))]
+    return [
+        GraderResult("latex_required_files", True),
+        GraderResult("latex_inputs_resolve", not broken, f"missing \\input targets: {broken}" if broken else ""),
+        GraderResult("latex_floats_in_own_files", not inline, f"misplaced content: {inline}" if inline else ""),
+    ]
