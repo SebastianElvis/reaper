@@ -180,6 +180,8 @@ reaper-workspace/
 └── report/                             # The write-paper skill writes this project.
     ├── main.tex                        # The paper source uses LaTeX.
     ├── sections/NN-<name>.tex          # Each section has its own file. main.tex inputs them in order.
+    ├── figures/<name>.tex              # Each figure has its own file. A section file inputs it.
+    ├── tables/<name>.tex               # Each table has its own file. A section file inputs it.
     ├── references.bib                  # The bibliography stores citation metadata.
     ├── Makefile                        # The default target builds the PDF. `make clean` removes build files.
     ├── .gitignore                      # Git ignores LaTeX build files.
@@ -230,7 +232,7 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
 | `/brainstorm` | Stage 2.5: Recurring ideation | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md`, `notes/results.md`, `notes/literature.md`, `notes/paper-summary.md` | Updates `notes/ideas.md` (adds new, edits existing inline) |
 | `/investigate` | Stage 3: Investigate (one cycle) | `notes/problem-statement.md`, `notes/ideas.md`, `notes/current-understanding.md` | `investigations/NNN-<name>/` (reuses on revisit), updates `notes/results.md` inline, edits `current-understanding.md` on keep |
 | `/critique` | Stage 3 sub-step: review | `investigations/`, `notes/current-understanding.md`, `notes/ideas.md` | `feedbacks/`, `logs/`, may add hypotheses to `notes/ideas.md` |
-| `/write-paper` | Stage 4: Write Paper | All `notes/`, `investigations/`, `notes/results.md` | `report/main.tex`, `report/sections/*.tex`, `report/references.bib`, `report/Makefile`, `report/.gitignore` |
+| `/write-paper` | Stage 4: Write Paper | All `notes/`, `investigations/`, `notes/results.md` | `report/main.tex`, `report/sections/*.tex`, `report/figures/*.tex`, `report/tables/*.tex`, `report/references.bib`, `report/Makefile`, `report/.gitignore` |
 | `/reaper` | Orchestrator | Paper + goal prompt | Full workspace |
 
 **`/write-paper` report structure** (following Peyton Jones):
@@ -274,6 +276,8 @@ And each skill works standalone: invoke `analyze-paper paper.pdf` for just a str
 - [x] The `/write-paper` skill replaces the former paper generation skill.
 - [x] The skill requires a LaTeX project with `main.tex`, `references.bib`, and `Makefile`.
 - [x] Each section has its own `sections/NN-<name>.tex` file. `main.tex` inputs the files in order.
+- [x] Each figure has its own `figures/<name>.tex` file, and each table has its own `tables/<name>.tex` file. The L1 eval rule `latex_project` checks this layout.
+- [x] The `/write-paper` skill draws figures with the key-free workflow in `references/figures.md`. The workflow adapts PaperBanana: retrieve exemplar figures, plan, style, draw TikZ or pgfplots source, and critique the rendered page.
 - [x] The `/review-literature` skill sets a target venue bar from the call for papers and 3-5 exemplar papers. The `/write-paper` skill uses the venue template and audits the paper against the bar.
 - [x] The paper reports only final results. It has no cycle numbers, hypothesis labels, result log, or research history.
 - [x] The skill requires theorem environments, BibTeX citations, and PDF build checks.

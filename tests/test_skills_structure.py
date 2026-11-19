@@ -28,6 +28,7 @@ EXPECTED_REFERENCES = [
     "skills/reaper/references/methodology.md",
     "skills/reaper/references/paper-analysis.md",
     "skills/reaper/references/search-tools.md",
+    "skills/reaper/references/figures.md",
 ]
 
 EXPECTED_SCRIPTS = [

@@ -12,7 +12,7 @@ You must read and apply the [language rules](../reaper/references/language.md) b
 
 This skill writes a LaTeX research paper in `reaper-workspace/report/`.
 The paper targets the requested venue requirements. You report unmet requirements honestly. The paper separates supported results from conjectures and limitations.
-You create `main.tex`, one `sections/NN-<name>.tex` file for each section, `references.bib`, `Makefile`, and `.gitignore`. You do not write a Markdown paper.
+You create `main.tex`, one `sections/NN-<name>.tex` file for each section, one `figures/<name>.tex` file for each figure, one `tables/<name>.tex` file for each table, `references.bib`, `Makefile`, and `.gitignore`. You do not write a Markdown paper.
 
 ## Usage
 
@@ -67,6 +67,7 @@ You use this structure:
 
 You state contributions as specific informal results in the introduction.
 You add an architecture figure only when the result proposes an architecture. You add a comparison table when shared assumptions, properties, or costs support a useful comparison.
+Before you make a figure or a plot, you read and apply [figures.md](../reaper/references/figures.md).
 You use `amsthm` environments for numbered definitions, lemmas, theorems, propositions, and conjectures.
 You use the `proof` environment for complete proofs. Each proof names its technique and justifies every step.
 The `proof` environment supplies the end marker. You label incomplete arguments as proof sketches and state each gap.
@@ -96,7 +97,8 @@ The workspace records the research process. The paper presents only the final re
 
 - You write each section, including the abstract and each appendix, in its own file `sections/NN-<name>.tex`. `NN` is the order of the section in the paper, for example `sections/01-introduction.tex`.
 - You write `main.tex` with the document class, package declarations, title, and document environment. Its body contains only `\maketitle`, `\input{sections/NN-<name>}` commands in section order, `\appendix` before the first appendix, and the bibliography commands.
-- You define each theorem environment before use. You load `amsmath` and `amssymb` for mathematics, `tikz` for figures, and `hyperref` for links.
+- You write each figure in its own file `figures/<name>.tex` and each table in its own file `tables/<name>.tex`. Each file contains the complete `figure` or `table` environment with its caption and label. The section file includes it with `\input{figures/<name>}` or `\input{tables/<name>}`. You do not write a `figure` or `table` environment in `main.tex` or in a section file.
+- You define each theorem environment before use. You load `amsmath` and `amssymb` for mathematics, `tikz` for figures, `pgfplots` for plots, and `hyperref` for links.
 - You use LaTeX math, lists, and tables. You escape reserved characters in prose, paths, and bibliography fields.
 - You create `references.bib` from verified entries in `notes/literature.md`. You preserve authors, titles, and venues. You include DOI or URL fields. With the `plain` style, you also put a `\url{}` link in the `note` field so the reference displays the link. You do not invent missing metadata.
 - You use the venue's citation and bibliography conventions. Without venue requirements, you use `\cite{key}`, `\bibliographystyle{plain}`, and `\bibliography{references}`. Each citation key must match a bibliography entry.

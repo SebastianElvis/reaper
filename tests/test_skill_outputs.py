@@ -226,7 +226,8 @@ def test_every_fixture_skill_has_rules():
         assert spec["skill"] == spec_path.parent.parent.name
         assert spec["case_id"] == spec_path.parent.name
         assert spec["skill"] in SKILL_STRUCTURAL_RULES
-        assert runner.load_rubric(spec["skill"])["dimensions"]
+        if "expectations" in spec or any(n.get("target_layer", "judge") == "judge" for n in spec.get("negatives", [])):
+            assert runner.load_rubric(spec["skill"])["dimensions"]
 
 
 def command(code):

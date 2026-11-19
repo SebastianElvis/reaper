@@ -99,9 +99,12 @@ def stage_variant(spec_path: Path, variant: dict, run_dir: Path) -> Path:
             shutil.copy2(f, trial_dir / f.name)
 
     artifact_src = spec_dir / variant["artifact"]
-    if not artifact_src.is_file():
+    if artifact_src.is_dir():
+        shutil.copytree(artifact_src, trial_dir / artifact_src.name)
+    elif artifact_src.is_file():
+        shutil.copy2(artifact_src, trial_dir / artifact_src.name)
+    else:
         raise FileNotFoundError(f"variant artifact not found: {artifact_src}")
-    shutil.copy2(artifact_src, trial_dir / artifact_src.name)
 
     return trial_dir
 
@@ -154,6 +157,7 @@ SKILL_STRUCTURAL_RULES = {
         ],
         "min_chars": 400,
     },
+    "write-paper": {"artifact": "report", "latex_project": True},
 }
 
 def run_structural(skill: str, trial_dir: Path) -> list[StructuralReport]:
@@ -161,6 +165,8 @@ def run_structural(skill: str, trial_dir: Path) -> list[StructuralReport]:
     if not rules:
         return [StructuralReport("coverage", False, "This skill has no structural rules.")]
     artifact = trial_dir / rules["artifact"]
+    if rules.get("latex_project"):
+        return [StructuralReport(r.name, r.passed, r.detail) for r in structural.latex_project(artifact)]
     results = [
         structural.has_sections(artifact, rules["required_sections"]),
         structural.min_length_chars(artifact, rules["min_chars"]),

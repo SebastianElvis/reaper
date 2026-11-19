@@ -180,7 +180,8 @@ reaper-workspace/
 │   ├── current-understanding.md    # "Branch tip" — advances only on keep
 │   ├── results.md                  # One row per hypothesis, updated inline on revisit
 │   ├── venue-bar.md                # Target venue rules, exemplar papers, bar checklist
-│   └── bar-audit.md                # PASS/PARTIAL/FAIL per bar checklist item
+│   ├── bar-audit.md                # PASS/PARTIAL/FAIL per bar checklist item
+│   └── figure-plans.md             # One plan per figure: sources, layout, elements
 ├── investigations/                 # Evolving — reuse directory on revisit, edit inline
 │   └── NNN-<name>/                 # One directory per hypothesis
 │       ├── analysis.md             # Reasoning, attempts, dead ends, insights
@@ -193,6 +194,8 @@ reaper-workspace/
 └── report/
     ├── main.tex                    # The paper source uses LaTeX.
     ├── sections/NN-<name>.tex      # Each section has its own file. main.tex inputs them in order.
+    ├── figures/<name>.tex          # Each figure has its own file. A section file inputs it.
+    ├── tables/<name>.tex           # Each table has its own file. A section file inputs it.
     ├── references.bib              # The bibliography stores citation metadata.
     ├── Makefile                    # The default target builds the PDF. `make clean` removes build files.
     ├── .gitignore                  # Git ignores LaTeX build files.
